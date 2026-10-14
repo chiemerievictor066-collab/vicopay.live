@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VicoPay Live - Home</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #eef7ff;
+            color: #082653;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit
+        }
+
+        button {
+            font-family: inherit
+        }
+
+        /* TOP NAVIGATION */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            min-height: 70px;
+            padding: 0 4%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: linear-gradient(90deg, #031c5d, #0646b8, #087fe8);
+            border-bottom: 1px solid rgba(255, 255, 255, .2);
+            box-shadow: 0 4px 18px rgba(0, 55, 150, .22);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: max-content;
+        }
+
+        .brand-mark {
+            width: 45px;
+            height: 45px;
+            display: grid;
+            place-items: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            background: linear-gradient(135deg, #00d9ff, #1768ff);
+            clip-path: polygon(50% 0, 100% 0, 72% 100%, 50% 100%, 0 0);
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff
+        }
+
+        .brand-sub {
+            font-size: 10px;
+            color: #bcecff;
+            margin-top: 2px
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+            color: #fff;
+            font-weight: 600
+        }
+
+        .nav-links a {
+            padding: 25px 0;
+            border-bottom: 3px solid transparent
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #61e8ff;
+            border-bottom-color: #00d9ff
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .search {
+            width: 220px;
+            padding: 11px 16px;
+            border: 0;
+            border-radius: 24px;
+            outline: none;
+            background: rgba(255, 255, 255, .13);
+            color: #fff;
+        }
+
+        .search::placeholder {
+            color: #d9edff
+        }
+
+        .nav-btn {
+            border: 1px solid #56dfff;
+            border-radius: 24px;
+            padding: 10px 18px;
+            background: transparent;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(90deg, #10bfff, #0874ff);
+            border-color: #57e5ff
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 520px;
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 75% 30%, rgba(0, 221, 255, .55), transparent 28%),
+                radial-gradient(circle at 15% 70%, rgba(42, 74, 255, .7), transparent 32%),
+                linear-gradient(135deg, #031b61 0%, #0758d4 55%, #09a7ee 100%);
+            color: #fff;
+        }
+
+        .hero:before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(0, 16, 70, .78), rgba(0, 40, 130, .18));
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+            width: min(1250px, 92%);
+            min-height: 520px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 35px;
+        }
+
+        .hero-copy {
+            width: 52%;
+            padding: 45px 0
+        }
+
+        .live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 15px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255, 255, 255, .3);
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .live-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #ffe500;
+            box-shadow: 0 0 12px #ffe500;
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: .25
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(42px, 5.5vw, 76px);
+            line-height: .98;
+            max-width: 720px
+        }
+
+        .hero h1 span {
+            color: #19e4ff
+        }
+
+        .hero p {
+            font-size: 19px;
+            line-height: 1.55;
+            color: #e1f6ff;
+            max-width: 620px;
+            margin: 22px 0
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap
+        }
+
+        .hero-btn {
+            padding: 15px 25px;
+            border-radius: 28px;
+            border: 1px solid #5eeaff;
+            background: #09baff;
+            color: #fff;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+        }
+
+        .hero-btn.alt {
+            background: transparent
+        }
+
+        .hero-features {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 28px
+        }
+
+        .hero-feature {
+            padding: 9px 13px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, .22);
+            font-size: 13px;
+        }
+
+        .hero-visual {
+            width: 46%;
+            min-height: 430px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stream-card {
+            width: min(450px, 100%);
+            height: 330px;
+            border-radius: 28px;
+            background: linear-gradient(145deg, #142d72, #08132e);
+            border: 2px solid rgba(69, 225, 255, .65);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, .35);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stream-card:before {
+            content: "LIVE";
+            position: absolute;
+            left: 18px;
+            top: 16px;
+            z-index: 3;
+            background: #ff2f59;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 7px 12px;
+            border-radius: 8px;
+        }
+
+        .stream-avatar {
+            width: 145px;
+            height: 145px;
+            border-radius: 50%;
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: grid;
+            place-items: center;
+            font-size: 72px;
+            background: linear-gradient(135deg, #00d9ff, #3155ff);
+            border: 5px solid #fff;
+        }
+
+        .stream-info {
+            position: absolute;
+            left: 25px;
+            right: 25px;
+            bottom: 22px
+        }
+
+        .stream-info h3 {
+            font-size: 23px
+        }
+
+        .stream-info p {
+            font-size: 13px;
+            color: #b9d9ff;
+            margin: 6px 0
+        }
+
+        .viewer-count {
+            position: absolute;
+            right: 18px;
+            top: 17px;
+            background: rgba(0, 0, 0, .5);
+            padding: 7px 11px;
+            border-radius: 20px;
+            font-size: 12px
+        }
+
+        /* SECTIONS */
+        .section {
+            width: min(1250px, 92%);
+            margin: 0 auto;
+            padding: 48px 0
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 15px;
+            margin-bottom: 20px
+        }
+
+        .section-head h2 {
+            font-size: 30px
+        }
+
+        .section-head p {
+            color: #55718e;
+            margin-top: 5px
+        }
+
+        .view-all {
+            color: #0577df;
+            font-weight: 700
+        }
+
+        .live-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px
+        }
+
+        .live-card {
+            background: #fff;
+            border-radius: 17px;
+            overflow: hidden;
+            border: 1px solid #cfe6fb;
+            box-shadow: 0 8px 24px rgba(0, 72, 150, .08);
+        }
+
+        .live-image {
+            height: 180px;
+            position: relative;
+            background: linear-gradient(135deg, #061b5c, #0787ed, #0bd4ff);
+            display: grid;
+            place-items: center;
+            font-size: 70px;
+            color: #fff;
+        }
+
+        .live-badge {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            background: #ff315a;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800
+        }
+
+        .views {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: rgba(0, 0, 0, .55);
+            color: #fff;
+            padding: 6px 9px;
+            border-radius: 15px;
+            font-size: 11px
+        }
+
+        .live-body {
+            padding: 13px
+        }
+
+        .live-body h3 {
+            font-size: 17px
+        }
+
+        .country {
+            color: #66829e;
+            font-size: 12px;
+            margin: 6px 0 11px
+        }
+
+        .watch {
+            display: block;
+            text-align: center;
+            padding: 9px;
+            border-radius: 20px;
+            background: #0787ed;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px
+        }
+
+        /* GIFTS */
+        .gifts-section {
+            background: linear-gradient(135deg, #031c61, #0755ca, #079ee9);
+            color: #fff;
+            border-radius: 28px;
+            overflow: hidden;
+        }
+
+        .gifts-inner {
+            padding: 36px;
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 30px
+        }
+
+        .gifts-copy h2 {
+            font-size: 34px
+        }
+
+        .gifts-copy p {
+            color: #d8f3ff;
+            line-height: 1.55;
+            margin: 13px 0 20px
+        }
+
+        .coin-btn {
+            display: inline-block;
+            background: #11cfff;
+            color: #04336b;
+            padding: 13px 20px;
+            border-radius: 25px;
+            font-weight: 800
+        }
+
+        .gift-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px
+        }
+
+        .gift {
+            text-align: center;
+            padding: 15px 8px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .18);
+        }
+
+        .gift-icon {
+            font-size: 35px
+        }
+
+        .gift strong {
+            display: block;
+            margin-top: 7px
+        }
+
+        .gift small {
+            color: #ffe15b
+        }
+
+        /* HOW IT WORKS */
+        .how-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px
+        }
+
+        .how-box {
+            background: #fff;
+            border: 1px solid #d3e9fb;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(0, 72, 150, .06)
+        }
+
+        .how-box h3 {
+            font-size: 22px;
+            color: #06459f;
+            margin-bottom: 22px
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center
+        }
+
+        .step-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: grid;
+            place-items: center;
+            background: #e2f5ff;
+            color: #0878e6;
+            font-size: 24px;
+        }
+
+        .step p {
+            font-size: 12px;
+            color: #66809a;
+            line-height: 1.4
+        }
+
+        /* RANKINGS */
+        .rankings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px
+        }
+
+        .rank-box {
+            background: #06388e;
+            color: #fff;
+            border-radius: 20px;
+            padding: 22px
+        }
+
+        .rank-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px
+        }
+
+        .rank-row {
+            display: grid;
+            grid-template-columns: 35px 42px 1fr auto;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .12);
+        }
+
+        .rank-row:last-child {
+            border-bottom: 0
+        }
+
+        .rank-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #00d9ff, #415eff)
+        }
+
+        .rank-value {
+            color: #ffd94a;
+            font-weight: 800;
+            font-size: 13px
+        }
+
+        /* JOIN */
+        .join-banner {
+            margin: 0 auto 45px;
+            width: min(1250px, 92%);
+            padding: 25px 30px;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #06266d, #0876dd);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .join-banner h2 {
+            font-size: 25px
+        }
+
+        .join-banner p {
+            color: #cceaff;
+            margin-top: 5px
+        }
+
+        .join-now {
+            background: #16d2ff;
+            color: #00316b;
+            padding: 12px 22px;
+            border-radius: 24px;
+            font-weight: 800
+        }
+
+        /* FOOTER */
+        footer {
+            background: #021747;
+            color: #a9c7e6;
+            padding: 35px 4%;
+        }
+
+        .footer-inner {
+            width: min(1250px, 100%);
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            flex-wrap: wrap
+        }
+
+        .footer-brand {
+            color: #fff;
+            font-size: 23px;
+            font-weight: 800
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 13px
+        }
+
+        .footer-links a:hover {
+            color: #36ddff
+        }
+
+        .footer-bottom {
+            width: min(1250px, 100%);
+            margin: 25px auto 0;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, .12);
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            font-size: 12px
+        }
+
+        .online {
+            color: #57e7a2
+        }
+
+        /* RESPONSIVE / 9:16 FRIENDLY */
+        @media(max-width:1050px) {
+            .nav-links {
+                display: none
+            }
+
+            .search {
+                display: none
+            }
+
+            .live-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .hero-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-top: 35px;
+                padding-bottom: 35px
+            }
+
+            .hero-copy,
+            .hero-visual {
+                width: 100%
+            }
+
+            .hero-visual {
+                min-height: 330px
+            }
+
+            .gifts-inner {
+                grid-template-columns: 1fr
+            }
+
+            .gift-grid {
+                grid-template-columns: repeat(3, 1fr)
+            }
+        }
+
+        @media(max-width:650px) {
+            .navbar {
+                min-height: 62px;
+                padding: 0 14px
+            }
+
+            .brand-name {
+                font-size: 20px
+            }
+
+            .brand-mark {
+                width: 39px;
+                height: 39px
+            }
+
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 12px
+            }
+
+            .hero {
+                min-height: auto
+            }
+
+            .hero-inner {
+                min-height: auto
+            }
+
+            .hero h1 {
+                font-size: 43px
+            }
+
+            .hero p {
+                font-size: 15px
+            }
+
+            .stream-card {
+                height: 280px
+            }
+
+            .live-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px
+            }
+
+            .live-image {
+                height: 135px;
+                font-size: 50px
+            }
+
+            .live-body {
+                padding: 10px
+            }
+
+            .live-body h3 {
+                font-size: 14px
+            }
+
+            .watch {
+                font-size: 11px
+            }
+
+            .section {
+                padding: 32px 0
+            }
+
+            .section-head h2 {
+                font-size: 24px
+            }
+
+            .gifts-inner {
+                padding: 22px
+            }
+
+            .gifts-copy h2 {
+                font-size: 27px
+            }
+
+            .gift-grid {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .gift {
+                padding: 11px 4px
+            }
+
+            .gift-icon {
+                font-size: 28px
+            }
+
+            .how-grid,
+            .rankings {
+                grid-template-columns: 1fr
+            }
+
+            .steps {
+                gap: 4px
+            }
+
+            .step p {
+                font-size: 10px
+            }
+
+            .join-banner {
+                flex-direction: column;
+                align-items: flex-start
+            }
+
+            .footer-bottom {
+                flex-direction: column
+            }
+        }
+
+        /* Tall 9:16 viewing support */
+        @media(min-width:651px) and (max-width:850px) {
+            body {
+                max-width: 900px;
+                margin: auto
+            }
+
+            .live-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+    </style>
+    <script src="auth.js"></script>
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="home.html" class="brand">
+            <div class="brand-mark">V</div>
+            <div>
+                <div class="brand-name">VicoPay</div>
+                <div class="brand-sub">Live • Chat • Connect • Earn</div>
+            </div>
+        </a>
+
+        <nav class="nav-links">
+            <a href="home.html" class="active">⌂ Home</a>
+            <a href="live-room.html">◉ Live</a>
+            <a href="hosts.html">Hosts</a>
+            <a href="gifters.html">Gifters</a>
+            <a href="followers.html">Following</a>
+            <a href="pk-battles.html">⚔️ PK</a>
+            <a href="gift-shop.html">Gift Shop</a>
+            <a href="live-room-dashboard.html">Explore</a>
+        </nav>
+
+        <div class="nav-actions">
+            <input class="search" type="search" placeholder="Search creators, tags, or users...">
+            <a href="live-room-profile.html" class="nav-btn">Login</a>
+            <a href="join-now.html" class="nav-btn primary">Join Now</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-copy">
+                <div class="live-pill"><span class="live-dot"></span> LIVE NOW</div>
+
+                <h1>Go Live. Connect.<br>Share. <span>Earn.</span></h1>
+
+                <p>
+                    Discover amazing live creators, meet new people,
+                    send virtual gifts and join conversations around the world.
+                </p>
+
+                <div class="hero-buttons">
+                    <a href="Go-Live.html" class="hero-btn">▶ Start Streaming</a>
+                    <a href="live-room.html" class="hero-btn alt">👥 Join Live</a>
+                </div>
+
+                <div class="hero-features">
+                    <span class="hero-feature">💬 Live Chat</span>
+                    <span class="hero-feature">🎁 Virtual Gifts</span>
+                    <span class="hero-feature">🌐 Global Community</span>
+                    <span class="hero-feature">💰 Creator Earnings</span>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="stream-card">
+                    <div class="viewer-count">🔴 Live rooms appear here when creators go live</div>
+                    <div class="stream-avatar">🎤</div>
+                    <div class="stream-info">
+                        <h3>VicoPay Live</h3>
+                        <p>Join real creators when they go live.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2>🔴 Live Now</h2>
+                <p>Amazing creators are live right now. Don't miss out!</p>
+            </div>
+            <a class="view-all" href="live-room.html">View All Live →</a>
+        </div>
+
+        <div id="homeLiveGrid" class="live-grid">
+            <div style="grid-column:1/-1;text-align:center;padding:35px;color:#66809a">Live rooms will appear here when
+                creators go live.</div>
+        </div>
+
+        <section class="section">
+            <div class="gifts-section">
+                <div class="gifts-inner">
+                    <div class="gifts-copy">
+                        <h2>🎁 Virtual Gifts & Coins</h2>
+                        <p>Send amazing virtual gifts to your favorite creators and show your support.</p>
+                        <a href="buy-coin.html" class="coin-btn">🪙 Buy Coins</a>
+                    </div>
+
+                    <div>
+                        <h3 style="margin-bottom:12px">Popular Gifts</h3>
+                        <div class="gift-grid">
+                            <div class="gift">
+                                <div class="gift-icon">🐉</div><strong>Dragon</strong><small>20,000</small>
+                            </div>
+                            <div class="gift">
+                                <div class="gift-icon">🦁</div><strong>Lion</strong><small>15,000</small>
+                            </div>
+                            <div class="gift">
+                                <div class="gift-icon">🦅</div><strong>Eagle</strong><small>10,000</small>
+                            </div>
+                            <div class="gift">
+                                <div class="gift-icon">💎</div><strong>Diamond</strong><small>7,000</small>
+                            </div>
+                            <div class="gift">
+                                <div class="gift-icon">🥇</div><strong>Gold</strong><small>5,000</small>
+                            </div>
+                            <div class="gift">
+                                <div class="gift-icon">🥈</div><strong>Silver</strong><small>3,000</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <h2>⚙ How VicoPay Live Works</h2>
+                </div>
+            </div>
+
+            <div class="how-grid">
+                <div class="how-box">
+                    <h3>For Viewers</h3>
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-icon">👤</div><strong>Join</strong>
+                            <p>Create your account</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">▶</div><strong>Watch</strong>
+                            <p>Explore live streams</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">💬</div><strong>Connect</strong>
+                            <p>Meet new people</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="how-box">
+                    <h3>For Creators</h3>
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-icon">👑</div><strong>Create Account</strong>
+                            <p>Sign up easily</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">📹</div><strong>Go Live</strong>
+                            <p>Start streaming</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">🎁</div><strong>Receive Gifts</strong>
+                            <p>Turn gifts into earnings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="rankings">
+                <div class="rank-box">
+                    <div class="rank-title">
+                        <h2>🏆 Top Gifters</h2><a href="gifters.html">View All →</a>
+                    </div>
+                    <div class="rank-row"><b>1</b>
+                        <div class="rank-avatar">💎</div><span></span><span class="rank-value">245,800</span>
+                    </div>
+                    <div class="rank-row"><b>2</b>
+                        <div class="rank-avatar">⭐</div><span></span><span class="rank-value">198,450</span>
+                    </div>
+                    <div class="rank-row"><b>3</b>
+                        <div class="rank-avatar">🎁</div><span></span><span class="rank-value">152,300</span>
+                    </div>
+                    <div class="rank-row"><b>4</b>
+                        <div class="rank-avatar">❤️</div><span></span><span class="rank-value">121,600</span>
+                    </div>
+                    <div class="rank-row"><b>5</b>
+                        <div class="rank-avatar">👑</div><span></span><span class="rank-value">98,750</span>
+                    </div>
+                </div>
+
+                <div class="rank-box">
+                    <div class="rank-title">
+                        <h2>⭐ Top Hosts</h2><a href="hosts.html">View All →</a>
+                    </div>
+                    <div class="rank-row"><b>1</b>
+                        <div class="rank-avatar"></div><span></span><span class="rank-value">1.2M</span>
+                    </div>
+                    <div class="rank-row"><b>2</b>
+                        <div class="rank-avatar">🎧</div><span></span><span class="rank-value">980K</span>
+                    </div>
+                    <div class="rank-row"><b>3</b>
+                        <div class="rank-avatar">😊</div><span></span><span class="rank-value">856K</span>
+                    </div>
+                    <div class="rank-row"><b>4</b>
+                        <div class="rank-avatar">😎</div><span></span><span class="rank-value">720K</span>
+                    </div>
+                    <div class="rank-row"><b>5</b>
+                        <div class="rank-avatar"></div><span></span><span class="rank-value">648K</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="join-banner">
+            <div>
+                <h2>🌐 Join VicoPay global forex trading Today</h2>
+                <p>Be part of a vicopay global forex traders community where global markets meet their ambitions .</p>
+            </div>
+            <a class="forex" href="forex.html">Join Now</a>
+        </section>
+
+        <footer>
+            <div class="footer-inner">
+                <div>
+                    <div class="footer-brand">VicoPay</div>
+                    <div>Live • Chat • Connect • Earn</div>
+                </div>
+
+                <div class="footer-links">
+                    <a href="home.html">About Us</a>
+                    <a href="#">Help Center</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Community Guidelines</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© 2026 VicoPay Live. All rights reserved.</span>
+                <span class="online">🟢 Online Now</span>
+            </div>
+        </footer>
+
+
+        <script>
+            (async function () {
+                const grid = document.getElementById("homeLiveGrid");
+                if (!grid) return;
+                try {
+                    const r = await fetch("/api/live/discover");
+                    const d = await r.json();
+                    const rooms = Array.isArray(d.rooms) ? d.rooms : [];
+                    if (!rooms.length) return;
+                    grid.innerHTML = rooms.slice(0, 8).map(room => `<article class="live-card"><div class="live-image">🔴 <span class="live-badge">LIVE</span><span class="views">👁 ${Number(room.viewers || 0).toLocaleString()}</span></div><div class="live-body"><h3>VicoPay Host</h3><div class="country">${room.category || "Live"}</div><a class="watch" href="live-feed.html?room=${encodeURIComponent(room.roomId)}">Watch Live</a></div></article>`).join("");
+                } catch (e) { console.error(e); }
+            })();
+        </script>
+</body>
+
+</html>

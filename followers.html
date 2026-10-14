@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Followers - VicoPay Live</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#050812;color:#fff;font-family:Arial,sans-serif;min-height:100vh}
+header{height:64px;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid #22304b;background:#071025}.logo{font-weight:900;font-size:23px;margin-right:auto}.logo span{color:#20d8ff}
+header a{color:#cfe3ff;text-decoration:none;font-weight:700;font-size:14px}.wrap{width:min(900px,94%);margin:22px auto}h1{margin:0 0 4px}.sub{color:#8fa7c5;margin:0 0 18px}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}.tab{border:1px solid #2a4066;background:#0a1328;color:#cfe3ff;border-radius:20px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer}.tab.on{background:#0787ed;border-color:#0787ed;color:#fff}
+.row{display:flex;align-items:center;gap:12px;background:#0a1328;border:1px solid #203352;border-radius:14px;padding:12px 14px;margin-bottom:10px}.row .g{flex:1;min-width:0}.nm{font-weight:900}.s{color:#8fa7c5;font-size:12px;margin-top:2px}
+.b{border:0;border-radius:18px;padding:8px 14px;font:inherit;font-weight:900;cursor:pointer;color:#fff;background:#0787ed;text-decoration:none;font-size:13px;white-space:nowrap}.b.on{background:#1f2f4d;color:#9bb0ca}.b.live{background:#ff315a}
+.empty{padding:30px;text-align:center;color:#8fa7c5;background:#0a1328;border:1px dashed #2a4066;border-radius:14px}.lvl{background:#7c3aed;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}.vs .sc{font-size:22px;font-weight:900;color:#ffd54a}.bar{height:12px;border-radius:7px;background:#ff315a;overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:#0787ed}
+input.q{width:100%;padding:13px 16px;border-radius:24px;border:1px solid #2a4066;background:#0a1328;color:#fff;font:inherit;margin-bottom:14px}</style>
+<script src="auth.js"></script><script>VicoAuth.requireLogin&&true&&VicoAuth.requireLogin();</script><script src="vico-ui.js"></script></head><body>
+<header><div class="logo">VicoPay <span>Live</span></div><a href="live-room.html">Live</a><a href="hosts.html">Hosts</a><a href="followers.html">Followers</a><a href="pk-battles.html">PK</a><span id="bellSlot"></span></header><div class="wrap">
+<h1>👥 Followers</h1><p class="sub" id="sub"></p>
+<input class="q" id="search" placeholder="🔍 Find hosts by name…" oninput="searchHosts(this.value)">
+<div class="tabs"><button class="tab on" id="t1" onclick="show('followers')">Followers</button><button class="tab" id="t2" onclick="show('following')">Following</button></div>
+<div id="list"></div>
+<script>
+const U=VicoUI;let mode="followers",who=new URLSearchParams(location.search).get("u")||"me",timer;
+function row(c){return '<div class="row">'+U.avatar(c.displayName,c.isLive,c.roomId,null,c.avatar)+'<div class="g"><div class="nm">'+U.esc(c.displayName)+'</div><div class="s">@'+U.esc(c.handle)+' · '+U.num(c.followers)+' followers'+(c.isLive?' · 🔴 '+U.esc(c.title||"Live now"):'')+'</div></div>'+
+  (c.isLive?'<a class="b live" href="live-feed.html?room='+encodeURIComponent(c.roomId)+'">Watch</a>':'')+'<button class="b'+(c.isFollowing?' on':'')+'" onclick="tog(this,\''+c.handle+'\','+c.isFollowing+')">'+(c.isFollowing?'Following':'Follow')+'</button></div>';}
+async function show(m){mode=m;t1.className="tab"+(m==="followers"?" on":"");t2.className="tab"+(m==="following"?" on":"");
+  const d=await U.api("/api/"+m+"/"+encodeURIComponent(who));
+  if(!d._ok){list.innerHTML='<div class="empty">'+U.esc(d.message||"Could not load.")+'</div>';return;}
+  sub.textContent=d.owner.displayName+" · "+U.num(d.owner.followers)+" followers · "+U.num(d.owner.following)+" following";
+  t1.textContent="Followers ("+U.num(d.owner.followers)+")";t2.textContent="Following ("+U.num(d.owner.following)+")";
+  const items=d[m];list.innerHTML=items.length?items.map(row).join(""):'<div class="empty">'+(m==="followers"?"No followers yet. Go live and share your link!":"You are not following anyone yet. Find hosts on the Live page.")+'</div>';}
+async function tog(btn,handle,on){const d=await U.api(on?"/api/unfollow":"/api/follow",{method:"POST",body:{hostId:handle}});if(d._ok)show(mode);else U.toast(d.message||"Failed");}
+function searchHosts(v){clearTimeout(timer);if(v.trim().length<2){show(mode);return;}timer=setTimeout(async()=>{const d=await U.api("/api/search/hosts?q="+encodeURIComponent(v));list.innerHTML=(d.results||[]).length?d.results.map(row).join(""):'<div class="empty">No hosts found.</div>';},300);}
+show("followers");
+</script></div><script>VicoUI.bell(document.getElementById("bellSlot"));</script></body></html>

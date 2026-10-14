@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>VicoPay Live - Payment</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #061426;
+    color: white;
+}
+
+header {
+    height: 70px;
+    background: #081a30;
+    border-bottom: 1px solid #294c6c;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 25px;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #00e5c3;
+}
+
+.back {
+    color: white;
+    text-decoration: none;
+}
+
+.container {
+    width: 94%;
+    max-width: 600px;
+    margin: 45px auto;
+}
+
+.payment-card {
+    background: #0b2039;
+    border: 1px solid #315778;
+    border-radius: 22px;
+    padding: 30px;
+}
+
+.payment-card h1 {
+    text-align: center;
+    margin-top: 0;
+}
+
+.subtitle {
+    text-align: center;
+    color: #91aac4;
+    line-height: 1.5;
+}
+
+.package {
+    background: #102a45;
+    border: 1px solid #315778;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 25px 0;
+}
+
+.package-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 12px 0;
+}
+
+.package-label {
+    color: #91aac4;
+}
+
+.coin {
+    color: #ffd54a;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.amount {
+    color: #00e5c3;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #b5c8da;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+
+    background: #061426;
+    color: white;
+
+    border: 1px solid #3b5d79;
+    border-radius: 10px;
+
+    outline: none;
+}
+
+input:focus {
+    border-color: #00e5c3;
+}
+
+.pay-button {
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 15px;
+
+    border: none;
+    border-radius: 28px;
+
+    background: #00e5c3;
+    color: #052027;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.pay-button:hover {
+    background: #35f3d7;
+}
+
+.pay-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.message {
+    display: none;
+
+    margin-top: 18px;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    text-align: center;
+}
+
+.success {
+    display: block;
+    background: #173d35;
+    color: #aaffeb;
+}
+
+.error {
+    display: block;
+    background: #4a1e2a;
+    color: #ffb4c5;
+}
+
+footer {
+    text-align: center;
+    color: #7189a2;
+    padding: 30px;
+}
+</style>
+
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo">
+        VicoPay <span>Live</span>
+    </div>
+
+    <a
+        href="buy-coin.html"
+        class="back">
+
+        ← Back
+
+    </a>
+
+</header>
+
+
+<main class="container">
+
+    <div class="payment-card">
+
+        <h1>
+            💳 Paystack Payment
+        </h1>
+
+        <p class="subtitle">
+            Complete your payment securely
+            to purchase VicoPay Live coin.
+        </p>
+
+
+        <div class="package">
+
+            <div class="package-row">
+
+                <span class="package-label">
+                    Coins
+                </span>
+
+                <span
+                    class="coin"
+                    id="coinAmount">
+
+                    100
+
+                </span>
+
+            </div>
+
+
+            <div class="package-row">
+
+                <span class="package-label">
+                    Amount
+                </span>
+
+                <span
+                    class="amount"
+                    id="nairaAmount">
+
+                    ₦1,000
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <label for="email">
+            Email address
+        </label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter your email"
+            required
+        >
+
+
+        <button
+            class="pay-button"
+            id="payButton"
+            onclick="startPayment()">
+
+            💳 Pay with Paystack
+
+        </button>
+
+
+        <div
+            id="message"
+            class="message">
+        </div>
+
+    </div>
+
+</main>
+
+
+<footer>
+
+    VicoPay Live
+
+    <br><br>
+
+    Secure payments powered by Paystack
+
+</footer>
+
+
+<script>
+
+const API_BASE = window.location.origin;
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const coin =
+    Number(
+        params.get("coin")
+    ) || 100;
+
+const amount =
+    Number(
+        params.get("amount")
+    ) || 1000;
+
+const coinElement =
+    document.getElementById("coinAmount");
+
+const amountElement =
+    document.getElementById("nairaAmount");
+
+const emailElement =
+    document.getElementById("email");
+
+const payButton =
+    document.getElementById("payButton");
+
+const message =
+    document.getElementById("message");
+
+coinElement.textContent =
+    coin.toLocaleString();
+
+amountElement.textContent =
+    "₦" + amount.toLocaleString();
+
+
+async function startPayment() {
+
+    const email =
+        emailElement.value.trim();
+
+    message.className =
+        "message";
+
+    message.style.display =
+        "none";
+
+    if (!email) {
+
+        message.textContent =
+            "Please enter your email address.";
+
+        message.className =
+            "message error";
+
+        message.style.display =
+            "block";
+
+        return;
+    }
+
+
+    if (!email.includes("@")) {
+
+        message.textContent =
+            "Please enter a valid email address.";
+
+        message.className =
+            "message error";
+
+        message.style.display =
+            "block";
+
+        return;
+    }
+
+
+    /*
+     * Save the same email that Paystack
+     * will use for the wallet.
+     */
+    localStorage.setItem(
+        "vicoPayEmail",
+        email
+    );
+
+
+    payButton.disabled =
+        true;
+
+    payButton.textContent =
+        "Connecting to Paystack...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_BASE +
+                "/api/paystack/initialize",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        email: email,
+
+                        amount: amount,
+
+                        coin: coin
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Payment initialization:",
+            data
+        );
+
+
+        if (
+            !response.ok ||
+            !data.success ||
+            !data.authorization_url
+        ) {
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Unable to initialize payment."
+            );
+
+        }
+
+
+        /*
+         * Save the Paystack reference.
+         */
+        if (data.reference) {
+
+            localStorage.setItem(
+                "vicoPayPaymentReference",
+                data.reference
+            );
+
+        }
+
+
+        /*
+         * Go to the real Paystack checkout.
+         */
+        window.location.href =
+            data.authorization_url;
+
+
+    } catch (error) {
+
+        console.error(
+            "Payment error:",
+            error
+        );
+
+
+        message.textContent =
+            error.message ||
+            "Unable to start payment.";
+
+        message.className =
+            "message error";
+
+        message.style.display =
+            "block";
+
+
+        payButton.disabled =
+            false;
+
+        payButton.textContent =
+            "💳 Pay with Paystack";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

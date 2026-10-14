@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vicopay Global — Forex Academy &amp; Livestream</title>
+<style>
+  :root{
+    --ink:#0d1117; --panel:#141b24; --panel-2:#1b2430; --line:#2a3441;
+    --gold:#e0a640; --green:#3fb27f; --red:#e0605c; --blue:#4aa3ff;
+    --text:#e8ecf1; --text-dim:#8b98a9;
+    --font-head: Georgia,'Times New Roman',serif;
+    --font-body: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --font-num: 'Courier New',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ink);color:var(--text);font-family:var(--font-body);line-height:1.5}
+  a{color:var(--gold)}
+  button{font-family:inherit}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand h1{font-family:var(--font-head);font-size:22px;font-weight:400;letter-spacing:.3px}
+  .brand span{color:var(--gold);font-style:italic}
+  .brand a.back{font-size:12px;color:var(--text-dim);text-decoration:none;margin-right:6px}
+  .head-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .live-pill{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--text-dim)}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{opacity:1}50%{opacity:.35}100%{opacity:1}}
+  .viewer-count{color:var(--text);font-family:var(--font-num)}
+  .acct-chip{font-size:12px;border:1px solid var(--line);border-radius:20px;padding:6px 12px;background:var(--panel-2);color:var(--text);text-decoration:none}
+  .acct-chip.member{border-color:#8d6330;color:#f0bd62}
+
+  /* ---------- hero / join ---------- */
+  .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;padding:26px 24px;background:radial-gradient(1200px 300px at 10% -20%,#2a2115 0,transparent 60%),linear-gradient(180deg,#10161e,#0d1117);border-bottom:1px solid var(--line)}
+  .eyebrow{color:var(--gold);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+  .hero h2{font-family:var(--font-head);font-weight:400;font-size:34px;line-height:1.2;margin:8px 0 10px;min-height:2.4em;transition:opacity .4s}
+  .hero p.sub{color:#c1cad5;font-size:15px;max-width:620px}
+  .perks{list-style:none;margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;font-size:13px;color:#d3dbe5}
+  .perks li:before{content:"✓";color:var(--green);margin-right:7px;font-weight:700}
+  .join-card{background:var(--panel);border:1px solid #8d6330;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px #0007}
+  .cur-toggle{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:3px;align-self:flex-start}
+  .cur-toggle button{border:0;background:transparent;color:var(--text-dim);padding:6px 14px;border-radius:999px;font-weight:700;cursor:pointer;font-size:13px}
+  .cur-toggle button.on{background:var(--gold);color:#1a1305}
+  .price{font-family:var(--font-head);font-size:44px;line-height:1}
+  .price small{font-family:var(--font-body);font-size:13px;color:var(--text-dim);margin-left:6px}
+  .btn-join{background:linear-gradient(135deg,#f0bd62,#e0a640);color:#1a1305;border:0;border-radius:10px;padding:14px 18px;font-weight:800;font-size:16px;cursor:pointer;box-shadow:0 8px 24px #e0a64040}
+  .btn-join:hover{filter:brightness(1.07)}
+  .btn-join:disabled{opacity:.6;cursor:wait}
+  .btn-ghost{background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600}
+  .btn-ghost:hover{border-color:var(--gold)}
+  .join-note{font-size:11px;color:var(--text-dim)}
+  .join-err{display:none;background:#2a1717;border:1px solid #7a3030;color:#ffb4b0;border-radius:8px;padding:9px 11px;font-size:13px}
+  .member-card h3{font-family:var(--font-head);font-weight:400;font-size:22px;color:#f0bd62}
+  .member-card .days{font-family:var(--font-num);font-size:30px}
+  .paybanner{display:none;margin:12px 24px 0;background:#13251d;border:1px solid #315745;color:#cdeedd;padding:11px 14px;border-radius:10px;font-size:14px}
+
+  /* ---------- main layout ---------- */
+  main{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(0,1fr);gap:1px;background:var(--line);min-height:calc(100vh - 64px)}
+  .stage{background:var(--ink);display:flex;flex-direction:column;min-width:0}
+  .stage-head{padding:16px 20px 0}
+  .stage-head h2{font-family:var(--font-head);font-weight:400;font-size:18px}
+  .stage-head p{color:var(--text-dim);font-size:13px;margin-top:4px}
+  .tabs{display:flex;gap:6px;padding:14px 20px 0;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:none;background:var(--panel);border:1px solid var(--line);color:var(--text-dim);padding:9px 14px;border-radius:9px 9px 0 0;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap}
+  .tab.on{background:var(--panel-2);color:var(--gold);border-bottom-color:var(--panel-2)}
+  .tab .lk{font-size:11px;margin-left:4px;opacity:.8}
+  .panel{display:none;padding:18px 20px 26px;border-top:1px solid var(--line);background:linear-gradient(180deg,var(--panel-2),var(--ink) 220px);flex:1}
+  .panel.on{display:block}
+  #chart-container{min-height:480px;margin-bottom:16px}
+  .tv-frame{height:480px;width:100%;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h3{font-family:var(--font-head);font-weight:400;font-size:17px;margin-bottom:4px}
+  .hint{font-size:12px;color:var(--text-dim)}
+  .card .hint{margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .risk-banner{border:1px solid #8d6330;background:#2a2115;border-radius:10px;padding:13px 15px;margin-top:16px}
+  .risk-banner strong{display:block;color:#f0bd62;margin-bottom:4px;font-size:13px}
+  .risk-banner p{color:#e6d8bf;font-size:12px}
+  .risk-banner p+p{margin-top:6px}
+  label.f{display:block;font-size:12px;color:var(--text-dim);margin-bottom:10px}
+  label.f input,label.f select,label.f textarea,.inp{display:block;width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:8px 10px;font-size:14px;font-family:inherit}
+  label.f textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:1px solid var(--gold)}
+  .out{background:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:13px;color:#d3dbe5;margin-top:6px}
+  .out b{color:var(--gold);font-family:var(--font-num)}
+  .green{color:var(--green)} .red{color:var(--red)} .dim{color:var(--text-dim)}
+
+  /* ---------- sessions ---------- */
+  .sess{display:grid;grid-template-columns:90px 1fr 62px;align-items:center;gap:10px;margin:8px 0;font-size:13px}
+  .bar{position:relative;height:12px;background:var(--panel-2);border-radius:6px;border:1px solid var(--line)}
+  .bar i{position:absolute;top:0;bottom:0;background:#315745;border-radius:5px}
+  .bar i.live{background:var(--green)}
+  .bar u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--gold)}
+  .badge{font-size:11px;font-weight:700;text-align:center;border-radius:20px;padding:2px 6px;border:1px solid var(--line);color:var(--text-dim)}
+  .badge.open{color:#0d2519;background:var(--green);border-color:var(--green)}
+
+  /* ---------- locked ---------- */
+  .locked{text-align:center;padding:34px 18px;background:repeating-linear-gradient(45deg,#141b24,#141b24 12px,#161e29 12px,#161e29 24px);border:1px dashed #8d6330;border-radius:12px}
+  .locked h3{font-family:var(--font-head);font-weight:400;font-size:22px;color:#f0bd62}
+  .locked p{color:#c1cad5;font-size:14px;max-width:520px;margin:8px auto 14px}
+
+  /* ---------- academy ---------- */
+  .academy{display:grid;grid-template-columns:270px 1fr;gap:16px}
+  .progress{height:8px;background:var(--panel-2);border-radius:5px;border:1px solid var(--line);overflow:hidden;margin:8px 0 12px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,#3fb27f,#7be0b0);width:0}
+  .mod-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin:12px 0 6px;font-weight:700}
+  .les{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 10px;margin-bottom:6px;cursor:pointer;font-size:13px}
+  .les.on{border-color:var(--gold)}
+  .les .n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--panel-2);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--text-dim)}
+  .les.done .n{background:var(--green);color:#0d2519}
+  .les small{display:block;color:var(--text-dim);font-size:11px}
+  .lesson h3{font-family:var(--font-head);font-weight:400;font-size:24px;margin:2px 0 4px}
+  .lesson .meta{font-size:12px;color:var(--text-dim);margin-bottom:12px}
+  .lesson p{font-size:14px;color:#d3dbe5;margin:10px 0}
+  .lesson ul{padding-left:20px;margin:10px 0;font-size:14px;color:#d3dbe5}
+  .lesson li{margin:5px 0}
+  .tipbox,.warnbox,.takeaway{border-radius:9px;padding:11px 13px;font-size:13px;margin:12px 0}
+  .tipbox{background:#13251d;border:1px solid #315745;color:#cdeedd}
+  .warnbox{background:#2a2115;border:1px solid #8d6330;color:#f0dcb6}
+  .takeaway{background:var(--panel-2);border-left:3px solid var(--gold);color:#e8ecf1}
+  .quiz{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+  .quiz h4{font-size:15px;margin-bottom:8px}
+  .q{margin:12px 0}
+  .q p{font-weight:600;color:var(--text)}
+  .opt{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:9px 11px;border-radius:8px;margin:6px 0;cursor:pointer;font-size:14px}
+  .opt.sel{border-color:var(--gold)}
+  .opt.right{border-color:var(--green);background:#13251d}
+  .opt.wrong{border-color:var(--red);background:#2a1717}
+  .why{font-size:12px;color:var(--text-dim);margin-top:4px}
+
+  /* ---------- lab ---------- */
+  .lab-note{font-size:12px;color:#e6d8bf;background:#2a2115;border:1px solid #8d6330;border-radius:8px;padding:8px 11px;margin-bottom:12px}
+  .lab-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}
+  .pair-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .ptab{background:var(--panel);border:1px solid var(--line);color:var(--text-dim);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-num)}
+  .ptab.on{color:var(--gold);border-color:var(--gold)}
+  .qrow{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px;font-family:var(--font-num)}
+  .qrow .nm{font-family:var(--font-body);font-weight:700}
+  .sellc{color:var(--red)} .buyc{color:var(--blue)}
+  #lab-chart{width:100%;height:300px;background:var(--ink);border:1px solid var(--line);border-radius:8px;display:block}
+  .acct-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px}
+  .acct-grid div{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+  .acct-grid b{display:block;font-family:var(--font-num);font-size:15px;color:var(--text)}
+  .ticket .row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .tbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  .tbtn{border:0;border-radius:9px;padding:12px;font-weight:800;color:#fff;cursor:pointer;font-size:14px}
+  .tbtn.sell{background:#c24b47}.tbtn.buy{background:#2f7fd1}
+  .tbtn:hover{filter:brightness(1.1)}
+  .lab-err{font-size:12px;color:#ffb4b0;min-height:16px;margin-top:6px}
+  table.t{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+  table.t th{color:var(--text-dim);text-align:left;font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line)}
+  table.t td{padding:6px;border-bottom:1px solid #1d2733;font-family:var(--font-num)}
+  .scroll-x{overflow-x:auto}
+  .mini{border:0;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px}
+  .mini:hover{border-color:var(--red);color:var(--red)}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0}
+  .stats div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:11px;color:var(--text-dim);text-align:center}
+  .stats b{display:block;font-size:15px;color:var(--text);font-family:var(--font-num)}
+  h4.sec{font-family:var(--font-head);font-weight:400;font-size:16px;margin:18px 0 4px}
+
+  /* ---------- glossary ---------- */
+  .term{padding:10px 0;border-bottom:1px solid var(--line)}
+  .term b{color:var(--gold)}
+  .term span{color:#c1cad5;font-size:14px;display:block}
+
+  /* ---------- chat ---------- */
+  .chat-panel{background:var(--panel);display:flex;flex-direction:column;height:calc(100vh - 64px);position:sticky;top:0}
+  .chat-head{padding:16px 18px;border-bottom:1px solid var(--line)}
+  .chat-head h3{font-family:var(--font-head);font-weight:400;font-size:16px}
+  .chat-head p{color:var(--text-dim);font-size:12px;margin-top:2px}
+  #messages{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+  .msg{font-size:14px}
+  .msg .who{color:var(--gold);font-weight:600;margin-right:6px}
+  .msg .country{color:var(--text-dim);font-size:11px;margin-left:6px}
+  .msg.system{color:var(--text-dim);font-style:italic;font-size:12px}
+  form#chat-form{display:flex;border-top:1px solid var(--line);padding:12px;gap:8px}
+  #chat-name{width:88px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;color:var(--text);padding:8px 10px;font-size:13px}
+  #chat-input{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;color:var(--text);padding:8px 12px;font-size:14px}
+  #chat-form button{background:var(--gold);color:#1a1305;border:none;border-radius:6px;padding:0 16px;font-weight:600;cursor:pointer}
+
+  /* ---------- toast + certificate ---------- */
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1b2430;border:1px solid var(--gold);color:var(--text);padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;display:none;max-width:90vw;text-align:center}
+  #cert-modal{display:none;position:fixed;inset:0;background:#000c;z-index:60;align-items:center;justify-content:center;padding:14px}
+  #cert-modal.on{display:flex}
+  #cert{background:#fffdf6;color:#2b2111;border:10px double #b88a2e;border-radius:6px;padding:34px 30px;max-width:640px;width:100%;text-align:center;font-family:var(--font-head)}
+  #cert h2{font-weight:400;font-size:30px;letter-spacing:.04em;color:#8a6420}
+  #cert .nm{font-size:30px;border-bottom:1px solid #b88a2e;display:inline-block;padding:4px 22px;margin:16px 0}
+  #cert p{font-size:15px;margin:6px 0}
+  #cert small{display:block;margin-top:16px;font-size:11px;color:#6b5a38;font-family:var(--font-body)}
+  .cert-actions{display:flex;gap:8px;justify-content:center;margin-top:12px}
+
+
+  /* ---------- video lesson ---------- */
+  .vid-wrap{position:relative;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .vid-wrap canvas{width:100%;height:100%;display:block}
+  .vid-cap{position:absolute;left:0;right:0;bottom:0;padding:26px 18px 10px;background:linear-gradient(transparent,#000d);font-size:15px;text-align:center;color:#fff}
+  .vid-big{position:absolute;inset:0;margin:auto;width:78px;height:78px;border-radius:50%;border:0;background:#e0a640e6;color:#1a1305;font-size:30px;cursor:pointer;box-shadow:0 8px 30px #000a}
+  .vid-prog{height:5px;background:var(--panel-2);border-radius:3px;margin-top:8px;overflow:hidden}
+  .vid-prog i{display:block;height:100%;width:0;background:var(--gold);transition:width .4s}
+  .vid-ctl{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  /* ---------- coach / lab extras ---------- */
+  .coach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+  .coach-grid div{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:11px;color:var(--text-dim)}
+  .coach-grid b{display:block;font-family:var(--font-num);font-size:14px;color:var(--text)}
+  .coach-grid small{display:block;font-size:10px}
+  .verdict{font-size:14px;color:#e8ecf1;background:var(--panel-2);border-left:3px solid var(--gold);border-radius:6px;padding:9px 11px;margin:6px 0}
+  .idea{border-radius:9px;padding:10px 12px;font-size:13px;margin-top:8px;border:1px solid}
+  .idea.buy{background:#0f1f33;border-color:#2f7fd1}.idea.sell{background:#2a1717;border-color:#c24b47}
+  details#coach-steps{margin-top:10px;font-size:13px;color:#c1cad5}
+  details#coach-steps summary{cursor:pointer;color:var(--gold);font-weight:700}
+  ol.steps{padding-left:20px;margin-top:8px}ol.steps li{margin:6px 0}
+  .riskmeter{font-size:12px;border-radius:8px;padding:8px 10px;margin:4px 0 8px;border:1px solid var(--line)}
+  .riskmeter.good{background:#13251d;border-color:#315745;color:#cdeedd}
+  .riskmeter.warn{background:#2a2115;border-color:#8d6330;color:#f0dcb6}
+  .riskmeter.bad{background:#2a1717;border-color:#7a3030;color:#ffb4b0}
+  .revrow{background:#10161e;color:#c1cad5;font-family:var(--font-body)!important;font-size:12px;line-height:1.7}
+  /* ---------- calculators / journal ---------- */
+  .ratebadge{font-size:12px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:12px;background:var(--panel);color:var(--text-dim)}
+  .ratebadge.live{border-color:#315745;color:#9be3bd;background:#13251d}
+  .jstats{grid-template-columns:repeat(5,1fr)}
+  .curvewrap{height:120px;margin:6px 0}
+  #j-curve{width:100%;height:100%;display:block;background:var(--ink);border:1px solid var(--line);border-radius:8px}
+  .insights{background:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:13px;color:#d3dbe5;margin-top:8px}
+  .insights b{color:var(--gold);display:block;margin-bottom:4px}
+  .jbar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+  .jhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .pill{font-size:12px;border:1px solid var(--line);border-radius:20px;padding:2px 10px;font-family:var(--font-num)}
+  .pill.green{border-color:#315745;background:#13251d}.pill.red{border-color:#7a3030;background:#2a1717}
+  .coachnotes{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;color:#c1cad5;margin-bottom:10px;line-height:1.7}
+  @media(max-width:560px){.coach-grid{grid-template-columns:repeat(2,1fr)}.jstats{grid-template-columns:repeat(2,1fr)}.vid-cap{font-size:13px;padding:20px 10px 8px}}
+  @media(max-width:1000px){
+    .hero{grid-template-columns:1fr}
+    main{grid-template-columns:minmax(0,1fr)}
+    .chat-panel{height:70vh;min-height:420px;position:static}
+    .academy,.lab-grid,.grid2,.grid3{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){
+    header{padding:12px 14px}
+    .hero{padding:20px 14px}.hero h2{font-size:26px}.perks{grid-template-columns:1fr}
+    .panel{padding:14px 12px 22px}.tabs,.stage-head{padding-left:12px;padding-right:12px}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .tv-frame,#chart-container{min-height:360px;height:360px}
+    .brand h1{font-size:18px}
+  }
+  @media print{
+    body *{visibility:hidden}
+    #cert-modal,#cert-modal *{visibility:visible}
+    #cert-modal{position:absolute;inset:0;background:#fff}
+    .cert-actions{display:none}
+  }
+</style>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <a class="back" href="home.html">← Home</a>
+    <h1>Vicopay <span>Global</span></h1>
+  </div>
+  <div class="head-right">
+    <div class="live-pill"><span class="live-dot"></span>LIVE — <span class="viewer-count" id="viewer-count">0</span> watching worldwide</div>
+    <a class="acct-chip" id="acct-chip" href="join-now.html?next=forex.html">Sign in</a>
+  </div>
+</header>
+
+<!-- ============ JOIN / MEMBER BANNER ============ -->
+<div class="paybanner" id="paybanner"></div>
+<section class="hero" id="hero">
+  <div>
+    <div class="eyebrow">Vicopay Global · Forex Academy</div>
+    <h2 id="hero-line">Every expert was once a beginner who refused to quit.</h2>
+    <p class="sub">Learn forex step by step, practise with virtual money, and build the discipline that real traders are made of, before you risk a single dollar.</p>
+    <ul class="perks">
+      <li>8 guided lessons with quizzes</li>
+      <li>Practice Trading with $10,000 virtual cash</li>
+      <li>Position-size, risk and margin calculators</li>
+      <li>Trading journal to track your growth</li>
+      <li>Certificate when you finish the course</li>
+      <li>Global live chat room (always free)</li>
+    </ul>
+  </div>
+  <div class="join-card" id="join-card">
+    <div class="cur-toggle" id="cur-toggle" role="group" aria-label="Choose currency">
+      <button type="button" data-c="USD">$ USD</button>
+      <button type="button" data-c="NGN">₦ Naira</button>
+    </div>
+    <div class="price"><span id="price-amt">$9.99</span><small id="price-note">for full access</small></div>
+    <button class="btn-join" id="btn-join-hero" type="button">Join for $9.99</button>
+    <div class="join-err" id="join-err"></div>
+    <div class="join-note">🔒 Secure checkout by Paystack. Access unlocks automatically after payment. Education only, not financial advice.</div>
+  </div>
+</section>
+
+<main>
+  <section class="stage">
+    <div class="stage-head">
+      <h2>Forex Livestream &amp; Academy</h2>
+      <p>Watch the live chart, learn the skills, practise safely, and chat with traders from every country.</p>
+    </div>
+
+    <div class="tabs" id="tabs" role="tablist">
+      <button class="tab on" data-p="chart">📈 Live Chart</button>
+      <button class="tab" data-p="academy">🎓 Academy</button>
+      <button class="tab" data-p="lab">🧪 Practice Trading <span class="lk" data-lock>🔒</span></button>
+      <button class="tab" data-p="tools">🧮 Calculators <span class="lk" data-lock>🔒</span></button>
+      <button class="tab" data-p="journal">📓 Journal <span class="lk" data-lock>🔒</span></button>
+      <button class="tab" data-p="glossary">📖 Glossary</button>
+    </div>
+
+    <!-- ===== LIVE CHART ===== -->
+    <div class="panel on" id="p-chart">
+      <div id="chart-container">
+        <div class="tv-frame">
+          <div class="tradingview-widget-container" style="height:100%;width:100%">
+            <div id="tradingview_chart" style="height:100%;width:100%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>🌍 Market sessions</h3>
+          <div class="hint" id="sess-hint">Forex follows the sun. Times shown in UTC.</div>
+          <div id="sessions"></div>
+        </div>
+        <div class="card">
+          <h3>✦ A reminder for every trader</h3>
+          <p id="motivation" aria-live="polite" style="font-size:15px;margin:8px 0 12px">Consistency beats excitement. Learn the process, manage risk, and give yourself time to improve.</p>
+          <button class="btn-ghost" id="next-motivation" type="button">New reminder ↗</button>
+        </div>
+      </div>
+
+      <aside class="risk-banner" role="note" aria-label="Important trading risk warning">
+        <strong>⚠ Important risk warning</strong>
+        <p>Forex and leveraged products are high risk. You can lose some or all of the money you deposit, and leverage can magnify losses. Stop-loss orders may not prevent losses during fast markets or price gaps. Practise with a demo account, understand fees and spreads, and never trade with borrowed money or money needed for essentials.</p>
+        <p>Lessons, practice results and chat messages are general education only, not personal financial advice. No strategy, chart, signal or motivational message guarantees profit. Practice Trading uses simulated prices. Verify claims independently and follow the laws that apply where you live.</p>
+      </aside>
+    </div>
+
+    <!-- ===== ACADEMY ===== -->
+    <div class="panel" id="p-academy">
+      <div class="academy">
+        <div>
+          <div class="card">
+            <h3>Your course</h3>
+            <div class="hint" id="course-hint">Lesson 1 is free. Join to unlock all 8.</div>
+            <div class="progress"><i id="prog-bar"></i></div>
+            <div class="hint" id="prog-text">0 of 8 complete</div>
+            <div id="outline"></div>
+            <button class="btn-join" id="btn-cert" type="button" style="display:none;width:100%;margin-top:10px;font-size:14px">🏆 Get my certificate</button>
+          </div>
+        </div>
+        <div class="card lesson" id="lesson-view"><div class="dim">Loading lessons…</div></div>
+      </div>
+    </div>
+
+    <!-- ===== PRACTICE TRADING ===== -->
+    <div class="panel" id="p-lab"><div id="lab-root"></div></div>
+
+    <!-- ===== CALCULATORS ===== -->
+    <div class="panel" id="p-tools"><div id="tools-root"></div></div>
+
+    <!-- ===== JOURNAL ===== -->
+    <div class="panel" id="p-journal"><div id="journal-root"></div></div>
+
+    <!-- ===== GLOSSARY ===== -->
+    <div class="panel" id="p-glossary">
+      <div class="card">
+        <h3>Forex glossary</h3>
+        <div class="hint">Plain-English meanings for the words you will hear everywhere.</div>
+        <input class="inp" id="gl-search" type="search" placeholder="Search a word, e.g. pip, margin, spread…" autocomplete="off">
+        <div id="gl-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="chat-panel">
+    <div class="chat-head">
+      <h3>Global Chat</h3>
+      <p>One room. Every country. Real time. Free for everyone.</p>
+    </div>
+    <div id="messages"><div class="msg system">Connecting to the global room…</div></div>
+    <form id="chat-form">
+      <input id="chat-name" type="text" placeholder="Name" maxlength="16" required>
+      <input id="chat-input" type="text" placeholder="Say something…" maxlength="300" required autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+  </aside>
+</main>
+
+<div id="toast" role="status"></div>
+
+<div id="cert-modal">
+  <div>
+    <div id="cert">
+      <h2>CERTIFICATE OF COMPLETION</h2>
+      <p>This certifies that</p>
+      <div class="nm" id="cert-name">Trader</div>
+      <p>has completed all 8 lessons of the</p>
+      <p><strong>Vicopay Global Forex Academy</strong></p>
+      <p id="cert-date"></p>
+      <small>Educational certificate only. It is not a financial qualification or a promise of trading results.</small>
+    </div>
+    <div class="cert-actions">
+      <button class="btn-join" style="font-size:14px" id="cert-print" type="button">🖨 Print / Save as PDF</button>
+      <button class="btn-ghost" id="cert-close" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="forex-lab.js"></script>
+
+<!-- TradingView chart -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+  try {
+    new TradingView.widget({
+      container_id: "tradingview_chart", autosize: true, symbol: "FX:EURUSD", interval: "15", timezone: "Etc/UTC",
+      theme: "dark", style: "1", locale: "en", toolbar_bg: "#141b24", enable_publishing: false,
+      hide_top_toolbar: false, allow_symbol_change: true, studies: ["MASimple@tv-basicstudies"]
+    });
+  } catch (e) { document.getElementById("tradingview_chart").textContent = "The chart could not load. Check your internet connection."; }
+</script>
+
+<!-- ============ ACADEMY LOGIC ============ -->
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function esc(t) { var d = document.createElement("div"); d.textContent = t == null ? "" : String(t); return d.innerHTML; }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+  async function api(path, opts) {
+    opts = opts || {};
+    var o = { method: opts.method || "GET", headers: { "Content-Type": "application/json" } };
+    if (opts.body !== undefined) o.body = JSON.stringify(opts.body);
+    try { var r = await fetch(path, o); var d = await r.json(); d._ok = r.ok && d.success !== false; d._status = r.status; return d; }
+    catch (e) { return { success: false, _ok: false, message: e.message }; }
+  }
+  var toastTimer;
+  function toast(msg) {
+    var t = $("#toast"); t.textContent = msg; t.style.display = "block";
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.style.display = "none"; }, 3500);
+  }
+  window.showForexToast = toast;
+
+  /* ------------------------- state ------------------------- */
+  var S = { plans: { usd: 9.99, ngn: 15000, days: 30, lifetime: false }, cur: "USD", signedIn: false, member: false, lifetime: false, daysLeft: null, busy: false };
+  var tzGuess = ""; try { tzGuess = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  S.cur = localStorage.getItem("vicoForexCur") || (tzGuess === "Africa/Lagos" ? "NGN" : "USD");
+
+  function money(cur) { return cur === "USD" ? "$" + Number(S.plans.usd).toFixed(2) : "₦" + Number(S.plans.ngn).toLocaleString("en-NG"); }
+  function accessText() { return S.plans.lifetime ? "lifetime access" : S.plans.days + " days of full access"; }
+  function renderPrice() {
+    $$("#cur-toggle button").forEach(function (b) { b.classList.toggle("on", b.dataset.c === S.cur); });
+    if ($("#price-amt")) $("#price-amt").textContent = money(S.cur);
+    if ($("#price-note")) $("#price-note").textContent = accessText();
+    var label = S.member && !S.plans.lifetime ? "Add " + S.plans.days + " more days · " + money(S.cur) : "Join for " + money(S.cur);
+    $$(".join-btn, #btn-join-hero").forEach(function (b) { b.textContent = label; });
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("#cur-toggle button"); if (!b) return;
+    S.cur = b.dataset.c; localStorage.setItem("vicoForexCur", S.cur);
+    var er = $("#join-err"); if (er) er.style.display = "none"; renderPrice();
+  });
+
+  /* ------------------------- motivation ------------------------- */
+  var heroLines = [
+    "Every expert was once a beginner who refused to quit.",
+    "Learn first. Earn the right to trade.",
+    "Skills are the one asset the market can never take from you.",
+    "Small steps. Strong risk control. Big discipline.",
+    "Don't chase the market. Build the knowledge that lets you read it.",
+    "Your future self is watching. Start learning today."
+  ];
+  var hi = 0, heroEl = $("#hero-line");
+  setInterval(function () {
+    hi = (hi + 1) % heroLines.length; heroEl.style.opacity = 0;
+    setTimeout(function () { heroEl.textContent = heroLines[hi]; heroEl.style.opacity = 1; }, 400);
+  }, 6500);
+  var reminders = [
+    "Consistency beats excitement. Learn the process, manage risk, and give yourself time to improve.",
+    "You do not need to trade every move. Sometimes the best decision is to wait.",
+    "Protecting your capital is a skill. A small planned loss is better than an uncontrolled one.",
+    "Keep a journal: honest reviews turn experience into learning.",
+    "Do not measure progress by one trade. Focus on patience, preparation and discipline.",
+    "Stay curious, stay humble, and never risk money just to prove a point."
+  ];
+  var ri = 0;
+  $("#next-motivation").addEventListener("click", function () { ri = (ri + 1) % reminders.length; $("#motivation").textContent = reminders[ri]; });
+
+  /* ------------------------- join / pay ------------------------- */
+  async function join() {
+    if (!S.signedIn) { location.href = "join-now.html?next=forex.html"; return; }
+    if (S.busy) return;
+    S.busy = true; var err = $("#join-err") || el("div"); err.style.display = "none";
+    $$(".join-btn, #btn-join-hero").forEach(function (b) { b.disabled = true; });
+    var d = await api("/api/forex/checkout", { method: "POST", body: { currency: S.cur } });
+    if (d._ok && d.authorization_url) { location.href = d.authorization_url; return; }
+    if (d._status === 401) { location.href = "join-now.html?next=forex.html"; return; }
+    S.busy = false; $$(".join-btn, #btn-join-hero").forEach(function (b) { b.disabled = false; });
+    err.textContent = d.message || "Could not start the payment. Please try again.";
+    err.style.display = "block";
+    if (S.cur === "USD" && /naira/i.test(err.textContent)) {
+      var sw = el("button", "btn-ghost", "Pay in Naira instead"); sw.type = "button"; sw.style.marginTop = "8px"; sw.style.display = "block";
+      sw.onclick = function () { S.cur = "NGN"; localStorage.setItem("vicoForexCur", "NGN"); err.style.display = "none"; renderPrice(); join(); };
+      err.appendChild(sw);
+    }
+  }
+  $("#btn-join-hero").addEventListener("click", join);
+  document.addEventListener("click", function (e) { if (e.target.closest(".join-btn")) join(); });
+
+  async function confirmPayment(ref) {
+    var bn = $("#paybanner"); bn.style.display = "block"; bn.textContent = "⏳ Confirming your payment…";
+    for (var i = 0; i < 5; i++) {
+      var d = await api("/api/forex/verify?reference=" + encodeURIComponent(ref));
+      if (d._ok) {
+        bn.textContent = "🎉 " + (d.message || "Payment confirmed. Welcome!");
+        history.replaceState(null, "", "forex.html");
+        await loadStatus(); setTab("academy"); setTimeout(function () { bn.style.display = "none"; }, 6000); return;
+      }
+      if (!/confirm|yet|wait/i.test(d.message || "")) { bn.textContent = "⚠️ " + (d.message || "We could not verify the payment.") + " If you were charged, contact support with reference " + ref + "."; return; }
+      await new Promise(function (r) { setTimeout(r, 2500); });
+    }
+    bn.textContent = "⚠️ Your payment is still being confirmed. Refresh this page in a minute. If you were charged, contact support with reference " + ref + ".";
+  }
+
+  /* ------------------------- status / gate ------------------------- */
+  function renderAccount() {
+    var chip = $("#acct-chip");
+    if (!S.signedIn) { chip.textContent = "Sign in"; chip.className = "acct-chip"; chip.href = "join-now.html?next=forex.html"; }
+    else {
+      var nm = localStorage.getItem("vicoPayDisplayName") || "My account";
+      chip.textContent = (S.member ? "⭐ Member · " : "") + nm; chip.className = "acct-chip" + (S.member ? " member" : ""); chip.href = "live-room-profile.html";
+    }
+    $$("[data-lock]").forEach(function (x) { x.style.display = S.member ? "none" : "inline"; });
+    var card = $("#join-card");
+    if (S.member) {
+      card.className = "join-card member-card";
+      var until = S.expiresAt ? new Date(S.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+      card.innerHTML = '<div class="eyebrow">Forex Academy member</div><h3>You\'re in. Keep going! ⭐</h3>' +
+        '<div class="days" id="days-left"></div><div class="join-note" id="until-note"></div>';
+      $("#days-left").textContent = S.lifetime ? "Lifetime access" : S.daysLeft + (S.daysLeft === 1 ? " day left" : " days left");
+      $("#until-note").textContent = S.lifetime ? "Your access never expires." : (until ? "Access until " + until : "");
+      var go = el("button", "btn-join", "Continue learning →"); go.type = "button"; go.onclick = function () { setTab("academy"); window.scrollTo({ top: $("#tabs").offsetTop - 10, behavior: "smooth" }); };
+      card.appendChild(go);
+      if (!S.lifetime) {
+        var box = el("div"); box.style.cssText = "border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px";
+        box.appendChild(el("div", "join-note", "Need more time? Pay again and the days are added on top of what you have left. Nothing is lost."));
+        var tg = el("div", "cur-toggle"); tg.id = "cur-toggle"; tg.innerHTML = '<button type="button" data-c="USD">$ USD</button><button type="button" data-c="NGN">₦ Naira</button>'; box.appendChild(tg);
+        var more = el("button", "btn-ghost join-btn", ""); more.type = "button"; more.id = "btn-add-time"; box.appendChild(more);
+        var er = el("div", "join-err"); er.id = "join-err"; box.appendChild(er);
+        card.appendChild(box);
+      }
+      renderPrice();
+    }
+  }
+  async function loadStatus() {
+    var p = await api("/api/forex/plans"); if (p._ok) { S.plans = { usd: p.usd, ngn: p.ngn, days: p.days, lifetime: !!p.lifetime }; }
+    var d = await api("/api/forex/status");
+    S.signedIn = !!d.signedIn; S.member = !!d.member; S.lifetime = !!d.lifetime; S.daysLeft = d.daysLeft; S.expiresAt = d.expiresAt || null;
+    renderPrice(); renderAccount(); renderLocks();
+    await loadAcademy();
+    if (S.member) { await loadSaved(); LabUI.start(); }
+    renderTools(); renderJournal(); LabUI.render();
+  }
+
+  function lockedBlock(title, text) {
+    var d = el("div", "locked");
+    d.appendChild(el("h3", "", "🔒 " + title)); d.appendChild(el("p", "", text));
+    var b = el("button", "btn-join join-btn", ""); b.type = "button"; d.appendChild(b);
+    return d;
+  }
+  function renderLocks() { renderPrice(); }
+
+  /* ------------------------- tabs ------------------------- */
+  function setTab(p) {
+    $$(".tab").forEach(function (t) { t.classList.toggle("on", t.dataset.p === p); });
+    $$(".panel").forEach(function (x) { x.classList.toggle("on", x.id === "p-" + p); });
+    if (p === "lab") LabUI.render(true);
+    if (p === "journal" && window.JournalUI) JournalUI.paint();
+  }
+  $("#tabs").addEventListener("click", function (e) { var t = e.target.closest(".tab"); if (t) setTab(t.dataset.p); });
+
+  /* ------------------------- sessions clock ------------------------- */
+  var SESSIONS = [
+    { n: "Sydney", s: 22, e: 7 }, { n: "Tokyo", s: 0, e: 9 }, { n: "London", s: 8, e: 17 }, { n: "New York", s: 13, e: 22 }
+  ];
+  function drawSessions() {
+    var now = new Date(), h = now.getUTCHours() + now.getUTCMinutes() / 60, dow = now.getUTCDay();
+    // the market is closed from Friday 22:00 UTC to Sunday 22:00 UTC
+    var weekend = (dow === 6) || (dow === 5 && h >= 22) || (dow === 0 && h < 22);
+    var box = $("#sessions"); box.innerHTML = "";
+    var openNames = [];
+    SESSIONS.forEach(function (x) {
+      var isOpen = !weekend && (x.s < x.e ? (h >= x.s && h < x.e) : (h >= x.s || h < x.e));
+      if (isOpen) openNames.push(x.n);
+      var row = el("div", "sess"); row.appendChild(el("span", "", x.n));
+      var bar = el("div", "bar");
+      function seg(a, b) { var i = el("i", isOpen ? "live" : ""); i.style.left = (a / 24 * 100) + "%"; i.style.width = ((b - a) / 24 * 100) + "%"; bar.appendChild(i); }
+      if (x.s < x.e) seg(x.s, x.e); else { seg(x.s, 24); seg(0, x.e); }
+      var u = el("u"); u.style.left = (h / 24 * 100) + "%"; bar.appendChild(u);
+      row.appendChild(bar); row.appendChild(el("span", "badge" + (isOpen ? " open" : ""), isOpen ? "OPEN" : "Closed"));
+      box.appendChild(row);
+    });
+    var hint = weekend ? "The forex market is closed for the weekend. It reopens Sunday 22:00 UTC."
+      : (openNames.indexOf("London") >= 0 && openNames.indexOf("New York") >= 0) ? "London + New York overlap: usually the busiest and most volatile hours."
+      : "Open now: " + (openNames.join(", ") || "quiet hours") + ". Times in UTC (now " + now.toISOString().substr(11, 5) + ").";
+    $("#sess-hint").textContent = hint;
+  }
+  drawSessions(); setInterval(drawSessions, 30000);
+
+  /* ------------------------- AI video lesson player ------------------------- */
+  var Tutor = (function () {
+    var W = 960, H = 540;
+    var GOLD = "#e0a640", GREEN = "#3fb27f", RED = "#e0605c", BLUE = "#4aa3ff", TXT = "#e8ecf1", DIM = "#8b98a9";
+    function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+    function ease(x) { x = clamp(x, 0, 1); return 1 - Math.pow(1 - x, 3); }
+    function text(c, s, x, y, size, color, align, font) { c.font = (font === "sans" ? "" : "") + size + "px " + (font === "sans" ? "-apple-system,Segoe UI,Roboto,sans-serif" : "Georgia,serif"); c.fillStyle = color; c.textAlign = align || "left"; c.textBaseline = "middle"; c.fillText(s, x, y); }
+    function words(t) { return t.trim().split(/\s+/).length; }
+    function sentences(t) { return t.match(/[^.!?]+[.!?]+/g) || [t]; }
+    function pickVoice() {
+      var vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [], en = vs.filter(function (v) { return /^en/i.test(v.lang); });
+      var pref = en.filter(function (v) { return /female|samantha|zira|aria|jenny|natural|google uk english female/i.test(v.name); });
+      return pref[0] || en[0] || null;
+    }
+
+    /* ---- drawing ---- */
+    function bg(c, t) {
+      var g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#0e141c"); g.addColorStop(1, "#1b2430"); c.fillStyle = g; c.fillRect(0, 0, W, H);
+      c.strokeStyle = "rgba(255,255,255,.035)"; c.lineWidth = 1;
+      for (var x = -((t * 12) % 60); x < W; x += 60) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
+      for (var y = 0; y < H; y += 60) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+    }
+    function header(c, h, p) {
+      c.globalAlpha = ease(p * 6); text(c, h, 48, 62, 38, TXT);
+      c.fillStyle = GOLD; c.fillRect(48, 90, 90 + 140 * ease(p * 3), 3); c.globalAlpha = 1;
+    }
+    function avatar(c, speaking, t) {
+      c.fillStyle = GOLD; c.beginPath(); c.arc(W - 62, 56, 28, 0, 6.283); c.fill();
+      text(c, "AI", W - 62, 56, 20, "#1a1305", "center", "sans");
+      for (var i = 0; i < 5; i++) { var h = speaking ? 6 + 18 * Math.abs(Math.sin(t * 7 + i * 1.3)) : 4; c.fillStyle = "rgba(224,166,64,.8)"; c.fillRect(W - 140 + i * 9, 56 - h / 2, 5, h); }
+      text(c, "AI Tutor", W - 62, 98, 13, DIM, "center", "sans");
+    }
+    var V = {
+      title: function (c, s, p) { c.globalAlpha = ease(p * 4); text(c, s.h, W / 2, 240, 56, TXT, "center"); c.globalAlpha = ease((p - 0.2) * 4); text(c, (s.d && s.d.sub) || "", W / 2, 305, 24, GOLD, "center", "sans"); c.fillStyle = GOLD; var w = 320 * ease(p * 2); c.fillRect(W / 2 - w / 2, 345, w, 3); c.globalAlpha = 1; },
+      bullets: function (c, s, p) {
+        var it = (s.d && s.d.items) || [], n = it.length; text(c, "", 0, 0, 1, TXT);
+        for (var i = 0; i < n; i++) {
+          var a = ease((p * (n + 0.6) - i) / 0.7); if (a <= 0) continue; c.globalAlpha = a;
+          c.fillStyle = GOLD; c.beginPath(); c.arc(78 - (1 - a) * 30, 150 + i * 62, 7, 0, 6.283); c.fill();
+          text(c, it[i], 102 - (1 - a) * 30, 150 + i * 62, 29, TXT, "left", "sans"); c.globalAlpha = 1;
+        }
+      },
+      pair: function (c, s, p) {
+        var d = s.d || {}; text(c, d.base || "EUR", 330, 210, 96, TXT, "center"); text(c, "/", 480, 210, 96, GOLD, "center"); text(c, d.quote || "USD", 630, 210, 96, TXT, "center");
+        c.globalAlpha = ease((p - 0.25) * 5); text(c, "BASE", 330, 280, 24, GREEN, "center", "sans"); text(c, "▲ the one you buy or sell", 330, 312, 17, DIM, "center", "sans");
+        c.globalAlpha = ease((p - 0.5) * 5); text(c, "QUOTE", 630, 280, 24, BLUE, "center", "sans"); text(c, "▲ the one that prices it", 630, 312, 17, DIM, "center", "sans");
+        c.globalAlpha = ease((p - 0.72) * 5); c.fillStyle = "#141b24"; c.strokeStyle = GOLD; c.lineWidth = 2; c.beginPath(); c.rect(250, 350, 460, 90); c.fill(); c.stroke();
+        text(c, "1 " + (d.base || "EUR") + " = " + (d.price || "1.0800") + " " + (d.quote || "USD"), 480, 395, 38, GOLD, "center", "sans"); c.globalAlpha = 1;
+      },
+      move: function (c, s, p) {
+        var d = s.d || {}, up = d.to >= d.from, x0 = 90, x1 = W - 90, y0 = 140, y1 = 390, n = 90, k = Math.floor(n * ease(p * 1.3));
+        c.strokeStyle = "#1d2733"; for (var g = 0; g < 5; g++) { c.beginPath(); c.moveTo(x0, y0 + g * (y1 - y0) / 4); c.lineTo(x1, y0 + g * (y1 - y0) / 4); c.stroke(); }
+        c.strokeStyle = up ? GREEN : RED; c.lineWidth = 4; c.beginPath();
+        for (var i = 0; i <= k; i++) { var f = i / n, v = f + Math.sin(f * 17) * 0.05 * (1 - f), x = x0 + f * (x1 - x0), y = (up ? y1 - (y1 - y0) * v : y0 + (y1 - y0) * v); if (i === 0) c.moveTo(x, y); else c.lineTo(x, y); }
+        c.stroke();
+        var cur = d.from + (d.to - d.from) * ease(p * 1.3); text(c, cur.toFixed(4), x1, y0 - 18, 34, up ? GREEN : RED, "right", "sans"); text(c, (up ? "▲ " : "▼ ") + (d.label || ""), 90, 440, 24, TXT, "left", "sans");
+      },
+      sessions: function (c, s, p) {
+        var rows = [["Sydney", 22, 7], ["Tokyo", 0, 9], ["London", 8, 17], ["New York", 13, 22]], x0 = 230, x1 = W - 60, w = x1 - x0;
+        for (var h = 0; h <= 24; h += 4) { text(c, (h < 10 ? "0" : "") + h, x0 + w * h / 24, 128, 14, DIM, "center", "sans"); }
+        rows.forEach(function (r, i) {
+          var y = 170 + i * 66, a = ease(p * 2.4 - i * 0.35); text(c, r[0], 60, y, 24, TXT, "left", "sans");
+          c.fillStyle = "#1b2430"; c.fillRect(x0, y - 15, w, 30); c.fillStyle = GREEN; c.globalAlpha = clamp(a, 0, 1);
+          function seg(a1, b1) { c.fillRect(x0 + w * a1 / 24, y - 15, w * (b1 - a1) / 24 * clamp(a, 0, 1), 30); }
+          if (r[1] < r[2]) seg(r[1], r[2]); else { seg(r[1], 24); seg(0, r[2]); } c.globalAlpha = 1;
+        });
+        c.globalAlpha = ease((p - 0.6) * 4); c.strokeStyle = GOLD; c.lineWidth = 3; c.strokeRect(x0 + w * 13 / 24, 140, w * 4 / 24, 270); text(c, "London + New York overlap: usually the busiest hours", W / 2, 450, 22, GOLD, "center", "sans"); c.globalAlpha = 1;
+      },
+      pips: function (c, s, p) {
+        var d = s.d || {}, n = Math.max(1, Math.round((d.to - d.from) / 0.0001)), x0 = 110, x1 = W - 110, y = 270, k = Math.floor(n * ease(p * 1.4));
+        c.strokeStyle = TXT; c.lineWidth = 3; c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.stroke();
+        for (var i = 0; i <= n; i++) { var x = x0 + (x1 - x0) * i / n, on = i <= k; c.strokeStyle = on ? GOLD : "#2a3441"; c.lineWidth = i % 5 === 0 ? 3 : 1.5; c.beginPath(); c.moveTo(x, y - (i % 5 === 0 ? 20 : 12)); c.lineTo(x, y + (i % 5 === 0 ? 20 : 12)); c.stroke(); }
+        text(c, Number(d.from).toFixed(4), x0, y + 60, 28, TXT, "center", "sans"); text(c, (d.from + k * 0.0001).toFixed(4), x0 + (x1 - x0) * k / n, y - 60, 28, GOLD, "center", "sans");
+        c.globalAlpha = ease((p - 0.7) * 4); text(c, n + " pips", W / 2, 390, 56, GOLD, "center"); text(c, "1 pip = 0.0001 on most pairs", W / 2, 440, 22, DIM, "center", "sans"); c.globalAlpha = 1;
+      },
+      candles: function (c, s, p) {
+        function candle(x, up) {
+          var top = 200, bot = 380, hi = 140, lo = 440, col = up ? GREEN : RED; c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 4;
+          c.beginPath(); c.moveTo(x, hi); c.lineTo(x, lo); c.stroke(); c.fillRect(x - 34, top, 68, bot - top);
+          function lab(t, y, a, side) { c.globalAlpha = ease(a); c.strokeStyle = "#556"; c.lineWidth = 1; c.beginPath(); c.moveTo(x + 40 * side, y); c.lineTo(x + 70 * side, y); c.stroke(); text(c, t, x + 78 * side, y, 20, TXT, side > 0 ? "left" : "right", "sans"); c.globalAlpha = 1; }
+          lab("High", hi, (p - 0.1) * 5, 1); lab(up ? "Close" : "Open", top, (p - 0.3) * 5, 1); lab(up ? "Open" : "Close", bot, (p - 0.5) * 5, 1); lab("Low", lo, (p - 0.7) * 5, 1);
+          text(c, up ? "Bullish (closed higher)" : "Bearish (closed lower)", x, 480, 22, col, "center", "sans");
+        }
+        candle(250, true); candle(650, false);
+      },
+      levels: function (c, s, p) {
+        var mode = (s.d && s.d.mode) || "range", x0 = 90, x1 = W - 90, n = 120, k = Math.floor(n * ease(p * 1.2)), pts = [];
+        for (var i = 0; i <= n; i++) {
+          var f = i / n, y;
+          if (mode === "range") y = 300 + Math.sin(f * 18) * 85 + Math.sin(f * 47) * 8;
+          else if (mode === "trend") y = 420 - f * 220 + Math.sin(f * 16) * 42;
+          else y = 300 - f * 130 + Math.sin(f * 14) * 28 * (1 - f * 0.5);
+          pts.push([x0 + f * (x1 - x0), y]);
+        }
+        function hline(y, col, label, dash) { c.save(); c.strokeStyle = col; c.lineWidth = 2; c.setLineDash(dash || [8, 6]); c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.stroke(); c.restore(); text(c, label, x1, y - 14, 20, col, "right", "sans"); }
+        if (mode === "range") { hline(215, RED, "Resistance"); hline(385, GREEN, "Support"); }
+        if (mode === "stop") { hline(300, GOLD, "Entry"); hline(350, RED, "Stop-loss: lose 1%"); hline(200, GREEN, "Take-profit: gain 2%"); }
+        c.strokeStyle = TXT; c.lineWidth = 4; c.beginPath(); for (var j = 0; j <= k; j++) { if (j === 0) c.moveTo(pts[j][0], pts[j][1]); else c.lineTo(pts[j][0], pts[j][1]); } c.stroke();
+        if (mode === "trend") { c.globalAlpha = ease((p - 0.65) * 4); text(c, "Higher highs", 560, 160, 24, GREEN, "center", "sans"); text(c, "Higher lows", 330, 420, 24, GREEN, "center", "sans"); c.globalAlpha = 1; }
+      },
+      bars: function (c, s, p) {
+        var d = s.d || {}, list = [d.a, d.b, d.c].filter(Boolean), mx = Math.max.apply(null, list.map(function (x) { return x.value; })), x0 = 330, w = W - 330 - 70;
+        list.forEach(function (r, i) {
+          var y = 180 + i * 90; text(c, r.label, x0 - 16, y, 22, TXT, "right", "sans");
+          c.fillStyle = "#1b2430"; c.fillRect(x0, y - 22, w, 44); c.fillStyle = i === 0 ? BLUE : i === 1 ? GOLD : GREEN; c.fillRect(x0, y - 22, Math.max(6, w * (r.value / mx) * ease(p * 1.6 - i * 0.2)), 44);
+        });
+      }
+    };
+
+    function create(scenes, cv, ui) {
+      var c = cv.getContext("2d"), hasTTS = ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+      var P = { idx: 0, playing: false, started: false, rate: 1, voice: true, sceneStart: 0, pausedAt: 0, sent: 0, gen: 0, speaking: false, speechDone: false, ttsFailed: false, est: 6, sents: [], raf: 0, t0: performance.now() };
+
+      function speechMode() { return P.voice && hasTTS && !P.ttsFailed; }
+      function setCaption() { var s = P.sents[Math.min(P.sent, P.sents.length - 1)] || ""; ui.caption.textContent = s.trim(); }
+      function startScene(i) {
+        P.idx = clamp(i, 0, scenes.length - 1); P.gen++; var sc = scenes[P.idx];
+        P.sceneStart = performance.now(); P.sent = 0; P.speechDone = false; P.speaking = false;
+        P.sents = sentences(sc.say); P.est = Math.max(5, words(sc.say) / (2.5 * P.rate)); setCaption();
+        ui.counter.textContent = "Scene " + (P.idx + 1) + " of " + scenes.length; ui.bar.style.width = (P.idx / scenes.length * 100) + "%";
+        if (hasTTS) speechSynthesis.cancel();
+        if (P.playing && speechMode()) speakNext(P.gen);
+      }
+      function speakNext(gen) {
+        if (gen !== P.gen) return;
+        if (P.sent >= P.sents.length) { P.speechDone = true; P.speaking = false; return; }
+        var u = new SpeechSynthesisUtterance(P.sents[P.sent].trim()); u.rate = P.rate; u.lang = "en-US"; var v = pickVoice(); if (v) u.voice = v;
+        u.onstart = function () { if (gen === P.gen) P.speaking = true; };
+        u.onend = function () { if (gen !== P.gen) return; P.sent++; if (P.sent < P.sents.length) setCaption(); speakNext(gen); };
+        u.onerror = function (e) { if (gen !== P.gen) return; if (e && (e.error === "canceled" || e.error === "interrupted")) return; P.ttsFailed = true; P.speaking = false; };
+        speechSynthesis.speak(u);
+      }
+      function frame() {
+        var now = performance.now(), t = (now - P.t0) / 1000;
+        var sc = scenes[P.idx], elapsed = P.playing ? (now - P.sceneStart) / 1000 : (P.pausedAt - P.sceneStart) / 1000;
+        var p = clamp(elapsed / P.est, 0, 1);
+        bg(c, t); header(c, sc.h, p); (V[sc.v] || V.bullets)(c, sc, p); avatar(c, P.playing && (P.speaking || !speechMode()), t);
+        if (P.playing) {
+          if (!speechMode()) { var si = Math.min(P.sents.length - 1, Math.floor(p * P.sents.length)); if (si !== P.sent) { P.sent = si; setCaption(); } }
+          var done = speechMode() ? P.speechDone : elapsed >= P.est + 0.8;
+          if (done || elapsed > P.est * 1.7 + 6) { if (P.idx < scenes.length - 1) startScene(P.idx + 1); else finish(); }
+        }
+        P.raf = requestAnimationFrame(frame);
+      }
+      function finish() { P.playing = false; P.pausedAt = performance.now(); if (hasTTS) speechSynthesis.cancel(); P.gen++; P.finished = true; ui.play.textContent = "↻ Watch again"; ui.big.style.display = "block"; ui.bar.style.width = "100%"; ui.caption.textContent = "🎉 Lesson video complete. Now try the Practice Trading tab!"; }
+      var api = {
+        play: function () {
+          ui.big.style.display = "none"; ui.play.textContent = "⏸ Pause";
+          if (P.finished || !P.started) { var from = P.finished ? 0 : (P.idx || 0); P.started = true; P.finished = false; P.playing = true; startScene(from); return; }
+          P.sceneStart += performance.now() - P.pausedAt; P.playing = true;
+          if (speechMode()) { P.gen++; speakNext(P.gen); }
+        },
+        pause: function () { P.playing = false; P.pausedAt = performance.now(); P.gen++; if (hasTTS) speechSynthesis.cancel(); P.speaking = false; ui.play.textContent = "▶ Play"; ui.big.style.display = "block"; },
+        toggle: function () { if (P.playing) api.pause(); else { if (P.finished) { P.idx = 0; } api.play(); } },
+        go: function (i) { var was = P.playing; P.started = true; P.finished = false; P.playing = true; ui.big.style.display = "none"; ui.play.textContent = "⏸ Pause"; startScene(i); if (!was) { /* started by click */ } },
+        next: function () { api.go(P.idx + 1); }, prev: function () { api.go(P.idx - 1); },
+        setRate: function (r) { P.rate = r; P.est = Math.max(5, words(scenes[P.idx].say) / (2.5 * P.rate)); },
+        setVoice: function (on) { P.voice = on; if (!on && hasTTS) { P.gen++; speechSynthesis.cancel(); P.speaking = false; } else if (on && P.playing && hasTTS) { P.gen++; speakNext(P.gen); } },
+        stop: function () { cancelAnimationFrame(P.raf); P.playing = false; P.gen++; if (hasTTS) { try { speechSynthesis.cancel(); } catch (e) {} } },
+        state: P, hasTTS: hasTTS
+      };
+      startScene(0); P.pausedAt = performance.now(); frame();
+      return api;
+    }
+    return { create: create };
+  })();
+
+  var activeTutor = null;
+  function embedUrlOk(u) { return /^https:\/\/(www\.youtube(-nocookie)?\.com\/embed\/|player\.vimeo\.com\/video\/)/i.test(u); }
+  function buildVideoCard(l) {
+    var vd = l.video; if (!vd) return null;
+    var card = el("div", "card vidcard"); card.style.marginTop = "18px";
+    card.appendChild(el("h3", "", "🎬 AI video lesson"));
+    card.appendChild(el("div", "hint", "Watch your AI tutor explain \"" + l.title + "\" with voice, captions and animation."));
+    if (vd.url && embedUrlOk(vd.url)) {
+      var wrap0 = el("div", "vid-wrap"); var fr = document.createElement("iframe"); fr.src = vd.url; fr.allowFullscreen = true; fr.setAttribute("allow", "accelerometer; autoplay; encrypted-media; picture-in-picture"); fr.setAttribute("referrerpolicy", "no-referrer"); fr.style.cssText = "width:100%;height:100%;border:0"; wrap0.appendChild(fr); card.appendChild(wrap0); return card;
+    }
+    if (vd.url && /^https:\/\/.+\.(mp4|webm)(\?.*)?$/i.test(vd.url)) {
+      var wrap1 = el("div", "vid-wrap"); var vv = document.createElement("video"); vv.src = vd.url; vv.controls = true; vv.playsInline = true; vv.style.cssText = "width:100%;height:100%"; wrap1.appendChild(vv); card.appendChild(wrap1); return card;
+    }
+    var wrap = el("div", "vid-wrap"); var cv = document.createElement("canvas"); cv.width = 960; cv.height = 540; wrap.appendChild(cv);
+    var big = el("button", "vid-big", "▶"); big.type = "button"; big.setAttribute("aria-label", "Play video lesson"); wrap.appendChild(big);
+    var cap = el("div", "vid-cap", (vd.scenes[0].say.split(/[.!?]\s/)[0] || "") + "."); wrap.appendChild(cap); card.appendChild(wrap);
+    var prog = el("div", "vid-prog"); var bar = el("i"); prog.appendChild(bar); card.appendChild(prog);
+    var ctl = el("div", "vid-ctl");
+    var prev = el("button", "btn-ghost", "⏮"); prev.type = "button"; prev.title = "Previous scene";
+    var play = el("button", "btn-ghost", "▶ Play"); play.type = "button";
+    var next = el("button", "btn-ghost", "⏭"); next.type = "button"; next.title = "Next scene";
+    var rate = el("select", "inp"); rate.style.cssText = "width:auto;margin:0"; [["0.85", "0.85×"], ["1", "1×"], ["1.2", "1.2×"], ["1.5", "1.5×"]].forEach(function (o) { var op = el("option", "", o[1]); op.value = o[0]; if (o[0] === "1") op.selected = true; rate.appendChild(op); });
+    var voice = el("label", "dim"); voice.style.cssText = "font-size:12px;display:flex;gap:5px;align-items:center"; var vc = document.createElement("input"); vc.type = "checkbox"; vc.checked = true; voice.appendChild(vc); voice.appendChild(document.createTextNode(" AI voice"));
+    var counter = el("span", "dim", ""); counter.style.cssText = "font-size:12px;margin-left:auto";
+    [prev, play, next, rate, voice, counter].forEach(function (x) { ctl.appendChild(x); }); card.appendChild(ctl);
+    var t = Tutor.create(vd.scenes, cv, { caption: cap, counter: counter, bar: bar, play: play, big: big });
+    activeTutor = t;
+    big.onclick = play.onclick = function () { t.toggle(); };
+    prev.onclick = function () { t.prev(); }; next.onclick = function () { t.next(); };
+    rate.onchange = function () { t.setRate(Number(rate.value)); }; vc.onchange = function () { t.setVoice(vc.checked); };
+    if (!t.hasTTS) { voice.style.display = "none"; card.appendChild(el("div", "hint", "Your browser has no built-in voice, so the lesson plays with captions only.")); }
+    card._tutor = t; return card;
+  }
+
+  /* ------------------------- academy ------------------------- */
+  var A = { lessons: [], outline: [], current: 1, progress: { done: {}, best: {} }, answers: {}, graded: false };
+  async function loadAcademy() {
+    var d;
+    if (S.member) { d = await api("/api/forex/academy"); if (d._ok) { A.lessons = d.lessons; A.outline = d.lessons; } }
+    if (!S.member || !A.lessons.length) { d = await api("/api/forex/preview"); if (d._ok) { A.lessons = [d.lesson]; A.outline = d.outline; } }
+    $("#course-hint").textContent = S.member ? "Finish a lesson by answering its quiz correctly." : "Lesson 1 is free. Join to unlock all " + (A.outline.length || 8) + ".";
+    renderAcademy();
+  }
+  function lessonById(id) { return A.lessons.filter(function (l) { return l.id === id; })[0]; }
+  function renderAcademy() {
+    var box = $("#outline"); box.innerHTML = ""; var mod = "";
+    var total = A.outline.length, done = 0;
+    A.outline.forEach(function (o) {
+      if (o.module !== mod) { mod = o.module; box.appendChild(el("div", "mod-title", mod)); }
+      var isDone = !!A.progress.done[o.id]; if (isDone) done++;
+      var unlocked = S.member || o.id === 1;
+      var b = el("button", "les" + (A.current === o.id ? " on" : "") + (isDone ? " done" : "")); b.type = "button";
+      b.appendChild(el("span", "n", isDone ? "✓" : String(o.id)));
+      var t = el("span"); t.appendChild(document.createTextNode(o.title)); t.appendChild(el("small", "", o.minutes + " min" + (unlocked ? "" : " · 🔒 members")));
+      b.appendChild(t);
+      b.onclick = function () { A.current = o.id; A.answers = {}; A.graded = false; renderAcademy(); };
+      box.appendChild(b);
+    });
+    var pct = total ? Math.round(done / total * 100) : 0;
+    $("#prog-bar").style.width = pct + "%"; $("#prog-text").textContent = done + " of " + total + " complete";
+    $("#btn-cert").style.display = (S.member && total && done === total) ? "block" : "none";
+    renderLesson();
+  }
+  function renderLesson() {
+    if (activeTutor) { activeTutor.stop(); activeTutor = null; }
+    var v = $("#lesson-view"); v.innerHTML = "";
+    var l = lessonById(A.current);
+    if (!l) { v.appendChild(lockedBlock("Members-only lesson", "This lesson is part of the full Forex Academy. Join to unlock all lessons, quizzes, the practice account, calculators and your certificate.")); return; }
+    v.appendChild(el("div", "eyebrow", l.module));
+    v.appendChild(el("h3", "", l.id + ". " + l.title));
+    v.appendChild(el("div", "meta", "⏱ " + l.minutes + " min read · " + l.quiz.length + " quiz questions"));
+    l.blocks.forEach(function (b) {
+      if (b.t === "p") v.appendChild(el("p", "", b.x));
+      else if (b.t === "ul") { var u = el("ul"); b.x.forEach(function (i) { u.appendChild(el("li", "", i)); }); v.appendChild(u); }
+      else if (b.t === "tip") v.appendChild(el("div", "tipbox", "💡 " + b.x));
+      else if (b.t === "warn") v.appendChild(el("div", "warnbox", "⚠️ " + b.x));
+    });
+    v.appendChild(el("div", "takeaway", "Key takeaway: " + l.takeaway));
+
+    var quiz = el("div", "quiz"); quiz.appendChild(el("h4", "", "Quick quiz"));
+    l.quiz.forEach(function (q, qi) {
+      var qb = el("div", "q"); qb.appendChild(el("p", "", (qi + 1) + ". " + q.q));
+      q.o.forEach(function (txt, oi) {
+        var b = el("button", "opt", txt); b.type = "button";
+        if (A.answers[qi] === oi) b.classList.add("sel");
+        if (A.graded) { if (oi === q.a) b.classList.add("right"); else if (A.answers[qi] === oi) b.classList.add("wrong"); }
+        b.onclick = function () { if (A.graded) return; A.answers[qi] = oi; renderLesson(); };
+        qb.appendChild(b);
+      });
+      if (A.graded) qb.appendChild(el("div", "why", (A.answers[qi] === q.a ? "✅ " : "❌ ") + q.why));
+      quiz.appendChild(qb);
+    });
+    var res = el("div", "out"); res.style.display = "none";
+    var check = el("button", "btn-join", A.graded ? "Try again" : "Check answers"); check.type = "button"; check.style.fontSize = "14px";
+    check.onclick = function () {
+      if (A.graded) { A.answers = {}; A.graded = false; renderLesson(); return; }
+      if (Object.keys(A.answers).length < l.quiz.length) { toast("Answer every question first."); return; }
+      A.graded = true;
+      var score = l.quiz.filter(function (q, i) { return A.answers[i] === q.a; }).length;
+      if (S.member) {
+        if (score > (A.progress.best[l.id] || 0)) A.progress.best[l.id] = score;
+        if (score === l.quiz.length && !A.progress.done[l.id]) { A.progress.done[l.id] = true; toast("✅ Lesson " + l.id + " complete!"); }
+        saveSoon("progress");
+      }
+      renderAcademy();
+    };
+    quiz.appendChild(check);
+    if (A.graded) {
+      var score2 = l.quiz.filter(function (q, i) { return A.answers[i] === q.a; }).length;
+      var perfect = score2 === l.quiz.length;
+      var msg = el("div", "out", perfect ? "🎉 Perfect: " + score2 + "/" + l.quiz.length + ". " + (S.member ? "Lesson marked complete." : "Join to save your progress and unlock the next lessons.") : "You got " + score2 + "/" + l.quiz.length + ". Read the explanations and try again.");
+      quiz.appendChild(msg);
+      if (perfect && S.member) {
+        var nxt = A.outline.filter(function (o) { return o.id === l.id + 1; })[0];
+        if (nxt) { var nb = el("button", "btn-ghost", "Next lesson →"); nb.type = "button"; nb.style.marginTop = "10px"; nb.onclick = function () { A.current = nxt.id; A.answers = {}; A.graded = false; renderAcademy(); }; quiz.appendChild(nb); }
+      }
+    }
+    v.appendChild(quiz);
+    var vcard = buildVideoCard(l); if (vcard) v.appendChild(vcard);
+    if (!S.member) {
+      var cta = el("div", "locked"); cta.style.marginTop = "18px";
+      cta.appendChild(el("h3", "", "Ready for lessons 2 to " + (A.outline.length || 8) + "?"));
+      cta.appendChild(el("p", "", "Unlock the full course, the $10,000 practice account, calculators, your journal and a completion certificate."));
+      var jb = el("button", "btn-join join-btn", ""); jb.type = "button"; cta.appendChild(jb); v.appendChild(cta); renderPrice();
+    }
+  }
+  $("#btn-cert").addEventListener("click", function () {
+    $("#cert-name").textContent = localStorage.getItem("vicoPayDisplayName") || "Forex Student";
+    $("#cert-date").textContent = "Completed on " + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    $("#cert-modal").classList.add("on");
+  });
+  $("#cert-close").addEventListener("click", function () { $("#cert-modal").classList.remove("on"); });
+  $("#cert-print").addEventListener("click", function () { window.print(); });
+
+  /* ------------------------- saved data ------------------------- */
+  var saved = { paper: null, journal: [] }, saveTimers = {};
+  async function loadSaved() {
+    var d = await api("/api/forex/state");
+    if (d._ok) {
+      if (d.progress && d.progress.done) A.progress = { done: d.progress.done || {}, best: d.progress.best || {} };
+      saved.paper = d.paper || null; saved.journal = Array.isArray(d.journal) ? d.journal : [];
+      renderAcademy();
+    }
+  }
+  function saveSoon(kind) {
+    clearTimeout(saveTimers[kind]);
+    saveTimers[kind] = setTimeout(function () { saveNow(kind); }, 1500);
+  }
+  function payloadFor(kind) {
+    if (kind === "progress") return A.progress;
+    if (kind === "journal") return saved.journal;
+    if (kind === "paper") return LabUI.snapshot();
+  }
+  function saveNow(kind) {
+    if (!S.member) return Promise.resolve();
+    var body = {}; body[kind] = payloadFor(kind); if (body[kind] == null) return Promise.resolve();
+    return api("/api/forex/state", { method: "POST", body: body });
+  }
+  window.addEventListener("pagehide", function () {
+    if (!S.member || !window.VicoAuth) return;
+    ["progress", "journal", "paper"].forEach(function (k) {
+      var p = payloadFor(k); if (p == null) return; var b = {}; b[k] = p;
+      try { fetch("/api/forex/state", { method: "POST", keepalive: true, headers: { "Content-Type": "application/json", "Authorization": "Bearer " + VicoAuth.getToken() }, body: JSON.stringify(b) }); } catch (e) {}
+    });
+  });
+
+  /* ------------------------- practice trading ------------------------- */
+  var LabUI = (function () {
+    var L = window.ForexLab, mkt = null, acct = null, sel = "EURUSD", timer = null, built = false, lastSave = 0, tickN = 0, openRev = {}, lastIdea = null;
+    var money2 = function (n) { return (n < 0 ? "-$" : "$") + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); };
+    var fmt = function (s, v) { return Number(v).toFixed(L.PAIRS[s].dec); };
+
+    function start() {
+      if (mkt) return;
+      var sv = saved.paper;
+      mkt = L.createMarket({ prices: sv && sv.prices });
+      acct = L.createAccount(sv && sv.acct);
+      if (!timer) timer = setInterval(tick, 1000);
+    }
+    function snapshot() { return (mkt && acct) ? L.serialize(acct, mkt) : null; }
+    function logClosed(rec) { if (window.JournalUI) JournalUI.addTrade(rec); }
+
+    function tick() {
+      if (!mkt || !S.member) return;
+      tickN++;
+      L.step(mkt);
+      var closed = L.checkStops(acct, mkt);
+      closed.forEach(function (c) {
+        toast((c.reason === "take-profit" ? "🎯 Take-profit hit: " : c.reason === "stop-out" ? "🚨 Stop-out: " : "🛑 Stop-loss hit: ") + L.PAIRS[c.sym].name + " " + money2(c.pnl) + " · logged in your Journal");
+        logClosed(c);
+      });
+      if (closed.length) saveSoon("paper");
+      else if (Date.now() - lastSave > 20000 && acct.positions.length) { lastSave = Date.now(); saveSoon("paper"); }
+      if ($("#p-lab").classList.contains("on") && built) paintLive();
+    }
+
+    function render(force) {
+      var root = $("#lab-root");
+      if (!S.member) {
+        root.innerHTML = ""; built = false;
+        root.appendChild(lockedBlock("Practice Trading is for members", "Trade a $10,000 virtual account on a simulated market with a Trade Coach that shows you the trend, the levels and a step-by-step practice idea. Every trade is reviewed and logged in your journal."));
+        renderPrice(); return;
+      }
+      if (!mkt) start();
+      if (built && !force) return;
+      root.innerHTML = "";
+      root.appendChild(el("div", "lab-note", "🧪 Practice market: prices are SIMULATED for learning and are not real quotes. The coach reads the same chart you see. Treat the virtual money like real money to build good habits."));
+      var grid = el("div", "lab-grid"); root.appendChild(grid);
+
+      var left = el("div"); grid.appendChild(left);
+      var tabs = el("div", "pair-tabs"); tabs.id = "pair-tabs";
+      Object.keys(L.PAIRS).forEach(function (s) {
+        var b = el("button", "ptab" + (s === sel ? " on" : ""), L.PAIRS[s].name); b.type = "button"; b.dataset.s = s;
+        b.onclick = function () { sel = s; $$(".ptab").forEach(function (x) { x.classList.toggle("on", x.dataset.s === s); }); paintLive(true); };
+        tabs.appendChild(b);
+      });
+      left.appendChild(tabs);
+      var qr = el("div", "qrow"); qr.id = "qrow"; left.appendChild(qr);
+      var cv = document.createElement("canvas"); cv.id = "lab-chart"; left.appendChild(cv);
+      left.appendChild(el("div", "hint dim", "Each candle = 5 seconds of the practice market (sped up so trends form quickly). Orange lines = your trades, with stop-loss (red) and take-profit (green)."));
+      var coach = el("div", "card coach"); coach.style.marginTop = "12px";
+      coach.innerHTML = '<h3>🧭 Trade Coach</h3><div class="hint">Reads the chart for you and shows how a careful trader would think. Practice guidance only, never a signal for real money.</div>' +
+        '<div id="coach-live"></div>' +
+        '<details id="coach-steps"><summary>📋 How to place a trade: the 6 steps</summary><ol class="steps">' +
+        '<li><b>Pick a pair</b> and look at the chart. Zoom out in your mind: which way has price been going?</li>' +
+        '<li><b>Find the trend.</b> Fast average above slow average means up. Below means down. Flat means ranging.</li>' +
+        '<li><b>Find the levels.</b> Support (floor) and resistance (ceiling). Buy near support in an uptrend; sell near resistance in a downtrend.</li>' +
+        '<li><b>Decide your exit first.</b> Put the stop-loss just beyond the level. If price reaches it, your idea was wrong.</li>' +
+        '<li><b>Size the trade.</b> Risk 1% or less of the account. The coach and the risk meter work out the lot size.</li>' +
+        '<li><b>Place it, then leave it.</b> Set stop-loss and take-profit (at least 1:2), press BUY or SELL, and let the plan work. Review it in your Journal.</li></ol></details>';
+      left.appendChild(coach);
+
+      var right = el("div"); grid.appendChild(right);
+      var ac = el("div", "card"); ac.appendChild(el("h3", "", "Account")); var ag = el("div", "acct-grid"); ag.id = "acct-grid"; ac.appendChild(ag); right.appendChild(ac);
+
+      var tk = el("div", "card ticket"); tk.style.marginTop = "12px"; tk.appendChild(el("h3", "", "New order"));
+      var inner = el("div"); inner.innerHTML = '' +
+        '<div class="row2"><label class="f">Lots<input id="t-lots" type="number" min="0.01" max="5" step="0.01" value="0.05"></label>' +
+        '<label class="f">Stop-loss (pips)<input id="t-sl" type="number" min="0" step="1" value="20"></label>' +
+        '<label class="f">Take-profit (pips)<input id="t-tp" type="number" min="0" step="1" value="40"></label></div>' +
+        '<div class="riskmeter" id="t-risk"></div>' +
+        '<div class="tbtns"><button class="tbtn sell" id="t-sell" type="button">SELL</button><button class="tbtn buy" id="t-buy" type="button">BUY</button></div>' +
+        '<div class="lab-err" id="lab-err"></div>';
+      tk.appendChild(inner); right.appendChild(tk);
+
+      root.appendChild(el("h4", "sec", "Open trades"));
+      var pt = el("div", "scroll-x"); pt.id = "pos-table"; root.appendChild(pt);
+      root.appendChild(el("h4", "sec", "Your results"));
+      var st = el("div", "stats"); st.id = "stats"; root.appendChild(st);
+      root.appendChild(el("h4", "sec", "Trade history & coach review"));
+      var ht = el("div", "scroll-x"); ht.id = "hist-table"; root.appendChild(ht);
+      var rs = el("button", "btn-ghost", "↺ Reset practice account"); rs.type = "button"; rs.style.marginTop = "14px";
+      rs.onclick = function () { if (confirm("Reset your practice account back to $10,000? (Your journal is kept.)")) { acct = L.createAccount(); saveNow("paper"); built = false; render(true); toast("Practice account reset."); } };
+      root.appendChild(rs);
+
+      $("#t-sell").onclick = function () { order(-1); };
+      $("#t-buy").onclick = function () { order(1); };
+      ["#t-lots", "#t-sl", "#t-tp"].forEach(function (id) { $(id).addEventListener("input", paintRisk); });
+      built = true; paintLive(true);
+    }
+
+    function order(dir) {
+      var r = L.open(acct, mkt, sel, dir, $("#t-lots").value, $("#t-sl").value, $("#t-tp").value);
+      var err = $("#lab-err");
+      if (!r.ok) { err.textContent = r.error; return; }
+      err.textContent = ""; toast((dir === 1 ? "BUY " : "SELL ") + L.PAIRS[sel].name + " " + r.pos.lots.toFixed(2) + " @ " + fmt(sel, r.pos.entry));
+      saveSoon("paper"); paintLive(true);
+    }
+    function paintRisk() {
+      var el2 = $("#t-risk"); if (!el2 || !mkt) return;
+      var lots = Number($("#t-lots").value) || 0, sl = Number($("#t-sl").value) || 0, tp = Number($("#t-tp").value) || 0, px = L.quote(mkt, sel).mid;
+      if (!sl) { el2.className = "riskmeter bad"; el2.textContent = "⚠ No stop-loss: your risk is unlimited. Set one before you trade."; return; }
+      var r = L.riskOf(acct, sel, lots, sl, px), cls = r.pct <= 1.05 ? "good" : r.pct <= 2.05 ? "warn" : "bad";
+      var rr = tp ? "  ·  reward : risk = 1 : " + (tp / sl).toFixed(1) : "";
+      el2.className = "riskmeter " + cls; el2.textContent = "If stopped out you lose about " + money2(r.usd) + " (" + r.pct.toFixed(2) + "% of your account)" + rr;
+    }
+    function paintCoach(force) {
+      var box = $("#coach-live"); if (!box) return;
+      var an = L.analyze(mkt, sel, acct); if (!an) { box.textContent = "Reading the chart…"; return; }
+      var p = L.PAIRS[sel], tr = an.trend === "up" ? ["↑ Uptrend", "green"] : an.trend === "down" ? ["↓ Downtrend", "red"] : ["↔ Ranging", "dim"];
+      var mom = an.rsi > 70 ? "stretched up (overbought)" : an.rsi < 30 ? "stretched down (oversold)" : "normal";
+      var html = '<div class="coach-grid">' +
+        '<div>Trend<b class="' + tr[1] + '">' + tr[0] + '</b></div>' +
+        '<div>Momentum (RSI)<b>' + an.rsi.toFixed(0) + '</b><small>' + mom + '</small></div>' +
+        '<div>Support<b>' + fmt(sel, an.support) + '</b></div>' +
+        '<div>Resistance<b>' + fmt(sel, an.resistance) + '</b></div>' +
+        '<div>Price in range<b>' + Math.round(an.posInRange * 100) + '%</b><small>0% = at support</small></div>' +
+        '<div>Typical candle<b>' + an.atrPips.toFixed(1) + ' pips</b></div></div>';
+      html += '<div class="verdict">' + (an.idea ? '' : '⏸ ') + esc(an.verdict) + '</div>';
+      if (an.idea) {
+        var i = an.idea; lastIdea = { sym: sel, idea: i };
+        html += '<div class="idea ' + (i.dir === 1 ? "buy" : "sell") + '"><b>Practice idea: ' + (i.dir === 1 ? "BUY" : "SELL") + ' ' + p.name + '</b><br>' +
+          'Lots <b>' + i.lots.toFixed(2) + '</b> · Stop-loss <b>' + i.slPips + ' pips</b> · Take-profit <b>' + i.tpPips + ' pips</b> (1:2)' +
+          (i.risk ? '<br>Risk if wrong: <b>' + money2(i.risk.usd) + '</b> (' + i.risk.pct.toFixed(2) + '% of your account)' : '') +
+          '<br><button class="btn-ghost" id="coach-apply" type="button" style="margin-top:8px">Apply to the order ticket</button> <span class="dim" style="font-size:12px">then press ' + (i.dir === 1 ? "BUY" : "SELL") + ' yourself</span></div>';
+      } else lastIdea = null;
+      html += '<div class="hint dim" style="margin-top:8px">Why the coach looks at these: the trend tells you which side to prefer, support and resistance tell you where to enter and where your stop-loss belongs, and RSI warns when a move is stretched.</div>';
+      box.innerHTML = html;
+      var ap = $("#coach-apply");
+      if (ap) ap.onclick = function () {
+        var i = lastIdea.idea; $("#t-lots").value = i.lots.toFixed(2); $("#t-sl").value = i.slPips; $("#t-tp").value = i.tpPips; paintRisk();
+        toast("Applied. Now press " + (i.dir === 1 ? "BUY" : "SELL") + " when you agree with the plan.");
+      };
+    }
+
+    function paintLive(force) {
+      if (!built || !mkt) return;
+      var q = L.quote(mkt, sel), p = L.PAIRS[sel];
+      $("#qrow").innerHTML = '<span class="nm">' + p.name + '</span><span class="sellc">Bid ' + fmt(sel, q.bid) + '</span><span class="buyc">Ask ' + fmt(sel, q.ask) + '</span><span class="dim">Spread ' + p.spread + ' pips</span>';
+      var sm = L.summary(acct, mkt);
+      var cell = function (k, v, cls) { return '<div>' + k + '<b class="' + (cls || "") + '">' + v + '</b></div>'; };
+      $("#acct-grid").innerHTML = cell("Balance", money2(sm.balance)) + cell("Equity", money2(sm.equity), sm.equity >= sm.balance ? "green" : "red") +
+        cell("Floating P/L", money2(sm.floating), sm.floating >= 0 ? "green" : "red") + cell("Used margin", money2(sm.used)) +
+        cell("Free margin", money2(sm.free)) + cell("Margin level", sm.level === null ? "—" : sm.level.toFixed(0) + "%", sm.level !== null && sm.level < 100 ? "red" : "");
+      var rows = acct.positions.map(function (pos) {
+        var cp = pos.dir === 1 ? L.quote(mkt, pos.sym).bid : L.quote(mkt, pos.sym).ask, pl = L.pnlUsd(pos, cp);
+        return '<tr><td>' + L.PAIRS[pos.sym].name + '</td><td class="' + (pos.dir === 1 ? "buyc" : "sellc") + '">' + (pos.dir === 1 ? "BUY" : "SELL") + '</td><td>' + pos.lots.toFixed(2) + '</td><td>' + fmt(pos.sym, pos.entry) + '</td><td>' + fmt(pos.sym, cp) + '</td><td>' + (pos.sl ? fmt(pos.sym, pos.sl) : "—") + '</td><td>' + (pos.tp ? fmt(pos.sym, pos.tp) : "—") + '</td><td class="' + (pl >= 0 ? "green" : "red") + '">' + money2(pl) + '</td><td><button class="mini" data-close="' + pos.id + '" type="button">Close</button></td></tr>';
+      }).join("");
+      $("#pos-table").innerHTML = '<table class="t"><tr><th>Pair</th><th>Side</th><th>Lots</th><th>Entry</th><th>Now</th><th>SL</th><th>TP</th><th>P/L</th><th></th></tr>' + (rows || '<tr><td colspan="9" class="dim">No open trades. Ask the coach above, then place a BUY or SELL.</td></tr>') + '</table>';
+      $$("[data-close]", $("#pos-table")).forEach(function (b) { b.onclick = function () { var r = L.closeById(acct, mkt, Number(b.dataset.close), "manual"); if (r) { toast("Closed " + L.PAIRS[r.sym].name + " " + money2(r.pnl) + " · logged in your Journal"); logClosed(r); saveSoon("paper"); paintLive(true); } }; });
+      var s = L.stats(acct), sc = function (k, v) { return '<div>' + k + '<b>' + v + '</b></div>'; };
+      $("#stats").innerHTML = sc("Trades", s.trades) + sc("Win rate", s.trades ? s.winRate.toFixed(0) + "%" : "—") + sc("Total P/L", money2(s.total)) + sc("Best / Worst", money2(s.best) + " / " + money2(s.worst)) + sc("Drawdown", s.drawdown.toFixed(1) + "%");
+      var hr = acct.history.slice(0, 12).map(function (h) {
+        var open = !!openRev[h.id], r = '<tr><td>' + L.PAIRS[h.sym].name + '</td><td class="' + (h.dir === 1 ? "buyc" : "sellc") + '">' + (h.dir === 1 ? "BUY" : "SELL") + '</td><td>' + h.lots.toFixed(2) + '</td><td>' + (h.pips != null ? h.pips.toFixed(1) : "") + '</td><td>' + h.reason + '</td><td class="' + (h.pnl >= 0 ? "green" : "red") + '">' + money2(h.pnl) + '</td><td><button class="mini" data-rev="' + h.id + '" type="button">' + (open ? "Hide" : "Review") + '</button></td></tr>';
+        if (open) r += '<tr><td colspan="7" class="revrow">' + L.reviewTrade(h).map(function (n) { return '<div>' + (n.ok === true ? "✅" : n.ok === false ? "⚠️" : "ℹ️") + ' ' + esc(n.text) + '</div>'; }).join("") + '</td></tr>';
+        return r;
+      }).join("");
+      $("#hist-table").innerHTML = '<table class="t"><tr><th>Pair</th><th>Side</th><th>Lots</th><th>Pips</th><th>Closed by</th><th>P/L</th><th></th></tr>' + (hr || '<tr><td colspan="7" class="dim">Your closed trades appear here with a coach review.</td></tr>') + '</table>';
+      $$("[data-rev]", $("#hist-table")).forEach(function (b) { b.onclick = function () { var id = b.dataset.rev; openRev[id] = !openRev[id]; paintLive(); }; });
+      if (force || tickN % 2 === 0) paintCoach();
+      paintRisk(); drawChart();
+    }
+
+    function drawChart() {
+      var cv = $("#lab-chart"); if (!cv) return;
+      var dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight; if (!W || !H) return;
+      if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+      var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
+      var cs = L.candlesOf(mkt, sel).slice(-70), q = L.quote(mkt, sel), an = L.analyze(mkt, sel, acct);
+      var hi = -Infinity, lo = Infinity;
+      cs.forEach(function (k) { if (k.h > hi) hi = k.h; if (k.l < lo) lo = k.l; });
+      var mine = acct.positions.filter(function (p) { return p.sym === sel; });
+      mine.forEach(function (p) { [p.entry, p.sl, p.tp].forEach(function (v) { if (v) { if (v > hi) hi = v; if (v < lo) lo = v; } }); });
+      var pad = (hi - lo) * 0.08 || L.PAIRS[sel].pip * 5; hi += pad; lo -= pad;
+      var padR = 62, plotW = W - padR, y = function (v) { return H - ((v - lo) / (hi - lo)) * H; };
+      c.font = "11px 'Courier New',monospace"; c.textBaseline = "middle";
+      for (var g = 0; g <= 4; g++) { var gv = lo + (hi - lo) * g / 4, gy = y(gv); c.strokeStyle = "#1d2733"; c.lineWidth = 1; c.beginPath(); c.moveTo(0, gy); c.lineTo(plotW, gy); c.stroke(); c.fillStyle = "#8b98a9"; c.fillText(fmt(sel, gv), plotW + 4, Math.min(H - 7, Math.max(7, gy))); }
+      var cw = plotW / cs.length;
+      // coach levels + moving averages
+      function hl(v, col, label, dash, left) { if (!v || v < lo || v > hi) return; var yy = y(v); c.save(); c.strokeStyle = col; c.lineWidth = 1; c.setLineDash(dash || []); c.beginPath(); c.moveTo(0, yy); c.lineTo(plotW, yy); c.stroke(); c.restore(); c.fillStyle = col; c.fillText(label, left ? 6 : plotW - 64, yy - 7); }
+      if (an) { hl(an.support, "#3fb27f66", "support", [2, 4], true); hl(an.resistance, "#e0605c66", "resistance", [2, 4], true); }
+      var closes = cs.map(function (k) { return k.c; });
+      function emaLine(n, col) { var k = 2 / (n + 1), e = closes[0]; c.strokeStyle = col; c.lineWidth = 1.5; c.beginPath(); closes.forEach(function (v, i) { e = v * k + e * (1 - k); var x = i * cw + cw / 2; if (i === 0) c.moveTo(x, y(e)); else c.lineTo(x, y(e)); }); c.stroke(); }
+      emaLine(9, "#4aa3ff"); emaLine(21, "#e0a640");
+      cs.forEach(function (k, i) {
+        var x = i * cw + cw / 2, up = k.c >= k.o, col = up ? "#3fb27f" : "#e0605c";
+        c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y(k.h)); c.lineTo(x, y(k.l)); c.stroke();
+        var top = y(Math.max(k.o, k.c)), bh = Math.max(1, Math.abs(y(k.o) - y(k.c))); c.fillRect(x - cw * 0.34, top, cw * 0.68, bh);
+      });
+      function hline(v, col, label, dash) { if (!v) return; var yy = y(v); c.save(); c.strokeStyle = col; c.setLineDash(dash || []); c.beginPath(); c.moveTo(0, yy); c.lineTo(plotW, yy); c.stroke(); c.restore(); c.fillStyle = col; c.fillText(label, 6, yy - 7); }
+      hline(q.ask, "#4aa3ff", "ASK", [2, 3]); hline(q.bid, "#e0605c", "BID", [2, 3]);
+      mine.forEach(function (p) { hline(p.entry, "#e0a640", (p.dir === 1 ? "BUY " : "SELL ") + p.lots.toFixed(2), [6, 4]); hline(p.sl, "#e0605c", "SL", [3, 3]); hline(p.tp, "#3fb27f", "TP", [3, 3]); });
+      c.fillStyle = "#4aa3ff"; c.fillText("— fast avg", plotW - 130, 12); c.fillStyle = "#e0a640"; c.fillText("— slow avg", plotW - 62, 12);
+    }
+    return { start: start, render: render, snapshot: snapshot };
+  })();
+
+  /* ------------------------- real calculators ------------------------- */
+  var RATES = { live: false, date: "", px: {}, raw: null };
+  var FALLBACK_RAW = { USD: 1, NGN: 1500, EUR: 0.92, GBP: 0.79, JPY: 150, CAD: 1.36, AUD: 1.52, NZD: 1.64, CHF: 0.88, ZAR: 18.5, GHS: 12.5, KES: 129, AED: 3.67 };
+  function buildPx(x) { return { EURUSD: 1 / x.EUR, GBPUSD: 1 / x.GBP, AUDUSD: 1 / x.AUD, NZDUSD: 1 / x.NZD, USDJPY: x.JPY, USDCAD: x.CAD, USDCHF: x.CHF }; }
+  function refPrice(sym) { return (RATES.px && RATES.px[sym]) || ForexLab.PAIRS[sym].start; }
+  var ratesPromise = null;
+  function loadRates() {
+    if (ratesPromise) return ratesPromise;
+    ratesPromise = fetch("https://open.er-api.com/v6/latest/USD").then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.result === "success" && d.rates && d.rates.EUR && d.rates.JPY) { RATES.raw = d.rates; RATES.px = buildPx(d.rates); RATES.live = true; RATES.date = String(d.time_last_update_utc || "").slice(0, 16); }
+    }).catch(function () { /* offline: keep reference prices */ });
+    return ratesPromise;
+  }
+  function renderTools() {
+    var root = $("#tools-root"); root.innerHTML = "";
+    if (!S.member) { root.appendChild(lockedBlock("Calculators are for members", "Position size, pip value and spread cost, profit and loss, margin, expectancy and a live currency converter, all using today's real exchange rates.")); renderPrice(); return; }
+    var Lb = ForexLab, pairs = Object.keys(Lb.PAIRS).map(function (s) { return '<option value="' + s + '">' + Lb.PAIRS[s].name + '</option>'; }).join("");
+    var cur = Object.keys(FALLBACK_RAW).map(function (k) { return '<option>' + k + '</option>'; }).join("");
+    var badge = el("div", "ratebadge", "Loading today's exchange rates…"); root.appendChild(badge);
+    var wrap = el("div", "grid3"); wrap.id = "calc-grid";
+    wrap.innerHTML = '' +
+      '<div class="card"><h3>1 · Position size</h3><div class="hint">How many lots can I trade for my risk?</div>' +
+      '<label class="f">Account balance ($)<input id="c-bal" type="number" value="1000" min="1"></label>' +
+      '<label class="f">Risk per trade (%)<input id="c-risk" type="number" value="1" min="0.1" step="0.1"></label>' +
+      '<label class="f">Stop-loss (pips)<input id="c-sl" type="number" value="20" min="1"></label>' +
+      '<label class="f">Take-profit (pips, optional)<input id="c-tp" type="number" value="40" min="0"></label>' +
+      '<label class="f">Pair<select id="c-pair">' + pairs + '</select></label><div class="out" id="c-out1"></div></div>' +
+
+      '<div class="card"><h3>2 · Pip value &amp; spread cost</h3><div class="hint">What is one pip worth, and what does the spread cost me?</div>' +
+      '<label class="f">Pair<select id="p-pair">' + pairs + '</select></label>' +
+      '<label class="f">Lot size<input id="p-lots" type="number" value="0.10" min="0.01" step="0.01"></label>' +
+      '<label class="f">Spread (pips)<input id="p-spr" type="number" value="1.2" min="0" step="0.1"></label><div class="out" id="c-out2"></div></div>' +
+
+      '<div class="card"><h3>3 · Profit &amp; loss</h3><div class="hint">What would this trade make or lose?</div>' +
+      '<label class="f">Pair<select id="l-pair">' + pairs + '</select></label>' +
+      '<div class="grid2"><label class="f">Direction<select id="l-dir"><option value="1">Buy</option><option value="-1">Sell</option></select></label>' +
+      '<label class="f">Lots<input id="l-lots" type="number" value="0.10" min="0.01" step="0.01"></label></div>' +
+      '<div class="grid2"><label class="f">Entry price<input id="l-in" type="number" step="any"></label><label class="f">Exit price<input id="l-out" type="number" step="any"></label></div><div class="out" id="c-out3"></div></div>' +
+
+      '<div class="card"><h3>4 · Margin &amp; leverage</h3><div class="hint">How much deposit does the trade need?</div>' +
+      '<label class="f">Pair<select id="m-pair">' + pairs + '</select></label>' +
+      '<div class="grid2"><label class="f">Lot size<input id="m-lots" type="number" value="0.10" min="0.01" step="0.01"></label>' +
+      '<label class="f">Leverage 1:<select id="m-lev"><option>10</option><option>20</option><option selected>30</option><option>50</option><option>100</option></select></label></div>' +
+      '<label class="f">Account balance ($)<input id="m-bal" type="number" value="1000" min="1"></label><div class="out" id="c-out4"></div></div>' +
+
+      '<div class="card"><h3>5 · Win rate &amp; expectancy</h3><div class="hint">Can this strategy make money over many trades?</div>' +
+      '<label class="f">Win rate (%)<input id="e-wr" type="number" value="45" min="1" max="99"></label>' +
+      '<label class="f">Average reward : risk (e.g. 2 = 1:2)<input id="e-rr" type="number" value="2" min="0.1" step="0.1"></label>' +
+      '<label class="f">Risk per trade (%)<input id="e-risk" type="number" value="1" min="0.1" step="0.1"></label><div class="out" id="c-out5"></div></div>' +
+
+      '<div class="card"><h3>6 · Currency converter</h3><div class="hint">Real exchange rates (updated daily).</div>' +
+      '<label class="f">Amount<input id="x-amt" type="number" value="100" min="0" step="any"></label>' +
+      '<div class="grid2"><label class="f">From<select id="x-from">' + cur + '</select></label><label class="f">To<select id="x-to">' + cur + '</select></label></div><div class="out" id="c-out6"></div></div>';
+    root.appendChild(wrap);
+    root.appendChild(el("p", "hint", "Calculators assume a US-dollar account. Pip values and prices use today's exchange rates when available (shown above). Always confirm with your broker's own calculator before trading real money."));
+    $("#x-to").value = "NGN";
+
+    var fmt$ = function (n, d) { return "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: d == null ? 2 : d, maximumFractionDigits: d == null ? 2 : d }); };
+    function setEntry() { var s = $("#l-pair").value, d = Lb.PAIRS[s].dec; $("#l-in").value = refPrice(s).toFixed(d); $("#l-out").value = (refPrice(s) + Lb.PAIRS[s].pip * 20).toFixed(d); }
+    function calc() {
+      // 1 position size
+      var bal = +$("#c-bal").value, risk = +$("#c-risk").value, sl = +$("#c-sl").value, tp = +$("#c-tp").value, sym = $("#c-pair").value, px = refPrice(sym);
+      var riskAmt = bal * risk / 100, pv1 = Lb.pipValueUsd(sym, 1, px), lots = sl > 0 && pv1 > 0 ? Math.floor((riskAmt / (sl * pv1)) * 100) / 100 : 0;
+      var h1 = 'Risk amount: <b>' + fmt$(riskAmt) + '</b><br>Position size: <b>' + lots.toFixed(2) + ' lots</b> (' + Math.round(lots * 100000).toLocaleString() + ' units)<br>1 pip at that size ≈ <b>' + fmt$(lots * pv1) + '</b><br>Loss if stopped out ≈ <b>' + fmt$(lots * pv1 * sl) + '</b>';
+      if (tp > 0 && sl > 0) h1 += '<br>Profit at take-profit ≈ <b>' + fmt$(lots * pv1 * tp) + '</b> (1 : ' + (tp / sl).toFixed(2) + ')';
+      if (lots < 0.01) h1 += '<br><span class="red">Too small for even 0.01 lot. Use a tighter stop-loss or a larger balance.</span>';
+      $("#c-out1").innerHTML = h1;
+      // 2 pip value & spread
+      var s2 = $("#p-pair").value, l2 = +$("#p-lots").value, sp = +$("#p-spr").value, pv = Lb.pipValueUsd(s2, l2, refPrice(s2));
+      $("#c-out2").innerHTML = '1 pip = <b>' + fmt$(pv, 3) + '</b><br>10 pips = <b>' + fmt$(pv * 10) + '</b> · 50 pips = <b>' + fmt$(pv * 50) + '</b><br>Spread cost (' + sp + ' pips) = <b>' + fmt$(pv * sp) + '</b> paid when you open';
+      // 3 profit & loss
+      var s3 = $("#l-pair").value, dir = +$("#l-dir").value, l3 = +$("#l-lots").value, en = +$("#l-in").value, ex = +$("#l-out").value;
+      if (en > 0 && ex > 0) {
+        var pnl = Lb.pnlUsd({ sym: s3, dir: dir, lots: l3, entry: en }, ex), pips = dir * (ex - en) / Lb.PAIRS[s3].pip;
+        $("#c-out3").innerHTML = 'Result: <b class="' + (pnl >= 0 ? "green" : "red") + '">' + (pnl >= 0 ? "+" : "-") + fmt$(Math.abs(pnl)) + '</b><br>Pips: <b>' + pips.toFixed(1) + '</b>';
+      } else $("#c-out3").textContent = "Enter an entry and exit price.";
+      // 4 margin
+      var s4 = $("#m-pair").value, l4 = +$("#m-lots").value, lev = +$("#m-lev").value, b4 = +$("#m-bal").value, px4 = refPrice(s4);
+      var mg = Lb.marginFor(s4, l4, px4, lev), perLot = Lb.marginFor(s4, 1, px4, lev);
+      $("#c-out4").innerHTML = 'Margin required ≈ <b>' + fmt$(mg) + '</b><br>Position value ≈ <b>' + fmt$(mg * lev, 0) + '</b><br>Free margin left ≈ <b class="' + (b4 - mg >= 0 ? "" : "red") + '">' + fmt$(b4 - mg) + '</b><br>Largest size your balance can open ≈ <b>' + (Math.floor(b4 / perLot * 100) / 100).toFixed(2) + ' lots</b> (but never risk that much!)';
+      // 5 expectancy
+      var wr = +$("#e-wr").value / 100, rr = +$("#e-rr").value, rk = +$("#e-risk").value, ex5 = wr * rr - (1 - wr), be = 100 / (1 + rr);
+      $("#c-out5").innerHTML = 'Break-even win rate: <b>' + be.toFixed(0) + '%</b><br>Expectancy: <b class="' + (ex5 >= 0 ? "green" : "red") + '">' + (ex5 >= 0 ? "+" : "") + ex5.toFixed(2) + ' R per trade</b><br>≈ <b>' + (ex5 * rk >= 0 ? "+" : "") + (ex5 * rk).toFixed(2) + '%</b> of your account per trade on average<br><span class="dim">' + (ex5 > 0 ? "Positive on paper, but it only works if you follow the rules every time." : "Negative expectancy: this setup loses money over time. Improve win rate or reward : risk.") + '</span>';
+      // 6 converter
+      var raw = RATES.raw || FALLBACK_RAW, a = +$("#x-amt").value, f = $("#x-from").value, t = $("#x-to").value;
+      if (raw[f] && raw[t]) { var v = a / raw[f] * raw[t]; $("#c-out6").innerHTML = a.toLocaleString() + ' ' + f + ' = <b>' + v.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ' + t + '</b><br><span class="dim">1 ' + f + ' = ' + (raw[t] / raw[f]).toLocaleString(undefined, { maximumFractionDigits: 4 }) + ' ' + t + '</span>'; }
+    }
+    $$("input,select", wrap).forEach(function (i) { i.addEventListener("input", calc); i.addEventListener("change", calc); });
+    ["#l-pair"].forEach(function (id) { $(id).addEventListener("change", function () { setEntry(); calc(); }); });
+    $("#p-pair").addEventListener("change", function () { $("#p-spr").value = Lb.PAIRS[$("#p-pair").value].spread; calc(); });
+    setEntry(); calc();
+    loadRates().then(function () {
+      if (!$("#calc-grid")) return;
+      badge.className = "ratebadge " + (RATES.live ? "live" : "");
+      badge.textContent = RATES.live ? "✅ Using real exchange rates (updated " + RATES.date + " UTC)" : "⚠️ Could not load live rates. Using approximate reference prices.";
+      setEntry(); calc();
+    });
+  }
+
+  /* ------------------------- active journal ------------------------- */
+  var JournalUI = (function () {
+    var filter = "all", built = false;
+    var FEELS = ["", "Calm", "Confident", "Nervous", "Greedy", "Fearful", "Bored", "Frustrated", "Excited"];
+    var money2 = function (n) { return (n < 0 ? "-$" : "+$") + Math.abs(n).toFixed(2); };
+    function closedOf(list) { return list.filter(function (x) { return x.res === "Win" || x.res === "Loss" || x.res === "Break-even"; }); }
+    function sortedNew() { return saved.journal.slice().sort(function (a, b) { return b.t - a.t; }); }
+
+    // called every time a practice trade closes (manual close, stop-loss, take-profit or stop-out)
+    function addTrade(rec) {
+      var tid = rec.id + "-" + rec.tClose;
+      if (saved.journal.some(function (x) { return x.tradeId === tid; })) return;
+      var notes = ForexLab.reviewTrade(rec), warn = notes.some(function (n) { return n.ok === false; });
+      var plan = !rec.hadSL ? "No" : (warn ? "Partly" : "Yes");
+      saved.journal.unshift({
+        t: rec.tClose, auto: true, tradeId: tid, pair: ForexLab.PAIRS[rec.sym].name, dir: rec.dir === 1 ? "Buy" : "Sell",
+        res: rec.pnl > 0.005 ? "Win" : rec.pnl < -0.005 ? "Loss" : "Break-even", pnl: Math.round(rec.pnl * 100) / 100, pips: Math.round(rec.pips * 10) / 10, lots: rec.lots,
+        rMult: rec.rMult != null ? Math.round(rec.rMult * 100) / 100 : null, riskPct: rec.riskPct != null ? Math.round(rec.riskPct * 100) / 100 : null,
+        reason: rec.reason, notes: notes.map(function (n) { return { ok: n.ok, text: n.text }; }), plan: plan, feel: "", why: "", learn: ""
+      });
+      if (saved.journal.length > 120) saved.journal.length = 120;
+      saveSoon("journal");
+      if (built) paint();
+    }
+
+    function stats() {
+      var cl = closedOf(saved.journal).filter(function (x) { return typeof x.pnl === "number"; }), all = saved.journal;
+      var wins = cl.filter(function (x) { return x.pnl > 0; }), losses = cl.filter(function (x) { return x.pnl < 0; });
+      var gw = wins.reduce(function (s, x) { return s + x.pnl; }, 0), gl = losses.reduce(function (s, x) { return s + x.pnl; }, 0);
+      var rs = cl.filter(function (x) { return typeof x.rMult === "number"; });
+      var streak = 0, kind = ""; sortedNew().filter(function (x) { return typeof x.pnl === "number" && x.res !== "Break-even"; }).some(function (x) { if (!kind) { kind = x.res; streak = 1; return false; } if (x.res === kind) { streak++; return false; } return true; });
+      var plans = all.filter(function (x) { return x.plan; }), yes = plans.filter(function (x) { return x.plan === "Yes"; }).length;
+      var feelCount = {}; all.forEach(function (x) { if (x.feel) feelCount[x.feel] = (feelCount[x.feel] || 0) + 1; });
+      var topFeel = Object.keys(feelCount).sort(function (a, b) { return feelCount[b] - feelCount[a]; })[0] || "—";
+      return {
+        n: cl.length, wins: wins.length, losses: losses.length, wr: cl.length ? wins.length / cl.length * 100 : null, total: gw + gl,
+        avgWin: wins.length ? gw / wins.length : null, avgLoss: losses.length ? gl / losses.length : null, pf: gl < 0 ? gw / Math.abs(gl) : null,
+        expR: rs.length ? rs.reduce(function (s, x) { return s + x.rMult; }, 0) / rs.length : null, streak: streak ? streak + " " + (kind === "Win" ? "win" : "loss") + (streak > 1 ? (kind === "Win" ? "s" : "es") : "") : "—",
+        plan: plans.length ? yes / plans.length * 100 : null, feel: topFeel, entries: all.length
+      };
+    }
+    function insights() {
+      var cl = closedOf(saved.journal).filter(function (x) { return typeof x.pnl === "number"; }), out = [];
+      if (cl.length < 3) return ["Close a few practice trades (or log some results) and your personal insights appear here."];
+      function avg(a) { return a.reduce(function (s, x) { return s + x.pnl; }, 0) / a.length; }
+      var yes = cl.filter(function (x) { return x.plan === "Yes"; }), no = cl.filter(function (x) { return x.plan === "No" || x.plan === "Partly"; });
+      if (yes.length >= 2 && no.length >= 2) out.push("When you follow your plan you average " + money2(avg(yes)) + " per trade, versus " + money2(avg(no)) + " when you do not.");
+      var byFeel = {}; cl.forEach(function (x) { if (x.feel) (byFeel[x.feel] = byFeel[x.feel] || []).push(x); });
+      var fe = Object.keys(byFeel).filter(function (k) { return byFeel[k].length >= 2; }).sort(function (a, b) { return avg(byFeel[b]) - avg(byFeel[a]); });
+      if (fe.length >= 2) out.push("Your best results come when you feel " + fe[0].toLowerCase() + " (" + money2(avg(byFeel[fe[0]])) + " per trade). Your worst: " + fe[fe.length - 1].toLowerCase() + " (" + money2(avg(byFeel[fe[fe.length - 1]])) + ").");
+      var noSl = cl.filter(function (x) { return x.notes && x.notes.some(function (n) { return /No stop-loss/.test(n.text); }); });
+      if (noSl.length) out.push("You traded " + noSl.length + " time" + (noSl.length > 1 ? "s" : "") + " without a stop-loss. That is the fastest way to blow an account.");
+      var against = cl.filter(function (x) { return x.notes && x.notes.some(function (n) { return /AGAINST the trend/.test(n.text); }); }), withT = cl.filter(function (x) { return x.notes && x.notes.some(function (n) { return /WITH the trend/.test(n.text); }); });
+      if (against.length >= 2 && withT.length >= 2) out.push("Trading with the trend averages " + money2(avg(withT)) + " versus " + money2(avg(against)) + " against it.");
+      var pairs = {}; cl.forEach(function (x) { (pairs[x.pair] = pairs[x.pair] || []).push(x); });
+      var pk = Object.keys(pairs).filter(function (k) { return pairs[k].length >= 3; }).sort(function (a, b) { return avg(pairs[b]) - avg(pairs[a]); });
+      if (pk.length >= 2) out.push("Your strongest pair so far is " + pk[0] + " (" + money2(avg(pairs[pk[0]])) + " per trade), weakest is " + pk[pk.length - 1] + ".");
+      if (!out.length) out.push("Keep logging how you feel and whether you followed your plan. Patterns show up after about 10 trades.");
+      return out;
+    }
+    function drawCurve() {
+      var cv = $("#j-curve"); if (!cv) return; var dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight; if (!W || !H) return;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
+      var pts = closedOf(saved.journal).filter(function (x) { return typeof x.pnl === "number"; }).sort(function (a, b) { return a.t - b.t; }), cum = 0, ys = [0];
+      pts.forEach(function (x) { cum += x.pnl; ys.push(cum); });
+      c.font = "11px 'Courier New',monospace"; c.textBaseline = "middle";
+      if (ys.length < 2) { c.fillStyle = "#8b98a9"; c.textAlign = "center"; c.fillText("Your results curve appears after your first closed trade", W / 2, H / 2); return; }
+      var hi = Math.max.apply(null, ys), lo = Math.min.apply(null, ys); if (hi === lo) { hi += 1; lo -= 1; } var pad = (hi - lo) * 0.1; hi += pad; lo -= pad;
+      var y = function (v) { return H - 6 - ((v - lo) / (hi - lo)) * (H - 12); }, x = function (i) { return 8 + (W - 70) * i / (ys.length - 1); };
+      c.strokeStyle = "#2a3441"; c.setLineDash([4, 4]); c.beginPath(); c.moveTo(0, y(0)); c.lineTo(W - 56, y(0)); c.stroke(); c.setLineDash([]);
+      var last = ys[ys.length - 1], col = last >= 0 ? "#3fb27f" : "#e0605c"; c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); ys.forEach(function (v, i) { if (i === 0) c.moveTo(x(i), y(v)); else c.lineTo(x(i), y(v)); }); c.stroke();
+      c.fillStyle = col; c.textAlign = "left"; c.fillText(money2(last), W - 54, y(last));
+    }
+
+    function render() {
+      var root = $("#journal-root"); root.innerHTML = ""; built = false;
+      if (!S.member) { root.appendChild(lockedBlock("The Trading Journal is for members", "Every practice trade is logged here automatically with a coach review. Add how you felt, what you learned, and see your own patterns, win rate and results curve.")); renderPrice(); return; }
+      var top = el("div", "card");
+      top.innerHTML = '<h3>📓 Your trading journal</h3><div class="hint">Every practice trade you close is logged here automatically, with the coach\'s review. Add how you felt and what you learned: that is where the improvement happens.</div>';
+      var st = el("div", "stats jstats"); st.id = "j-stats"; top.appendChild(st);
+      var cvw = el("div", "curvewrap"); cvw.innerHTML = '<canvas id="j-curve"></canvas>'; top.appendChild(cvw);
+      var ins = el("div", "insights"); ins.id = "j-insights"; top.appendChild(ins);
+      root.appendChild(top);
+
+      var bar = el("div", "jbar");
+      bar.innerHTML = '<select id="j-filter" class="inp" style="width:auto;margin:0"><option value="all">All entries</option><option value="auto">Practice trades (auto)</option><option value="manual">My own notes</option><option value="Win">Wins</option><option value="Loss">Losses</option></select>' +
+        '<button class="btn-ghost" id="j-new" type="button">＋ New note</button><button class="btn-ghost" id="j-csv" type="button">⬇ Export CSV</button>';
+      root.appendChild(bar);
+      var form = el("div", "card"); form.id = "j-form"; form.style.display = "none"; form.style.marginTop = "10px";
+      var pairs = Object.keys(ForexLab.PAIRS).map(function (s) { return "<option>" + ForexLab.PAIRS[s].name + "</option>"; }).join("") + "<option>Other</option>";
+      form.innerHTML = '<h3>New journal note</h3><div class="hint">Log a trade you took elsewhere, a trade idea you skipped, or a lesson from today.</div>' +
+        '<div class="grid3"><label class="f">Pair<select id="j-pair">' + pairs + '</select></label><label class="f">Direction<select id="j-dir"><option>Buy</option><option>Sell</option><option>No trade</option></select></label>' +
+        '<label class="f">Result<select id="j-res"><option>Open</option><option>Win</option><option>Loss</option><option>Break-even</option></select></label></div>' +
+        '<div class="grid3"><label class="f">Result in $ (optional)<input id="j-pnl" type="number" step="any" placeholder="e.g. 25 or -12"></label>' +
+        '<label class="f">How did you feel?<select id="j-feel">' + FEELS.map(function (f) { return "<option>" + f + "</option>"; }).join("") + '</select></label>' +
+        '<label class="f">Followed my plan?<select id="j-plan"><option>Yes</option><option>Partly</option><option>No</option></select></label></div>' +
+        '<label class="f">Why did you take (or skip) this trade?<textarea id="j-why" maxlength="400" placeholder="Trend, level, signal…"></textarea></label>' +
+        '<label class="f">What did you learn?<textarea id="j-learn" maxlength="400" placeholder="One thing to repeat, one to change"></textarea></label>';
+      var add = el("button", "btn-join", "Save note"); add.type = "button"; add.style.fontSize = "14px"; form.appendChild(add); root.appendChild(form);
+      var list = el("div"); list.id = "j-list"; root.appendChild(list);
+
+      $("#j-filter").onchange = function () { filter = this.value; paint(); };
+      $("#j-new").onclick = function () { form.style.display = form.style.display === "none" ? "block" : "none"; };
+      $("#j-csv").onclick = exportCsv;
+      add.onclick = function () {
+        var why = $("#j-why").value.trim(), learn = $("#j-learn").value.trim(), pnlRaw = $("#j-pnl").value, res = $("#j-res").value;
+        if (!why && !learn) { toast("Write at least one note first."); return; }
+        var e = { t: Date.now(), auto: false, pair: $("#j-pair").value, dir: $("#j-dir").value, res: res, feel: $("#j-feel").value, plan: $("#j-plan").value, why: why.slice(0, 400), learn: learn.slice(0, 400) };
+        if (pnlRaw !== "" && isFinite(Number(pnlRaw))) e.pnl = Math.round(Number(pnlRaw) * 100) / 100;
+        saved.journal.unshift(e); if (saved.journal.length > 120) saved.journal.length = 120;
+        $("#j-why").value = ""; $("#j-learn").value = ""; $("#j-pnl").value = ""; saveSoon("journal"); paint(); toast("📓 Note saved.");
+      };
+      built = true; paint();
+    }
+
+    function paint() {
+      if (!built || !$("#j-list")) return;
+      var s = stats(), cell = function (k, v, cls) { return '<div>' + k + '<b class="' + (cls || "") + '">' + v + '</b></div>'; };
+      $("#j-stats").innerHTML = cell("Closed trades", s.n) + cell("Win rate", s.wr == null ? "—" : s.wr.toFixed(0) + "%") + cell("Total P/L", s.n ? money2(s.total) : "—", s.total > 0 ? "green" : s.total < 0 ? "red" : "") +
+        cell("Avg win / loss", s.avgWin == null ? "—" : money2(s.avgWin) + " / " + (s.avgLoss == null ? "—" : money2(s.avgLoss))) + cell("Profit factor", s.pf == null ? "—" : s.pf.toFixed(2)) +
+        cell("Avg R", s.expR == null ? "—" : (s.expR >= 0 ? "+" : "") + s.expR.toFixed(2) + "R") + cell("Streak", s.streak) + cell("Followed plan", s.plan == null ? "—" : s.plan.toFixed(0) + "%") + cell("Common feeling", s.feel) + cell("Entries", s.entries);
+      $("#j-insights").innerHTML = '<b>💡 Your insights</b>' + insights().map(function (t) { return '<div>• ' + esc(t) + '</div>'; }).join("");
+      drawCurve();
+      var list = $("#j-list"); list.innerHTML = "";
+      var items = sortedNew().filter(function (x) { return filter === "all" || (filter === "auto" && x.auto) || (filter === "manual" && !x.auto) || x.res === filter; });
+      if (!items.length) { list.appendChild(el("p", "dim", saved.journal.length ? "Nothing matches this filter." : "No entries yet. Place a practice trade and close it, or add your first note.")); return; }
+      items.forEach(function (x) {
+        var c = el("div", "card jentry"); c.style.marginTop = "10px";
+        var head = el("div", "jhead");
+        head.appendChild(el("span", "eyebrow", new Date(x.t).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })));
+        head.appendChild(el("b", "", x.pair + " · " + x.dir + (x.lots ? " · " + Number(x.lots).toFixed(2) + " lots" : "")));
+        if (typeof x.pnl === "number") head.appendChild(el("span", "pill " + (x.pnl >= 0 ? "green" : "red"), money2(x.pnl) + (typeof x.pips === "number" ? " · " + x.pips.toFixed(1) + " pips" : "") + (typeof x.rMult === "number" ? " · " + (x.rMult >= 0 ? "+" : "") + x.rMult.toFixed(1) + "R" : "")));
+        else head.appendChild(el("span", "pill", x.res));
+        if (x.auto) head.appendChild(el("span", "pill dim", "auto · " + x.reason));
+        c.appendChild(head);
+        if (x.notes && x.notes.length) { var nb = el("div", "coachnotes"); x.notes.forEach(function (n) { nb.appendChild(el("div", "", (n.ok === true ? "✅ " : n.ok === false ? "⚠️ " : "ℹ️ ") + n.text)); }); c.appendChild(nb); }
+        var row = el("div", "grid2");
+        var fl = document.createElement("label"); fl.className = "f"; fl.textContent = "How did you feel?"; var fs = document.createElement("select"); FEELS.forEach(function (f) { var o = document.createElement("option"); o.textContent = f; if (f === (x.feel || "")) o.selected = true; fs.appendChild(o); }); fl.appendChild(fs); row.appendChild(fl);
+        var pl = document.createElement("label"); pl.className = "f"; pl.textContent = "Followed my plan?"; var ps = document.createElement("select"); ["Yes", "Partly", "No"].forEach(function (f) { var o = document.createElement("option"); o.textContent = f; if (f === (x.plan || "")) o.selected = true; ps.appendChild(o); }); pl.appendChild(ps); row.appendChild(pl);
+        c.appendChild(row);
+        var wl = document.createElement("label"); wl.className = "f"; wl.textContent = "Why did you take this trade?"; var wt = document.createElement("textarea"); wt.maxLength = 400; wt.value = x.why || ""; wt.placeholder = "Trend, level, signal…"; wl.appendChild(wt); c.appendChild(wl);
+        var ll = document.createElement("label"); ll.className = "f"; ll.textContent = "What did you learn?"; var lt = document.createElement("textarea"); lt.maxLength = 400; lt.value = x.learn || ""; lt.placeholder = "One thing to repeat, one to change"; ll.appendChild(lt); c.appendChild(ll);
+        var sv = el("button", "btn-ghost", "Save notes"); sv.type = "button"; sv.onclick = function () { x.feel = fs.value; x.plan = ps.value; x.why = wt.value.trim().slice(0, 400); x.learn = lt.value.trim().slice(0, 400); saveSoon("journal"); paint(); toast("📓 Saved."); };
+        var del = el("button", "mini", "Delete"); del.type = "button"; del.style.marginLeft = "8px"; del.onclick = function () { if (confirm("Delete this journal entry?")) { saved.journal.splice(saved.journal.indexOf(x), 1); saveSoon("journal"); paint(); } };
+        c.appendChild(sv); c.appendChild(del); list.appendChild(c);
+      });
+    }
+    function exportCsv() {
+      var q = function (v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; };
+      var rows = [["Date", "Pair", "Direction", "Lots", "Result", "PnL_USD", "Pips", "R", "RiskPct", "ClosedBy", "Feeling", "FollowedPlan", "Why", "Learned", "CoachNotes"].map(q).join(",")];
+      sortedNew().forEach(function (x) { rows.push([new Date(x.t).toISOString(), x.pair, x.dir, x.lots, x.res, x.pnl, x.pips, x.rMult, x.riskPct, x.reason, x.feel, x.plan, x.why, x.learn, (x.notes || []).map(function (n) { return n.text; }).join(" | ")].map(q).join(",")); });
+      var blob = new Blob([rows.join("\n")], { type: "text/csv" }), a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "vicopay-trading-journal.csv"; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    }
+    return { render: render, paint: paint, addTrade: addTrade };
+  })();
+  window.JournalUI = JournalUI;
+  function renderJournal() { JournalUI.render(); }
+
+  /* ------------------------- glossary ------------------------- */
+  var terms = [];
+  async function loadGlossary() {
+    var d = await api("/api/forex/glossary"); if (d._ok) terms = d.terms; paintGlossary("");
+  }
+  function paintGlossary(q) {
+    var box = $("#gl-list"); box.innerHTML = ""; q = q.toLowerCase();
+    var f = terms.filter(function (t) { return !q || t[0].toLowerCase().indexOf(q) >= 0 || t[1].toLowerCase().indexOf(q) >= 0; });
+    if (!f.length) { box.appendChild(el("p", "dim", terms.length ? "No match." : "Loading…")); return; }
+    f.forEach(function (t) { var d = el("div", "term"); d.appendChild(el("b", "", t[0])); d.appendChild(el("span", "", t[1])); box.appendChild(d); });
+  }
+  $("#gl-search").addEventListener("input", function (e) { paintGlossary(e.target.value); });
+
+  /* ------------------------- go ------------------------- */
+  renderPrice();
+  loadGlossary();
+  var qs = new URLSearchParams(location.search), ref = qs.get("reference") || qs.get("trxref");
+  loadStatus().then(function () { if (ref) confirmPayment(ref); });
+})();
+</script>
+
+<!-- ============ GLOBAL CHAT (Firebase Realtime Database) ============ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded, onValue, serverTimestamp, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDruIpDOrEkV6VVKV85-c2wrICfQtIScoc",
+    authDomain: "vicopay-global.firebaseapp.com",
+    databaseURL: "https://vicopay-global-default-rtdb.firebaseio.com",
+    projectId: "vicopay-global",
+    storageBucket: "vicopay-global.firebasestorage.app",
+    messagingSenderId: "1043769850241",
+    appId: "1:1043769850241:web:a8a166d0688c914199d080"
+  };
+
+  const messagesEl = document.getElementById("messages");
+  const form = document.getElementById("chat-form");
+  const nameInput = document.getElementById("chat-name");
+  const textInput = document.getElementById("chat-input");
+  const viewerCountEl = document.getElementById("viewer-count");
+  nameInput.value = (localStorage.getItem("vicoPayDisplayName") || "").slice(0, 16);
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const roomRef = ref(db, "vicopayglobal/rooms/global-chat");
+    const presenceRef = ref(db, "vicopayglobal/presence");
+    const myPresenceRef = push(presenceRef);
+
+    set(myPresenceRef, true);
+    onDisconnect(myPresenceRef).remove();
+    onValue(presenceRef, (snap) => { viewerCountEl.textContent = snap.exists() ? Object.keys(snap.val()).length : 0; });
+
+    messagesEl.innerHTML = "";
+    onChildAdded(roomRef, (snap) => {
+      const m = snap.val() || {};
+      const row = document.createElement("div"); row.className = "msg";
+      const who = document.createElement("span"); who.className = "who"; who.textContent = m.name || "Guest"; row.appendChild(who);
+      if (m.country) { const c = document.createElement("span"); c.className = "country"; c.textContent = m.country; row.appendChild(c); }
+      const body = document.createElement("div"); body.textContent = m.text || ""; row.appendChild(body);
+      messagesEl.appendChild(row);
+      while (messagesEl.children.length > 200) messagesEl.removeChild(messagesEl.firstChild);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+
+    let lastSent = 0;
+    const blockedWords = ["http://", "https://", "www."];
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const now = Date.now();
+      if (now - lastSent < 2000) return;
+      const name = nameInput.value.trim(), text = textInput.value.trim();
+      if (!name || !text) return;
+      if (blockedWords.some((w) => text.toLowerCase().includes(w))) { alert("Links aren't allowed in chat."); return; }
+      lastSent = now;
+      push(roomRef, { name, text, ts: serverTimestamp() });
+      textInput.value = "";
+    });
+  } catch (err) {
+    messagesEl.innerHTML = "";
+    const m = document.createElement("div"); m.className = "msg system"; m.textContent = "The chat could not connect. Check your internet connection and refresh."; messagesEl.appendChild(m);
+  }
+</script>
+</body>
+</html>

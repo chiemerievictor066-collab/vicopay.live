@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VicoPay Live - Gifter Wallet</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#07101f;color:#fff}
+a{text-decoration:none;color:inherit}button{font:inherit;cursor:pointer}
+.topbar{height:68px;background:#0b1630;border-bottom:1px solid #ffffff12;display:flex;align-items:center;padding:0 24px;gap:20px;position:sticky;top:0;z-index:10}
+.logo{font-size:22px;font-weight:900}.logo span{color:#38bdf8}
+.back{margin-left:auto;color:#cbd5e1;font-weight:700}.back:hover{color:#38bdf8}
+.wrap{max-width:1120px;margin:30px auto;padding:0 18px 50px}
+.hero{background:linear-gradient(135deg,#10295a,#172b62 50%,#25145a);border:1px solid #38bdf833;border-radius:24px;padding:28px;box-shadow:0 20px 60px #0005}
+.hero-top{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.hero h1{margin:0;font-size:30px}.hero p{color:#bfdbfe;margin:8px 0 0}
+.balance-label{color:#bfdbfe;font-size:13px;font-weight:700}.balance{font-size:42px;font-weight:900;margin:4px 0}
+.coin{color:#facc15}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.btn{border:1px solid #ffffff1f;background:#101d38;color:#fff;border-radius:12px;padding:11px 17px;font-weight:900}
+.primary{border:0;background:linear-gradient(135deg,#38bdf8,#2563eb,#7c3aed)}
+.gold{background:linear-gradient(135deg,#f59e0b,#d97706);border:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}
+.card{background:#0d172b;border:1px solid #ffffff12;border-radius:18px;padding:20px}
+.card h2{font-size:17px;margin:0 0 6px}.muted{color:#94a3b8;font-size:13px}
+.stat{font-size:25px;font-weight:900;margin-top:10px}
+.section{margin-top:24px}.section-title{font-size:20px;margin:0 0 12px}
+.table{overflow:hidden;border:1px solid #ffffff12;border-radius:16px;background:#0d172b}
+.row{display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:15px 18px;border-bottom:1px solid #ffffff09;align-items:center}
+.row:last-child{border-bottom:0}.head{color:#94a3b8;font-size:12px;font-weight:900;text-transform:uppercase}
+.gift{font-weight:800}.value{color:#facc15;font-weight:900}
+.rank{color:#94a3b8;font-weight:900;margin-right:8px}
+.empty{text-align:center;padding:28px;color:#94a3b8}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.quick .card{text-align:center}
+.icon{font-size:28px}
+@media(max-width:760px){
+ .hero-top{align-items:flex-start;flex-direction:column}
+ .grid{grid-template-columns:1fr}
+ .quick{grid-template-columns:repeat(2,1fr)}
+ .row{grid-template-columns:1.3fr 1fr 1fr;padding:13px 12px}
+ .wrap{margin-top:18px}
+}
+</style>
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo">VicoPay <span>Live</span></div>
+  <a class="back" href="live-room.html">← Back to <Live-room></Live-room></a>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="hero-top">
+      <div>
+        <h1>🎁 Gifter Wallet</h1>
+        <p>Your wallet for coins and gifts you send to live hosts.</p>
+      </div>
+      <div>
+        <div class="balance-label">AVAILABLE COINS</div>
+        <div class="balance"><span class="coin">🪙</span> <span id="coinBalance">0</span></div>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn primary" href="buy-coin.html">➕ Buy / Recharge Coins</a>
+      <a class="btn" href="gift-shop.html">🎁 Open Gift Shop</a>
+      <a class="btn" href="gifters.html">🏆 Gifter Ranking</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><h2>🎁 Gifts Sent</h2><div class="muted">Total gifts you have sent</div><div class="stat" id="giftsSent">0</div></div>
+    <div class="card"><h2>🪙 Coins Used</h2><div class="muted">Coins spent on gifts</div><div class="stat" id="coinsUsed">0</div></div>
+    <div class="card"><h2>👑 Gifter Level</h2><div class="muted">Based on your gifting activity</div><div class="stat" id="gifterLevel">Level 1</div></div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Quick Actions</h2>
+    <div class="quick">
+      <a class="card" href="buy-coin.html"><div class="icon">💳</div><div>Recharge</div></a>
+      <a class="card" href="gift-shop.html"><div class="icon">🎁</div><div>Gift Shop</div></a>
+      <a class="card" href="gifters.html"><div class="icon">🏆</div><div>Top Gifters</div></a>
+      <a class="card" href="live-room.html"><div class="icon">🔴</div><div>Live Rooms</div></a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">🎁 Gift History</h2>
+    <div class="table">
+      <div class="row head"><div>Gift / Host</div><div>Coins</div><div>Date</div></div>
+      <div id="history"><div class="empty">No gifts sent yet.</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">💳 Payment & Coin Transactions</h2>
+    <div class="table">
+      <div class="row head"><div>Transaction</div><div>Amount / Coins</div><div>Status</div></div>
+      <div class="row"><div>Coin balance</div><div class="value" id="transactionCoins">0 coins</div><div style="color:#94a3b8">Current</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const API_BASE=window.location.origin;
+
+function getUserId(){
+  return localStorage.getItem("vicoPayEmail") ||
+         localStorage.getItem("vicoPayUser") || "";
+}
+
+async function loadWallet(){
+  const userId=getUserId();
+  if(!userId){
+    document.getElementById("coinBalance").textContent="0";
+    return;
+  }
+  try{
+    const r=await fetch(API_BASE+"/api/wallet/"+encodeURIComponent(userId));
+    const d=await r.json();
+    if(r.ok && d.success){
+      const coins=Number(d.coins||0);
+      document.getElementById("coinBalance").textContent=coins.toLocaleString();
+      document.getElementById("transactionCoins").textContent=coins.toLocaleString()+" coins";
+    }
+  }catch(e){
+    console.error("Gifter wallet error:",e);
+  }
+}
+
+function loadGiftHistory(){
+  try{
+    const history=JSON.parse(localStorage.getItem("vicoPayGiftHistory")||"[]");
+    const box=document.getElementById("history");
+    if(!history.length){
+      box.innerHTML='<div class="empty">No gifts sent yet.</div>';
+      return;
+    }
+    let totalCoins=0;
+    box.innerHTML=history.slice().reverse().map(item=>{
+      totalCoins+=Number(item.price||item.coins||0);
+      const date=item.date||new Date().toLocaleString();
+      return '<div class="row">'+
+        '<div><span class="rank">🎁</span><span class="gift">'+
+        escapeHTML(item.gift||"Gift")+'</span>'+
+        '<div class="muted">To '+escapeHTML(item.host||"Host")+'</div></div>'+
+        '<div class="value">'+Number(item.price||item.coins||0).toLocaleString()+' coins</div>'+
+        '<div class="muted">'+escapeHTML(date)+'</div>'+
+        '</div>';
+    }).join("");
+    document.getElementById("giftsSent").textContent=history.length.toLocaleString();
+    document.getElementById("coinsUsed").textContent=totalCoins.toLocaleString();
+    const level=Math.max(1,Math.floor(totalCoins/10000)+1);
+    document.getElementById("gifterLevel").textContent="Level "+level;
+  }catch(e){}
+}
+
+function escapeHTML(text){
+  const d=document.createElement("div");
+  d.textContent=text;
+  return d.innerHTML;
+}
+
+loadWallet();
+loadGiftHistory();
+</script>
+</body>
+</html>

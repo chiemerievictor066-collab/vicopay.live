@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#020a1f">
+<title>Watch Live - VicoPay Live</title>
+<link rel="stylesheet" href="vico.css">
+<style>
+html,body{height:100%;margin:0;background:#020a1f;color:#fff;font-family:var(--font);overflow:hidden}
+.feed{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.slide{height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#07245f,#020a1f 70%)}
+.phone{position:relative;width:min(100vw,calc(100dvh*9/16));height:100dvh;overflow:hidden;background:#041233;isolation:isolate}
+@media(min-width:900px){.phone{height:calc(100dvh - 28px);border-radius:22px;box-shadow:0 20px 70px #000b,0 0 0 1px #17407f}}
+
+.poster{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(16px);opacity:.85;z-index:-3}
+.videos{position:absolute;inset:0;z-index:-2;display:flex}
+.vid{position:relative;flex:1;min-width:0;background:transparent}
+.vid video{width:100%;height:100%;object-fit:cover;display:block}
+.vid.land video{object-fit:contain}
+.vid.opp{display:none;border-left:2px solid #fff}
+.slide.inpk .videos{inset:132px 0 auto 0;height:40%}
+.slide.inpk .vid video{object-fit:cover}
+.slide.inpk .vid.opp{display:block}
+.oppTag{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(3,28,93,.7);border-radius:12px;padding:3px 9px;font-size:11px;font-weight:800;white-space:nowrap}
+.shade{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(2,10,31,.65) 0,rgba(2,10,31,0) 22%,rgba(2,10,31,0) 55%,rgba(2,10,31,.82) 100%)}
+
+.top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 12px 8px}
+.host{display:flex;align-items:center;gap:8px;background:rgba(3,28,93,.55);backdrop-filter:blur(8px);border-radius:26px;padding:4px 12px 4px 4px;min-width:0;border:1px solid rgba(255,255,255,.16)}
+.host .nm{display:block;font-weight:800;font-size:13px;text-decoration:none;max-width:104px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.host .fl,.host .nm{white-space:nowrap}
+.host .fl{background:none;border:0;color:#bfe3ff;font-size:11px;padding:0;cursor:pointer;display:block;font-weight:700}
+.follow{white-space:nowrap;border:0;border-radius:18px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;color:#fff;background:linear-gradient(90deg,var(--sky),var(--blue))}
+.follow.on{background:rgba(255,255,255,.2)}
+.grow{flex:1}
+.pill{background:rgba(3,28,93,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:7px 11px;font-size:13px;font-weight:800;white-space:nowrap}
+.xbtn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(3,28,93,.55);color:#fff;font-size:15px;cursor:pointer;display:grid;place-items:center;flex:none;backdrop-filter:blur(8px)}
+.meta{position:absolute;top:calc(62px + env(safe-area-inset-top));left:12px;right:12px;display:flex;align-items:center;gap:8px;font-size:12px}
+.badge{background:var(--live);border-radius:8px;padding:3px 8px;font-weight:900;font-size:11px;flex:none}
+.mt{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px #000}
+.views{margin-left:auto;flex:none;opacity:.9;font-weight:700}
+
+.pk{position:absolute;top:calc(88px + env(safe-area-inset-top));left:12px;right:12px;display:none}
+.slide.inpk .pk{display:block}
+.pk .t{text-align:center;color:var(--gold);font-weight:900;font-size:13px;margin-bottom:4px}
+.pk .bar{height:16px;border-radius:9px;background:var(--live);overflow:hidden;position:relative}
+.pk .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--sky));transition:width .6s}
+.pk .sc{display:flex;justify-content:space-between;font-weight:900;font-size:13px;margin-top:4px;text-shadow:0 1px 3px #000}
+
+.rail{position:absolute;right:8px;bottom:calc(62px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;align-items:center;
+  /* never grow taller than the space under the top bar, so the Love button can never be pushed off-screen; scroll if a phone is very short */
+  max-height:calc(100% - 128px - env(safe-area-inset-top) - 62px - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:2px}
+.rail::-webkit-scrollbar{display:none}
+.rb{flex:none}
+.rb{background:none;border:0;color:#fff;display:grid;gap:2px;justify-items:center;font-size:10px;font-weight:800;cursor:pointer;text-decoration:none;text-shadow:0 1px 3px #000}
+.rb .ic{width:42px;height:42px;border-radius:50%;background:rgba(3,28,93,.6);display:grid;place-items:center;font-size:20px;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.18);transition:transform .12s}
+.rb:active .ic{transform:scale(.88)}
+.rb.gift .ic{background:linear-gradient(135deg,var(--cyan),var(--sky) 60%,var(--blue));border-color:#fff}
+@media(max-height:820px){.rb .ic{width:38px;height:38px;font-size:18px}.rail{gap:6px}}
+@media(max-height:720px){.rb{font-size:0}.rb .ic{width:36px;height:36px;font-size:17px}.rail{gap:5px}}
+
+.chat{position:absolute;left:12px;bottom:calc(66px + env(safe-area-inset-bottom));width:calc(100% - 78px);max-height:30%;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;-webkit-mask-image:linear-gradient(180deg,transparent,#000 28%);mask-image:linear-gradient(180deg,transparent,#000 28%)}
+.msgs{overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:5px}
+.msgs::-webkit-scrollbar{display:none}
+.m{background:rgba(3,28,93,.5);border-radius:14px;padding:5px 11px;font-size:13px;line-height:1.3;width:fit-content;max-width:100%;word-break:break-word;backdrop-filter:blur(4px)}
+.m b{color:#7fd6ff;margin-right:5px}.m b.h{color:var(--gold)}.m.mine{background:rgba(8,127,232,.55)}.m.sys{background:rgba(255,200,61,.22);color:#ffe9a8}
+
+.bar2{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px}
+.bar2 input{flex:1;min-width:0;height:44px;border-radius:22px;border:1px solid rgba(255,255,255,.22);background:rgba(3,28,93,.55);backdrop-filter:blur(8px);color:#fff;padding:0 16px;font:inherit;font-size:14px;outline:none}
+.bar2 input::placeholder{color:#a9c9ea}
+.bar2 button{width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--sky),var(--blue));color:#fff;font-size:18px;cursor:pointer;flex:none}
+
+.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.fly{position:absolute;left:50%;bottom:34%;transform:translateX(-50%);text-align:center;animation:fly 3.2s ease-out forwards;text-shadow:0 4px 18px #000}
+.fly .e{font-size:52px;display:block}.fly small{display:inline-block;background:rgba(3,28,93,.8);border-radius:14px;padding:4px 12px;font-size:13px;font-weight:800}
+.fly.big .e{font-size:110px;animation:pop 1s ease-out}
+@keyframes fly{0%{opacity:0;transform:translate(-50%,50px) scale(.5)}12%{opacity:1;transform:translate(-50%,0) scale(1.15)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-170px)}}
+@keyframes pop{0%{transform:scale(.2) rotate(-12deg)}60%{transform:scale(1.25) rotate(6deg)}100%{transform:scale(1)}}
+.heart{position:absolute;bottom:90px;right:34px;font-size:30px;animation:hf 2s ease-out forwards}
+@keyframes hf{to{transform:translate(-28px,-260px) scale(1.25);opacity:0}}
+
+.ov{position:absolute;inset:0;display:none;place-items:center;text-align:center;background:rgba(2,10,31,.78);z-index:5;padding:30px;backdrop-filter:blur(4px)}
+.ov.on{display:grid}.ov h3{margin:0 0 8px;font-size:22px}.ov p{margin:0 0 18px;color:#bcd6f0}
+.status{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(3,28,93,.7);padding:10px 18px;border-radius:20px;font-weight:700;display:none;z-index:2;text-align:center;max-width:80%}
+.status.on{display:block}
+.snd{position:absolute;left:50%;top:44%;transform:translateX(-50%);z-index:4;display:none}
+.snd.on{display:block}
+.own{position:absolute;top:calc(100px + env(safe-area-inset-top));left:12px;right:12px;background:rgba(8,127,232,.35);border:1px solid #57b8ff;border-radius:12px;padding:8px 12px;font-size:12px;font-weight:700;display:none}
+.own.on{display:block}.own a{color:var(--cyan)}
+
+.nav{position:fixed;right:22px;top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:12px;z-index:30}
+.nav button{width:46px;height:46px;border-radius:50%;border:1px solid #2b5da8;background:#0a1f4d;color:#fff;font-size:20px;cursor:pointer}
+@media(min-width:900px){.nav{display:flex}}
+.hint{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:rgba(3,28,93,.85);border:1px solid #2b5da8;border-radius:20px;padding:8px 16px;font-weight:700;font-size:13px;z-index:25;animation:fade 4s forwards;pointer-events:none}
+@keyframes fade{0%,80%{opacity:1}100%{opacity:0}}
+
+.sheetWrap{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45)}
+.sheetWrap.on{display:flex}
+.sheet{width:min(100vw,520px);max-height:76dvh;display:flex;flex-direction:column;background:#0a1f4d;border-radius:22px 22px 0 0;border:1px solid #2b5da8;border-bottom:0;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.sheetHead{display:flex;align-items:center;padding:14px 16px 8px}
+.sheetHead b{font-size:17px;flex:1}.sheetHead button{background:#12356e;border:0;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer}
+.sheetBody{overflow-y:auto;padding:4px 16px calc(18px + env(safe-area-inset-bottom))}
+.tabs2{display:flex;gap:8px;margin:4px 0 10px}
+.tabs2 button{flex:1;border:1px solid #2b5da8;background:#0d2a66;color:#cfe3ff;border-radius:18px;padding:8px;font-weight:800;cursor:pointer;font:inherit;font-weight:800}
+.tabs2 button.on{background:var(--sky);border-color:var(--sky);color:#fff}
+.sr{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #1b3b80}
+.sr:last-child{border:0}.sr .g{flex:1;min-width:0}.sr .n{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sr .s{font-size:12px;color:#9fc3e8}
+.mini{border:0;border-radius:16px;padding:7px 13px;font-weight:800;font-size:12px;cursor:pointer;color:#fff;background:var(--sky);text-decoration:none;white-space:nowrap}
+.mini.on{background:#1c3f86;color:#a9c9ea}.mini.red{background:var(--live)}
+.muted{color:#9fc3e8;font-size:13px;padding:14px 0;text-align:center}
+.ggrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.gi{background:#0d2a66;border:1px solid #2b5da8;border-radius:14px;padding:10px 2px;text-align:center;cursor:pointer;color:#fff;font:inherit}
+.gi:hover,.gi:focus-visible{border-color:var(--cyan)}.gi .e{font-size:28px;display:block}.gi b{display:block;font-size:11px;margin-top:2px}.gi span{color:var(--gold);font-size:11px;font-weight:800}
+.bal{display:flex;align-items:center;gap:8px;font-weight:800;margin-bottom:6px}.bal a{margin-left:auto;color:var(--cyan);font-size:13px}
+.to{display:flex;gap:8px;margin:6px 0}.to button{flex:1;border:1px solid #2b5da8;background:#0d2a66;color:#fff;border-radius:14px;padding:8px;font-weight:800;cursor:pointer;font:inherit;font-weight:800;font-size:13px}.to button.on{background:var(--sky);border-color:var(--sky)}
+.fanhead{background:linear-gradient(135deg,#3b1d8f,#7c3aed);border-radius:16px;padding:14px;margin:6px 0 10px}
+.lvl{background:#7c3aed;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}
+.pkcard{background:#0d2a66;border:1px solid #2b5da8;border-radius:14px;padding:12px;margin-bottom:10px}
+.pkcard .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center}
+.pkcard .sc2{font-size:20px;font-weight:900;color:var(--gold)}
+.empty{position:fixed;inset:0;display:none;place-items:center;text-align:center;padding:30px;z-index:10;background:#020a1f}
+.empty.on{display:grid}.empty h2{margin:0 0 8px}.empty p{color:#a9c9ea;margin:0 0 20px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
+<script src="auth.js"></script>
+<script src="vico-ui.js"></script>
+</head>
+<body>
+<div id="feed" class="feed" aria-label="Live videos. Swipe or scroll for the next live."></div>
+<div class="nav"><button id="prev" aria-label="Previous live">↑</button><button id="next" aria-label="Next live">↓</button></div>
+<div class="empty" id="empty"><div><h2>No one is live right now</h2><p>Be the first. Your live shows up for everyone the moment you start.</p><a class="v-btn live" href="Go-Live.html">🎥 Go Live</a> <a class="v-btn ghost" href="live-room.html">Back to Live</a></div></div>
+<div class="sheetWrap" id="sheetWrap"><div class="sheet" role="dialog" aria-modal="true"><div class="sheetHead"><b id="sheetTitle"></b><button id="sheetClose" aria-label="Close">✕</button></div><div class="sheetBody" id="sheetBody"></div></div></div>
+
+<script>
+const U = VicoUI, $ = (s, r) => (r || document).querySelector(s), enc = encodeURIComponent;
+const GIFT_ICON = {Rose:"🌹",Fire:"🔥",Strawberry:"🍓",Star:"⭐",Trophy:"🏆",Car:"🏎️",Silver:"🥈",Diamond:"💎",Gold:"🥇",Eagle:"🦅",Lion:"🦁",Dragon:"🐉",Elephant:"🐘",Whale:"🐋"};
+const feed = $("#feed"), S = new Map(), guestKey = "g" + Math.random().toString(36).slice(2, 12);
+let cur = null, gen = 0, me = null, lastLove = 0;
+const LK = () => window.LivekitClient;
+const myEmail = () => localStorage.getItem("vicoPayEmail") || "";
+
+/* ---------- helpers ---------- */
+function needLogin(){
+  if (VicoAuth.isSignedIn()) return false;
+  location.href = "join-now.html?next=" + enc("live-feed.html" + location.search); return true;
+}
+function setStatus(st, text){ const e = $(".status", st.el); e.textContent = text; e.classList.toggle("on", !!text); }
+function addMsg(st, m){
+  const box = $(".msgs", st.el), d = document.createElement("div");
+  d.className = "m" + (m.mine ? " mine" : "") + (m.sys ? " sys" : "");
+  d.innerHTML = (m.sys ? "" : "<b class='" + (m.isHost ? "h" : "") + "'>" + U.esc(m.name || "Viewer") + (m.isHost ? " • HOST" : "") + "</b>") + U.esc(m.text);
+  box.appendChild(d); while (box.children.length > 40) box.firstChild.remove(); box.scrollTop = box.scrollHeight;
+}
+function fly(st, ev){
+  const f = document.createElement("div"), big = ev.price >= 1000;
+  f.className = "fly" + (big ? " big" : "");
+  f.innerHTML = "<span class='e'>" + (GIFT_ICON[ev.gift] || "🎁") + "</span><small>" + U.esc(ev.from) + " sent " + U.esc(ev.gift) + (ev.combo > 1 ? " x" + ev.combo : "") + (ev.toHost ? " to " + U.esc(ev.toHost) : "") + "</small>";
+  $(".fx", st.el).appendChild(f); setTimeout(() => f.remove(), 3300);
+}
+function heart(st){ const h = document.createElement("div"); h.className = "heart"; h.textContent = ["❤️","💙","💖","💗"][Math.floor(Math.random()*4)]; h.style.right = (24 + Math.random()*40) + "px"; $(".fx", st.el).appendChild(h); setTimeout(() => h.remove(), 2000); }
+
+/* ---------- slides ---------- */
+function slideHTML(r){
+  const poster = r.thumb ? "background-image:url('" + U.esc(r.thumb) + "')" : "background:linear-gradient(160deg,#062c77,#0787ed)";
+  const prof = "profile.html?u=" + enc(r.handle);
+  return '<div class="phone">' +
+    '<div class="poster" style="' + poster + '"></div>' +
+    '<div class="videos"><div class="vid main"><video playsinline autoplay></video></div><div class="vid opp" data-act="giftOpp"><video playsinline autoplay></video><span class="oppTag">🎁 Tap to support</span></div></div>' +
+    '<div class="shade"></div>' +
+    '<div class="top"><div class="host"><a href="' + prof + '">' + U.avatar(r.displayName, false, null, 38, r.avatar) + '</a><div><a class="nm" href="' + prof + '">' + U.esc(r.displayName) + '</a><button class="fl" data-act="people"><span class="fc">' + U.num(r.followers) + '</span> followers</button></div></div>' +
+    '<button class="follow" data-act="follow">+ Follow</button><span class="grow"></span><span class="pill">👁 <b class="vc">' + U.num(r.viewers) + '</b></span><button class="xbtn" data-act="more" aria-label="More">⋯</button><button class="xbtn" data-act="close" aria-label="Back to live room">✕</button></div>' +
+    '<div class="meta"><span class="badge">LIVE</span><span class="mt">' + U.esc(r.title) + '</span><span class="views"><b class="vw">' + U.num(r.views || 0) + '</b> <i class="vl" style="font-style:normal">' + (Number(r.views) === 1 ? "view" : "views") + '</i></span></div>' +
+    '<div class="own">This is your live. <a href="Go-Live.html">Open your studio</a></div>' +
+    '<div class="pk"><div class="t">⚔️ PK Battle · <span class="clock">0:00</span></div><div class="bar"><i style="width:50%"></i></div><div class="sc"><span class="pa"></span><span class="pb"></span></div></div>' +
+    '<div class="rail">' +
+      '<button class="rb" data-act="love"><span class="ic">❤️</span><span class="lc">0</span></button>' +
+      '<button class="rb" data-act="chat"><span class="ic">💬</span>Chat</button>' +
+      '<button class="rb gift" data-act="gift"><span class="ic">🎁</span>Gift</button>' +
+      '<button class="rb" data-act="pk"><span class="ic">⚔️</span>PK</button>' +
+      '<button class="rb" data-act="fans"><span class="ic">💜</span>Fans</button>' +
+      '<button class="rb" data-act="people"><span class="ic">👥</span>Followers</button>' +
+      '<button class="rb" data-act="share"><span class="ic">↗️</span>Share</button>' +
+      '<a class="rb" href="Go-Live.html"><span class="ic">🎥</span>Go Live</a>' +
+    '</div>' +
+    '<div class="chat"><div class="msgs" aria-live="polite"></div></div>' +
+    '<div class="bar2"><input maxlength="200" placeholder="Say something…" aria-label="Chat message"><button data-act="send" aria-label="Send">➤</button><button data-act="gift" aria-label="Gift">🎁</button></div>' +
+    '<div class="fx"></div><div class="status"></div><button class="v-btn snd" data-act="sound">🔊 Tap for sound</button>' +
+    '<div class="ov"><div><h3>This live has ended</h3><p>Thanks for watching. Swipe up for the next live.</p><button class="v-btn" data-act="nextlive">Next live ↓</button> <a class="v-btn ghost" href="live-room.html">Back</a></div></div>' +
+  '</div>';
+}
+function addSlide(r){
+  if (S.has(r.roomId)) return S.get(r.roomId);
+  const el = document.createElement("section"); el.className = "slide"; el.dataset.room = r.roomId; el.innerHTML = slideHTML(r);
+  feed.appendChild(el);
+  const st = { room: r, el, lk: null, lkOpp: null, oppId: null, lastEv: 0, battle: null, info: null, ended: false, audio: [], loves: 0 };
+  S.set(r.roomId, st); paintFollow(st); io.observe(el);
+  $("input", el).addEventListener("keydown", e => { if (e.key === "Enter") sendChat(st); });
+  return st;
+}
+function paintFollow(st){
+  const b = $(".follow", st.el), r = st.room;
+  b.textContent = r.isFollowing ? "✓ Following" : "+ Follow"; b.classList.toggle("on", !!r.isFollowing);
+  $(".fc", st.el).textContent = U.num(r.followers);
+}
+
+/* ---------- connecting the real video ---------- */
+async function viewerToken(roomId){
+  const d = await U.api("/api/livekit/token", { method: "POST", body: { roomName: roomId, identity: guestKey, role: "viewer" } });
+  if (!d._ok) throw new Error(d.message || "Could not join this live.");
+  return d;
+}
+function attachTrack(st, track, which){
+  const L = LK();
+  if (track.kind === L.Track.Kind.Video) {
+    const box = $(which === "main" ? ".vid.main" : ".vid.opp", st.el), v = $("video", box);
+    track.attach(v);
+    v.onloadedmetadata = () => box.classList.toggle("land", v.videoWidth > v.videoHeight && which === "main");
+    if (which === "main") { setStatus(st, ""); $(".poster", st.el).style.opacity = ".35"; }
+  } else if (track.kind === L.Track.Kind.Audio) {
+    const a = track.attach(); a.style.display = "none"; st.el.appendChild(a); st.audio.push(a);
+  }
+}
+function wireRoom(st, room, which){
+  const L = LK();
+  room.on(L.RoomEvent.TrackSubscribed, t => attachTrack(st, t, which));
+  room.on(L.RoomEvent.TrackUnsubscribed, t => t.detach());
+  if (which !== "main") return;
+  room.on(L.RoomEvent.DataReceived, (payload, p) => {
+    try {
+      const m = JSON.parse(new TextDecoder().decode(payload));
+      if (m.type !== "chat" || !m.text) return;
+      // only the real host connection may show the HOST badge; names come from the server-signed token, not the message
+      addMsg(st, { name: (p && p.name) || m.name, text: String(m.text).slice(0, 200), isHost: !!p && p.identity === st.room.handle });
+    } catch (e) {}
+  });
+  room.on(L.RoomEvent.AudioPlaybackStatusChanged, () => $(".snd", st.el).classList.toggle("on", !room.canPlaybackAudio));
+  room.on(L.RoomEvent.Reconnecting, () => setStatus(st, "Reconnecting…"));
+  room.on(L.RoomEvent.Reconnected, () => setStatus(st, ""));
+  room.on(L.RoomEvent.Disconnected, () => { if (!st.leaving && !st.ended && cur === st) setStatus(st, "Connection lost. Swipe away and back to retry."); });
+}
+function attachExisting(st, room, which){
+  const L = LK();
+  room.remoteParticipants.forEach(p => p.trackPublications.forEach(pub => { if (pub.isSubscribed && pub.track) attachTrack(st, pub.track, which); }));
+  if (which === "main") $(".snd", st.el).classList.toggle("on", !room.canPlaybackAudio);
+}
+async function connect(st, my){
+  setStatus(st, "Joining live…");
+  try {
+    if (!LK()) throw new Error("The video library did not load. Check your internet and refresh.");
+    const d = await viewerToken(st.room.roomId); if (my !== gen) return;
+    const room = new (LK().Room)({ adaptiveStream: true, dynacast: true });
+    st.lk = room; wireRoom(st, room, "main");
+    await room.connect(d.url, d.token);
+    if (my !== gen) { room.disconnect(); return; }
+    attachExisting(st, room, "main");
+    if (!room.remoteParticipants.size) setStatus(st, "Waiting for the host's video…");
+    room.on(LK().RoomEvent.ParticipantConnected, () => { if (!$(".vid.main video", st.el).srcObject) setStatus(st, "Waiting for the host's video…"); });
+  } catch (e) { console.error(e); if (my === gen) setStatus(st, "❌ " + e.message); }
+}
+async function syncOpp(st, b){
+  const oppRoom = b ? (b.a.handle === st.room.handle ? b.b.roomId : b.a.roomId) : null;
+  if (oppRoom === st.oppId) return;
+  st.oppId = oppRoom; st.el.classList.toggle("inpk", !!b);
+  if (st.lkOpp) { st.lkOpp.disconnect(); st.lkOpp = null; const v = $(".vid.opp video", st.el); v.srcObject = null; }
+  if (!oppRoom) return;
+  try {
+    const d = await viewerToken(oppRoom); if (cur !== st || st.oppId !== oppRoom) return;
+    const room = new (LK().Room)({ adaptiveStream: true, dynacast: true });
+    st.lkOpp = room; wireRoom(st, room, "opp"); await room.connect(d.url, d.token);
+    if (cur !== st || st.oppId !== oppRoom) { room.disconnect(); return; }
+    attachExisting(st, room, "opp");
+  } catch (e) { console.error("PK opponent video:", e); }
+}
+function deactivate(st){
+  st.leaving = true;
+  try { if (st.lk) st.lk.disconnect(); if (st.lkOpp) st.lkOpp.disconnect(); } catch (e) {}
+  st.lk = st.lkOpp = null; st.oppId = null; st.battle = null;
+  st.audio.forEach(a => { try { a.srcObject = null; a.remove(); } catch (e) {} }); st.audio = [];
+  $$("video", st.el).forEach(v => { v.srcObject = null; });
+  $(".poster", st.el).style.opacity = ".85"; st.el.classList.remove("inpk"); setStatus(st, ""); $(".snd", st.el).classList.remove("on");
+  st.leaving = false;
+}
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+async function activate(id){
+  const st = S.get(id); if (!st || cur === st) return;
+  const my = ++gen;
+  if (cur) deactivate(cur);
+  cur = st; st.lastEv = 0; closeSheet();
+  history.replaceState(null, "", "?room=" + enc(id));
+  if (st.ended) return;
+  loadInfo(st); loadChat(st); poll();
+  connect(st, my);
+}
+async function loadInfo(st){
+  const d = await U.api("/api/live/info/" + enc(st.room.roomId));
+  if (!d._ok) { markEnded(st); return; }
+  st.info = d; Object.assign(st.room, d.room); paintFollow(st);
+  $(".own", st.el).classList.toggle("on", !!d.isOwner);
+  if (d.isOwner) $(".follow", st.el).style.display = "none";
+  if (d.loggedIn && !me) U.api("/api/me").then(x => { if (x._ok) me = x; });
+}
+async function loadChat(st){
+  const d = await U.api("/api/live/chat/" + enc(st.room.roomId) + "?limit=25");
+  if (d.messages && cur === st && !$(".msgs", st.el).children.length) d.messages.forEach(m => addMsg(st, { name: m.name, text: m.text, isHost: m.isHost }));
+}
+function markEnded(st){ st.ended = true; $(".ov", st.el).classList.add("on"); if (st.lk) deactivate(st); }
+
+/* ---------- live pulse: viewers, views, loves, gifts, PK ---------- */
+async function poll(){
+  const st = cur; if (!st || st.ended) return;
+  const d = await U.api("/api/live/events/" + enc(st.room.roomId) + "?since=" + st.lastEv + "&k=" + guestKey);
+  if (cur !== st) return;
+  if (d.ended) { markEnded(st); return; }
+  $(".vc", st.el).textContent = U.num(d.viewers); $(".vw", st.el).textContent = U.num(d.views); $(".vl", st.el).textContent = Number(d.views) === 1 ? "view" : "views"; $(".lc", st.el).textContent = U.num(d.loves);
+  (d.events || []).forEach(ev => {
+    if ((d.now || Date.now()) - ev.ts > 12000) { st.lastEv = Math.max(st.lastEv || 0, ev.id); return; }   // do not replay old gifts when a live opens
+    st.lastEv = Math.max(st.lastEv, ev.id);
+    if (ev.type === "gift") fly(st, ev);
+    if (ev.type === "love") { const n = Math.min(ev.total || 1, 6); for (let i = 0; i < n; i++) setTimeout(() => heart(st), i * 140); }
+    if (ev.type === "pk_start") addMsg(st, { sys: true, text: "⚔️ PK battle started!" });
+    if (ev.type === "pk_end") addMsg(st, { sys: true, text: ev.winner === "draw" ? "⚔️ PK ended in a draw" : "🏆 PK winner: " + ev.winner });
+  });
+  st.battle = d.battle; paintPK(st); syncOpp(st, d.battle);
+}
+setInterval(poll, 3000);
+function paintPK(st){
+  const b = st.battle; if (!b) { st.el.classList.remove("inpk"); return; }
+  st.el.classList.add("inpk");
+  $(".pa", st.el).textContent = b.a.displayName + " · " + U.num(b.a.score); $(".pb", st.el).textContent = U.num(b.b.score) + " · " + b.b.displayName;
+  const t = b.a.score + b.b.score; $(".bar i", st.el).style.width = (t ? Math.round(b.a.score / t * 100) : 50) + "%";
+}
+setInterval(() => {
+  if (!cur || !cur.battle) return; const s = Math.max(0, Math.ceil((cur.battle.endsAt - Date.now()) / 1000));
+  $(".clock", cur.el).textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}, 500);
+
+/* ---------- actions ---------- */
+async function toggleFollow(st){
+  if (needLogin()) return;
+  const on = st.room.isFollowing, d = await U.api(on ? "/api/unfollow" : "/api/follow", { method: "POST", body: { hostId: st.room.handle } });
+  if (!d._ok) return U.toast(d.message || "Could not update follow.");
+  st.room.isFollowing = d.following; st.room.followers = d.followers; paintFollow(st);
+  U.toast(d.following ? "Following " + st.room.displayName : "Unfollowed");
+}
+function love(st){
+  heart(st);
+  if (!VicoAuth.isSignedIn() || Date.now() - lastLove < 350) return;
+  lastLove = Date.now(); U.api("/api/live/send-love", { method: "POST", body: { hostId: st.room.handle } });
+}
+async function sendChat(st){
+  if (needLogin()) return;
+  const inp = $("input", st.el), text = inp.value.trim(); if (!text) return; inp.value = "";
+  const name = (me && me.displayName) || "You";
+  addMsg(st, { name, text, mine: true });
+  try { if (st.lk) await st.lk.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({ type: "chat", name, text, ts: Date.now() })), { reliable: true }); } catch (e) {}
+  const d = await U.api("/api/live/chat/" + enc(st.room.roomId), { method: "POST", body: { text } });
+  if (d.message && !d._ok) U.toast(d.message);
+}
+function go(dir){ feed.scrollBy({ top: dir * feed.clientHeight, behavior: "smooth" }); }
+function jump(roomId){
+  closeSheet();
+  if (S.has(roomId)) S.get(roomId).el.scrollIntoView({ behavior: "smooth" }); else location.href = "live-feed.html?room=" + enc(roomId);
+}
+function shareLive(st){
+  const url = location.origin + "/live-feed.html?room=" + enc(st.room.roomId);
+  if (navigator.share) navigator.share({ title: st.room.title, text: st.room.displayName + " is live on VicoPay Live", url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => U.toast("🔗 Link copied"));
+}
+async function report(st){
+  if (needLogin()) return;
+  const reason = prompt("What is wrong with this live? (nudity, abuse, scam, other)"); if (!reason) return;
+  const d = await U.api("/api/report", { method: "POST", body: { roomId: st.room.roomId, reason } }); U.toast(d.message || "Could not send report.");
+}
+
+/* ---------- bottom sheets ---------- */
+const wrap = $("#sheetWrap"), body = $("#sheetBody");
+function openSheet(title, html){ $("#sheetTitle").textContent = title; body.innerHTML = html || ""; wrap.classList.add("on"); }
+function closeSheet(){ wrap.classList.remove("on"); }
+$("#sheetClose").onclick = closeSheet; wrap.onclick = e => { if (e.target === wrap) closeSheet(); };
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeSheet();
+  if (/INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || "")) return;
+  if (e.key === "ArrowDown") { e.preventDefault(); go(1); } if (e.key === "ArrowUp") { e.preventDefault(); go(-1); }
+});
+
+let giftTarget = null;
+async function openGifts(st, target){
+  if (needLogin()) return;
+  if (st.info && st.info.isOwner) return U.toast("You can't send gifts to yourself.");
+  giftTarget = target || st.room.handle;
+  openSheet("🎁 Send a gift", "<div class='muted'>Loading…</div>");
+  const [g, w] = await Promise.all([U.api("/api/gifts/catalog"), U.api("/api/wallet/" + enc(myEmail()))]);
+  const b = st.battle;
+  const to = b ? "<div class='to'><button data-to='" + U.esc(b.a.handle) + "' class='" + (giftTarget === b.a.handle ? "on" : "") + "'>" + U.esc(b.a.displayName) + "</button><button data-to='" + U.esc(b.b.handle) + "' class='" + (giftTarget === b.b.handle ? "on" : "") + "'>" + U.esc(b.b.displayName) + "</button></div>" : "";
+  body.innerHTML = "<div class='bal'>🪙 <span id='gbal'>" + U.num(w.coins) + "</span> coins<a href='buy-coin.html'>Buy coins</a></div>" + to +
+    "<div class='ggrid'>" + (g.gifts || []).map(x => "<button class='gi' data-gift='" + U.esc(x.name) + "'><span class='e'>" + (GIFT_ICON[x.name] || "🎁") + "</span><b>" + U.esc(x.name) + "</b><span>🪙 " + U.num(x.price) + "</span></button>").join("") + "</div>";
+}
+async function openFans(st){
+  const r = st.room; openSheet("💜 " + r.displayName + "'s Fan Club", "<div class='muted'>Loading…</div>");
+  const d = await U.api("/api/fanclub/" + enc(r.handle));
+  if (!d._ok) { body.innerHTML = "<div class='muted'>" + U.esc(d.message || "Could not load.") + "</div>"; return; }
+  const owner = st.info && st.info.isOwner;
+  body.innerHTML = "<div class='fanhead'><b>" + U.num(d.memberCount) + " fans</b><div class='s' style='color:#e4d8ff;font-size:13px;margin:4px 0 10px'>Join to earn fan points with every gift and climb the levels (" + d.levels.map(U.num).join(" / ") + " points).</div>" +
+    (owner ? "" : d.joined ? "<span class='lvl'>You are a fan</span>" : "<button class='mini' style='background:#fff;color:#4c1d95;padding:10px 18px' data-join data-cost='" + d.cost + "'>💜 Join for " + d.cost + " 🪙</button>") + "</div>" +
+    (d.members.length ? d.members.map((m, i) => "<div class='sr'><b>#" + (i + 1) + "</b>" + U.avatar(m.displayName, false, null, 38, "/api/avatar/" + enc(m.handle)) + "<div class='g'><div class='n'>" + U.esc(m.displayName) + (m.isMe ? " (you)" : "") + "</div><div class='s'>" + U.num(m.points) + " points</div></div><span class='lvl'>Lv " + m.level + "</span></div>").join("") : "<div class='muted'>No fans yet. Be the first.</div>");
+}
+async function openPeople(st, tab){
+  // Followers = people who follow this host.  Following = people this host follows.  Two separate lists.
+  tab = tab === "following" ? "following" : "followers"; const r = st.room; st.peopleTab = tab;
+  const own = !!(st.info && st.info.isOwner);
+  openSheet(own ? "Your people" : r.displayName, "<div class='tabs2'><button data-tab='followers' class='" + (tab === "followers" ? "on" : "") + "'>Followers</button><button data-tab='following' class='" + (tab === "following" ? "on" : "") + "'>Following</button></div><div id='plist'><div class='muted'>Loading…</div></div>");
+  const [fr, fg] = await Promise.all([U.api("/api/followers/" + enc(r.handle)), U.api("/api/following/" + enc(r.handle))]);
+  if (st.peopleTab !== tab) return;
+  const d = tab === "followers" ? fr : fg;
+  if (!d._ok) { $("#plist").innerHTML = "<div class='muted'>" + U.esc(d.message || "Could not load.") + "</div>"; return; }
+  if (fr._ok && fg._ok) {
+    const tb = $$(".tabs2 button", body);
+    tb.forEach(b => { b.textContent = (b.dataset.tab === "followers" ? "Followers (" + U.num(fr.owner.followers) : "Following (" + U.num(fr.owner.following)) + ")"; });
+  }
+  const list = d[tab] || [];
+  const who = own ? "you" : U.esc(r.displayName);
+  const hint = "<div class='muted' style='text-align:left;padding:2px 0 8px'>" + (tab === "followers" ? "People who follow " + who + "." : "People " + (own ? "you follow" : who + " follows") + ".") + "</div>";
+  $("#plist").innerHTML = hint + (list.length ? list.map(c => "<div class='sr'>" + U.avatar(c.displayName, c.isLive, null, 40, c.avatar) + "<div class='g'><div class='n'>" + U.esc(c.displayName) + "</div><div class='s'>@" + U.esc(c.handle) + " · " + U.num(c.followers) + " followers" + (c.isLive ? " · 🔴 live" : "") + "</div></div>" +
+    (c.isLive ? "<button class='mini red' data-jump='" + U.esc(c.roomId) + "'>Watch</button>" : "") + "<button class='mini " + (c.isFollowing ? "on" : "") + "' data-f='" + U.esc(c.handle) + "' data-on='" + (c.isFollowing ? 1 : 0) + "'>" + (c.isFollowing ? "Following" : (tab === "followers" && own ? "Follow back" : "Follow")) + "</button></div>").join("") :
+    "<div class='muted'>" + (tab === "followers" ? "No followers yet." : "Not following anyone yet.") + "</div>");
+}
+async function openPK(st){
+  openSheet("⚔️ PK Battles", "<div class='muted'>Loading…</div>");
+  const [a, lb] = await Promise.all([U.api("/api/pk/active"), U.api("/api/pk/leaderboard")]);
+  const mine = st.battle;
+  const card = b => "<div class='pkcard'><div class='vs'><div>" + U.avatar(b.a.displayName, false, null, 44, b.a.avatar) + "<div class='n' style='font-weight:800;font-size:13px;margin-top:4px'>" + U.esc(b.a.displayName) + "</div></div><div><div class='sc2'>" + U.num(b.a.score) + " : " + U.num(b.b.score) + "</div><div class='s' style='font-size:12px;color:#9fc3e8'>⏱ " + Math.floor(b.remainingSeconds / 60) + ":" + String(b.remainingSeconds % 60).padStart(2, "0") + "</div></div><div>" + U.avatar(b.b.displayName, false, null, 44, b.b.avatar) + "<div class='n' style='font-weight:800;font-size:13px;margin-top:4px'>" + U.esc(b.b.displayName) + "</div></div></div>" +
+    "<div style='display:flex;gap:8px;justify-content:center;margin-top:10px'>" + (b.a.roomId ? "<button class='mini' data-jump='" + U.esc(b.a.roomId) + "'>Watch " + U.esc(b.a.displayName) + "</button>" : "") + (b.b.roomId ? "<button class='mini' data-jump='" + U.esc(b.b.roomId) + "'>Watch " + U.esc(b.b.displayName) + "</button>" : "") + "</div></div>";
+  body.innerHTML = (mine ? "<b>This live is in a PK battle</b>" + card(mine) + (st.info && st.info.isOwner ? "" : "<button class='mini' style='width:100%;padding:11px' data-giftnow>🎁 Send a gift to help win</button>") : "<div class='muted' style='text-align:left;padding-top:4px'>" + U.esc(st.room.displayName) + " is not in a battle right now. Hosts can challenge each other from the studio.</div>") +
+    "<b style='display:block;margin:14px 0 6px'>Live battles now</b>" + ((a.battles || []).filter(b => !mine || b.battleId !== mine.battleId).map(card).join("") || "<div class='muted'>No other battles right now.</div>") +
+    "<b style='display:block;margin:14px 0 6px'>Top PK hosts</b>" + ((lb.ranking || []).slice(0, 5).map((r, i) => "<div class='sr'><b>#" + (i + 1) + "</b>" + U.avatar(r.displayName, r.isLive, null, 36, r.avatar) + "<div class='g'><div class='n'>" + U.esc(r.displayName) + "</div><div class='s'>" + r.played + " battles</div></div><span class='lvl'>" + r.wins + " wins</span></div>").join("") || "<div class='muted'>No finished battles yet.</div>") +
+    "<p style='text-align:center;margin:12px 0 0'><a href='Go-Live.html' class='mini' style='display:inline-block;padding:10px 18px'>🎥 Go live and challenge someone</a></p>";
+}
+function openMore(st){
+  openSheet("More", "<div class='sr'><div class='g'><div class='n'>Share this live</div></div><button class='mini' data-do='share'>Share</button></div>" +
+    "<div class='sr'><div class='g'><div class='n'>View " + U.esc(st.room.displayName) + "'s profile</div></div><a class='mini' href='profile.html?u=" + enc(st.room.handle) + "'>Open</a></div>" +
+    "<div class='sr'><div class='g'><div class='n'>Report this live</div><div class='s'>Nudity, abuse, scams or anything unsafe</div></div><button class='mini red' data-do='report'>Report</button></div>");
+}
+
+body.addEventListener("click", async e => {
+  const st = cur; if (!st) return;
+  const t = e.target.closest("[data-gift],[data-to],[data-join],[data-f],[data-jump],[data-tab],[data-do],[data-giftnow]"); if (!t) return;
+  if (t.dataset.to) { giftTarget = t.dataset.to; $$(".to button", body).forEach(b => b.classList.toggle("on", b === t)); }
+  else if (t.dataset.gift) {
+    t.disabled = true; const d = await U.api("/api/gifts/send", { method: "POST", body: { gift: t.dataset.gift, hostId: giftTarget } }); t.disabled = false;
+    if (!d._ok) { U.toast(d.message || "Gift failed."); return; }
+    $("#gbal").textContent = U.num(d.coins); U.toast((GIFT_ICON[t.dataset.gift] || "🎁") + " Sent!"); poll();
+  }
+  else if (t.dataset.join !== undefined) {
+    // Join for 100 coins -> not enough coins? go to Buy Coins, then come back to this Fan Club
+    const cost = Number(t.dataset.cost) || 100, hostName = st.room.displayName;
+    const goBuy = () => {
+      try { localStorage.setItem("vicoAfterBuy", JSON.stringify({ url: "live-feed.html?room=" + enc(st.room.roomId) + "&fans=1", label: "💜 Back to " + hostName + "'s Fan Club", t: Date.now() })); } catch (e) {}
+      U.toast("🪙 You need " + cost + " coins to join. Taking you to Buy Coins…");
+      setTimeout(() => { location.href = "buy-coin.html"; }, 900);
+    };
+    const w = await U.api("/api/wallet/" + enc(myEmail()));
+    if (w._ok && Number(w.coins) < cost) { goBuy(); return; }
+    if (!confirm("Join " + hostName + "'s fan club for " + cost + " coins?")) return;
+    const d = await U.api("/api/fanclub/join", { method: "POST", body: { hostId: st.room.handle } });
+    if (!d._ok && /coins/i.test(d.message || "")) { goBuy(); return; }
+    U.toast(d._ok ? "💜 Welcome to the fan club!" : (d.message || "Could not join.")); if (d._ok) openFans(st);
+  }
+  else if (t.dataset.f) {
+    const on = t.dataset.on === "1", d = await U.api(on ? "/api/unfollow" : "/api/follow", { method: "POST", body: { hostId: t.dataset.f } });
+    if (d._ok) {
+      t.dataset.on = on ? "0" : "1"; t.textContent = on ? "Follow" : "Following"; t.classList.toggle("on", !on);
+      if (st.info && st.info.isOwner && st.peopleTab) openPeople(st, st.peopleTab); // your own lists changed: reload them so they stay correct
+    } else U.toast(d.message || "Failed");
+  }
+  else if (t.dataset.jump) jump(t.dataset.jump);
+  else if (t.dataset.tab) openPeople(st, t.dataset.tab);
+  else if (t.dataset.giftnow !== undefined) openGifts(st);
+  else if (t.dataset.do === "share") shareLive(st);
+  else if (t.dataset.do === "report") { closeSheet(); report(st); }
+});
+
+feed.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"), slide = e.target.closest(".slide"); if (!b || !slide) return;
+  const st = S.get(slide.dataset.room); if (!st || st !== cur) return;
+  switch (b.dataset.act) {
+    case "follow": toggleFollow(st); break;
+    case "love": love(st); break;
+    case "chat": $("input", st.el).focus(); break;
+    case "gift": openGifts(st); break;
+    case "giftOpp": if (st.battle) openGifts(st, st.battle.a.handle === st.room.handle ? st.battle.b.handle : st.battle.a.handle); break;
+    case "pk": openPK(st); break;
+    case "fans": openFans(st); break;
+    case "people": openPeople(st, "followers"); break;
+    case "share": shareLive(st); break;
+    case "more": openMore(st); break;
+    case "send": sendChat(st); break;
+    case "nextlive": go(1); break;
+    case "sound": if (st.lk) st.lk.startAudio().then(() => $(".snd", st.el).classList.remove("on")); break;
+    case "close": location.href = "live-room.html"; break;
+  }
+});
+feed.addEventListener("dblclick", e => { const s = e.target.closest(".videos,.fx,.shade"); if (s && cur) love(cur); });
+$("#prev").onclick = () => go(-1); $("#next").onclick = () => go(1);
+
+/* ---------- start ---------- */
+const io = new IntersectionObserver(entries => { entries.forEach(en => { if (en.isIntersecting && en.intersectionRatio >= 0.6) activate(en.target.dataset.room); }); }, { root: feed, threshold: [0.6] });
+
+async function discover(){
+  const f = JSON.parse(sessionStorage.getItem("vicoFeedFilter") || "{}");
+  let url = "/api/live/discover?";
+  if (f.cat === "Following") url += "following=1"; else if (f.cat && f.cat !== "All") url += "category=" + enc(f.cat);
+  if (f.q) url += "&q=" + enc(f.q);
+  let d = await U.api(url);
+  if (!(d.rooms || []).length && url !== "/api/live/discover?") d = await U.api("/api/live/discover");
+  return d.rooms || [];
+}
+async function boot(){
+  const want = new URLSearchParams(location.search).get("room");
+  if (VicoAuth.isSignedIn()) U.api("/api/me").then(x => { if (x._ok) me = x; });
+  let list = await discover();
+  if (want && !list.some(r => r.roomId === want)) {
+    const i = await U.api("/api/live/info/" + enc(want));
+    if (i._ok) list.unshift(i.room); else U.toast("That live has ended. Here are others you may like.");
+  }
+  if (!list.length) { $("#empty").classList.add("on"); return; }
+  list.forEach(addSlide);
+  if (want && S.has(want)) S.get(want).el.scrollIntoView(); else if (list[0]) { /* first slide activates by itself */ }
+  // coming back from Buy Coins: open the Fan Club so the person can tap Join
+  if (new URLSearchParams(location.search).get("fans") === "1" && want) {
+    history.replaceState(null, "", "?room=" + enc(want));
+    let tries = 0;
+    const t = setInterval(() => {
+      if (cur && cur.room && cur.room.roomId === want) { clearInterval(t); openFans(cur); U.toast("🪙 Coins added! Tap Join to become a fan."); }
+      else if (++tries > 20) clearInterval(t);
+    }, 300);
+  }
+  if (list.length > 1 && !localStorage.getItem("vicoSwipeHint")) { localStorage.setItem("vicoSwipeHint", "1"); const h = document.createElement("div"); h.className = "hint"; h.textContent = "Swipe up for the next live ↑"; document.body.appendChild(h); setTimeout(() => h.remove(), 4200); }
+  // new lives that start while you watch are added to the end of the feed
+  setInterval(async () => { (await discover()).forEach(r => { if (!S.has(r.roomId)) addSlide(r); }); }, 15000);
+}
+window.addEventListener("beforeunload", () => { if (cur) try { cur.lk && cur.lk.disconnect(); } catch (e) {} });
+boot();
+</script>
+</body>
+</html>

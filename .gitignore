@@ -1,0 +1,6 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+# database backups contain password hashes and bank details: never publish them
+backups/

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Victopay - Payment Verification</title>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #061426;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 100vh;
+}
+
+.card {
+    width: 90%;
+    max-width: 500px;
+
+    background: #0b2039;
+
+    border: 1px solid #315778;
+
+    border-radius: 20px;
+
+    padding: 35px;
+
+    text-align: center;
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.35);
+}
+
+h1 {
+    margin-top: 0;
+    color: #ffd54a;
+}
+
+#message {
+    margin: 25px 0;
+    line-height: 1.7;
+}
+
+.success {
+    color: #7fffd4;
+}
+
+.error {
+    color: #ff9fb2;
+}
+
+.loading {
+    color: #ffd54a;
+}
+
+button {
+    border: none;
+
+    border-radius: 25px;
+
+    padding: 14px 25px;
+
+    background: #00e5c3;
+
+    color: #052027;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    margin: 5px;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+</style>
+
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+    <h1>
+        Victopay Live
+    </h1>
+
+
+    <div
+        id="message"
+        class="loading">
+
+        Verifying your payment...
+
+    </div>
+
+
+    <button
+        id="backButton"
+        style="display:none;"
+        onclick="window.location.href='buy-coin.html'">
+
+        Back to Coin Shop
+
+    </button>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   VICTOPAY PAYMENT VERIFICATION
+========================================= */
+
+async function verifyPayment() {
+
+    const message =
+        document.getElementById("message");
+
+    const backButton =
+        document.getElementById("backButton");
+
+
+    /*
+     * Get Paystack reference
+     * from the callback URL.
+     */
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const reference =
+        params.get("reference");
+
+
+    if (!reference) {
+
+        message.innerHTML =
+            "Payment reference is missing.";
+
+        message.className =
+            "error";
+
+        backButton.style.display =
+            "inline-block";
+
+        return;
+    }
+
+
+    /*
+     * Get the email saved before
+     * the customer went to Paystack.
+     */
+
+    const savedEmail =
+        localStorage.getItem(
+            "vicoPayEmail"
+        ) ||
+        localStorage.getItem(
+            "vicoPayUser"
+        );
+
+
+    try {
+
+        /*
+         * =====================================
+         * STEP 1 — VERIFY PAYMENT
+         * =====================================
+         */
+
+        const response =
+            await fetch(
+                window.location.origin + "/api/paystack/verify?reference=" +
+                encodeURIComponent(reference),
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+
+        const text =
+            await response.text();
+
+
+        console.log(
+            "Verification HTTP status:",
+            response.status
+        );
+
+
+        console.log(
+            "Verification response:",
+            text
+        );
+
+
+        let data;
+
+
+        try {
+
+            data =
+                JSON.parse(text);
+
+        } catch (parseError) {
+
+            throw new Error(
+                "The server returned an invalid response."
+            );
+
+        }
+
+
+        console.log(
+            "Parsed verification response:",
+            data
+        );
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Unable to verify payment."
+            );
+
+        }
+
+
+        /*
+         * =====================================
+         * STEP 2 — GET PAYMENT COINS
+         * =====================================
+         */
+
+        const storedCoins =
+            Number(
+                localStorage.getItem(
+                    "vicoPayPurchasedCoins"
+                )
+            ) || 0;
+
+
+        const paymentCoins =
+            Number(data.coinsAdded) > 0
+                ? Number(data.coinsAdded)
+                : storedCoins;
+
+
+        /*
+         * =====================================
+         * STEP 3 — GET THE REAL WALLET
+         * =====================================
+         *
+         * This is the important fix.
+         *
+         * We do NOT depend on data.balance
+         * from the verification response.
+         *
+         * We ask the wallet API directly.
+         */
+
+        let currentBalance = 0;
+
+
+        if (savedEmail) {
+
+            try {
+
+                const walletResponse =
+                    await fetch(
+                        window.location.origin + "/api/wallet/" +
+                        encodeURIComponent(
+                            savedEmail
+                        )
+                    );
+
+
+                const walletData =
+                    await walletResponse.json();
+
+
+                console.log(
+                    "Wallet response:",
+                    walletData
+                );
+
+
+                if (
+                    walletResponse.ok &&
+                    walletData.success
+                ) {
+
+                    currentBalance =
+                        Number(
+                            walletData.coins || 0
+                        );
+
+                }
+
+            } catch (walletError) {
+
+                console.error(
+                    "Wallet loading error:",
+                    walletError
+                );
+
+            }
+
+        }
+
+
+        /*
+         * =====================================
+         * STEP 4 — DISPLAY RESULT
+         * =====================================
+         */
+
+        const alreadyProcessed =
+            data.alreadyProcessed === true;
+
+
+        if (alreadyProcessed) {
+
+            message.innerHTML =
+
+                "Payment verified successfully." +
+
+                "<br><br>" +
+
+                "This payment has already been credited to your wallet." +
+
+                "<br><br>" +
+
+                "Reference: " +
+
+                reference +
+
+                "<br><br>" +
+
+                "Coins in this payment: " +
+
+                paymentCoins.toLocaleString() +
+
+                "<br><br>" +
+
+                "<strong>" +
+
+                "Current wallet balance: " +
+
+                currentBalance.toLocaleString() +
+
+                "</strong>";
+
+        } else {
+
+            message.innerHTML =
+
+                "Payment verified successfully." +
+
+                "<br><br>" +
+
+                "Reference: " +
+
+                reference +
+
+                "<br><br>" +
+
+                "Coins added: " +
+
+                paymentCoins.toLocaleString() +
+
+                "<br><br>" +
+
+                "<strong>" +
+
+                "Current wallet balance: " +
+
+                currentBalance.toLocaleString() +
+
+                "</strong>";
+
+        }
+
+
+        message.className =
+            "success";
+
+
+        /*
+         * Save the verified payment reference.
+         */
+
+        localStorage.setItem(
+            "vicoPayPaymentReference",
+            reference
+        );
+
+
+        /*
+         * Make sure the email identity
+         * remains available.
+         */
+
+        if (savedEmail) {
+
+            localStorage.setItem(
+                "vicoPayEmail",
+                savedEmail
+            );
+
+            localStorage.setItem(
+                "vicoPayUser",
+                savedEmail
+            );
+
+        }
+
+
+        backButton.style.display =
+            "inline-block";
+
+
+
+        /*
+         * If the person came from "Join Fan Club", take them back there.
+         */
+        try {
+            const back = JSON.parse(localStorage.getItem("vicoAfterBuy") || "null");
+            if (back && back.url && Date.now() - back.t < 2 * 60 * 60 * 1000) {
+                localStorage.removeItem("vicoAfterBuy");
+                backButton.textContent = back.label || "Continue";
+                backButton.onclick = function () { window.location.href = back.url; };
+                message.innerHTML += "<br><br>Taking you back in 3 seconds…";
+                setTimeout(function () { window.location.href = back.url; }, 3000);
+            }
+        } catch (e) { /* ignore */ }
+
+    } catch (error) {
+
+        console.error(
+            "Payment verification error:",
+            error
+        );
+
+
+        message.innerHTML =
+
+            "Unable to verify payment." +
+
+            "<br><br>" +
+
+            error.message;
+
+
+        message.className =
+            "error";
+
+
+        backButton.style.display =
+            "inline-block";
+
+    }
+
+}
+
+
+/*
+ * Start verification.
+ */
+
+verifyPayment();
+
+</script>
+
+
+</body>
+</html>

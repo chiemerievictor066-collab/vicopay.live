@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>VicoPay Live - Dashboard</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #061426;
+    color: white;
+}
+
+header {
+    height: 75px;
+
+    background: #081a30;
+
+    border-bottom: 1px solid #24496f;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 28px;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #00e5c3;
+}
+
+.home {
+    color: white;
+    text-decoration: none;
+}
+
+.home:hover {
+    color: #00e5c3;
+}
+
+.container {
+    width: 94%;
+    max-width: 1250px;
+
+    margin: 35px auto;
+}
+
+
+/* WELCOME */
+
+.welcome {
+    padding: 35px;
+
+    border-radius: 22px;
+
+    background:
+        radial-gradient(
+            circle at 80% 20%,
+            #273d91,
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 20% 80%,
+            #07556c,
+            transparent 35%
+        ),
+        #0b2039;
+
+    border: 1px solid #315779;
+
+    margin-bottom: 25px;
+}
+
+.welcome h1 {
+    margin: 0 0 10px;
+
+    font-size: 36px;
+}
+
+.welcome h1 span {
+    color: #00e5c3;
+}
+
+.welcome p {
+    color: #a9bfd4;
+
+    margin: 0;
+}
+
+
+/* SUMMARY */
+
+.summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    background: #0b2039;
+
+    border: 1px solid #294f70;
+
+    border-radius: 17px;
+
+    padding: 22px;
+}
+
+.summary-icon {
+    font-size: 30px;
+
+    margin-bottom: 10px;
+}
+
+.summary-number {
+    font-size: 25px;
+
+    font-weight: bold;
+
+    color: #ffd54a;
+}
+
+.summary-label {
+    color: #91aac4;
+
+    font-size: 13px;
+
+    margin-top: 5px;
+}
+
+
+/* SECTION */
+
+.section-title {
+    margin-bottom: 20px;
+}
+
+.section-title h2 {
+    margin: 0;
+
+    font-size: 28px;
+}
+
+.section-title p {
+    color: #91aac4;
+}
+
+
+/* MENU */
+
+.menu {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 18px;
+}
+
+.menu-card {
+    background: #0b2039;
+
+    border: 1px solid #294f70;
+
+    border-radius: 17px;
+
+    padding: 23px;
+
+    text-decoration: none;
+
+    color: white;
+
+    transition: 0.2s;
+}
+
+.menu-card:hover {
+    transform: translateY(-4px);
+
+    border-color: #00e5c3;
+}
+
+.menu-icon {
+    font-size: 35px;
+
+    margin-bottom: 12px;
+}
+
+.menu-card h3 {
+    margin: 0 0 8px;
+
+    font-size: 19px;
+}
+
+.menu-card p {
+    color: #91aac4;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    margin: 0;
+}
+
+
+/* CREATOR */
+
+.creator {
+    margin-top: 30px;
+
+    background:
+        linear-gradient(
+            120deg,
+            #132f48,
+            #123c38
+        );
+
+    border: 1px solid #286c62;
+
+    border-radius: 20px;
+
+    padding: 30px;
+}
+
+.creator h2 {
+    color: #00e5c3;
+
+    margin-top: 0;
+}
+
+.creator p {
+    color: #b1c5d8;
+
+    line-height: 1.6;
+}
+
+.creator-buttons {
+    display: flex;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+    margin-top: 20px;
+}
+
+.creator-btn {
+    display: inline-block;
+
+    padding: 13px 22px;
+
+    border-radius: 25px;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+.start-live {
+    background: #00e5c3;
+
+    color: #052027;
+}
+
+.withdraw {
+    background: #ffd54a;
+
+    color: #171200;
+}
+
+
+/* ACTIVITY */
+
+.activity {
+    margin-top: 30px;
+
+    background: #0b2039;
+
+    border: 1px solid #294f70;
+
+    border-radius: 18px;
+
+    padding: 25px;
+}
+
+.activity h2 {
+    margin-top: 0;
+}
+
+.activity-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 15px 0;
+
+    border-bottom: 1px solid #203e5b;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    font-size: 27px;
+}
+
+.activity-text strong {
+    display: block;
+
+    margin-bottom: 4px;
+}
+
+.activity-text small {
+    color: #8199b2;
+}
+
+
+/* FOOTER */
+
+footer {
+    text-align: center;
+
+    padding: 35px;
+
+    margin-top: 35px;
+
+    color: #7189a2;
+
+    border-top: 1px solid #203e5b;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 950px) {
+
+    .summary {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .menu {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 0 15px;
+    }
+
+    .logo {
+        font-size: 22px;
+    }
+
+    .summary {
+        grid-template-columns: 1fr;
+    }
+
+    .menu {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome h1 {
+        font-size: 30px;
+    }
+
+}
+
+</style>
+
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div class="logo">
+        VicoPay <span>Live</span>
+    </div>
+
+    <a
+        href="home.html"
+        class="home">
+
+        ← Home
+
+    </a>
+
+</header>
+
+
+<main class="container">
+
+
+    <!-- WELCOME -->
+
+    <section class="welcome">
+
+        <h1>
+            Welcome to your
+            <span>Dashboard</span>
+        </h1>
+
+        <p>
+            Manage your VicoPay Live account,
+            coin, gifts, Live rooms, creator
+            activities and profile.
+        </p>
+
+    </section>
+
+
+    <!-- ACCOUNT SUMMARY -->
+
+    <section class="summary">
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                🪙
+            </div>
+
+            <div
+                class="summary-number"
+                id="coin">
+
+                0
+
+            </div>
+
+            <div class="summary-label">
+                Coin Balance
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                ⭐
+            </div>
+
+            <div
+                class="summary-number"
+                id="stars">
+
+                0
+
+            </div>
+
+            <div class="summary-label">
+                Golden Stars
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                🎁
+            </div>
+
+            <div
+                class="summary-number"
+                id="gifts">
+
+                0
+
+            </div>
+
+            <div class="summary-label">
+                Gifts Sent
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                👥
+            </div>
+
+            <div
+                class="summary-number"
+                id="followers">
+
+                0
+
+            </div>
+
+            <div class="summary-label">
+                Followers
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- MAIN FEATURES -->
+
+    <section>
+
+        <div class="section-title">
+
+            <h2>
+                VicoPay Live Features
+            </h2>
+
+            <p>
+                Open and manage your Live features.
+            </p>
+
+        </div>
+
+
+        <div class="menu">
+
+
+            <!-- LIVE ROOM -->
+
+            <a
+                href="live-room.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    🔴
+                </div>
+
+                <h3>
+                    Live Room
+                </h3>
+
+                <p>
+                    Enter live rooms, chat with
+                    viewers and interact with hosts.
+                </p>
+
+            </a>
+
+
+            <!-- HOSTS -->
+
+            <a
+                href="hosts.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    🎤
+                </div>
+
+                <h3>
+                    Hosts
+                </h3>
+
+                <p>
+                    Discover hosts and view the
+                    current host rankings.
+                </p>
+
+            </a>
+
+
+            <!-- GIFTERS -->
+
+            <a
+                href="gifters.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    🏆
+                </div>
+
+                <h3>
+                    Gifters
+                </h3>
+
+                <p>
+                    View the top VicoPay Live
+                    gifters and rankings.
+                </p>
+
+            </a>
+
+
+            <!-- BUY COINS -->
+
+            <a
+                href="buy-coin.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    🪙
+                </div>
+
+                <h3>
+                    Buy Coins
+                </h3>
+
+                <p>
+                    Purchase coin for sending
+                    eligible virtual gifts.
+                </p>
+
+            </a>
+
+
+            <!-- GIFT SHOP -->
+
+            <a
+                href="gift-shop.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    🎁
+                </div>
+
+                <h3>
+                    Gift Shop
+                </h3>
+
+                <p>
+                    Browse virtual gifts and
+                    send them to hosts.
+                </p>
+
+            </a>
+
+
+            <!-- WALLET -->
+
+            <a
+                href="gifters-wallet.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    👛
+                </div>
+
+                <h3>
+                    Wallet
+                </h3>
+
+                <p>
+                    View wallet balances and
+                    transaction information.
+                </p>
+
+            </a>
+
+
+            <!-- PROFILE -->
+
+            <a
+                href="live-room-profile.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    👤
+                </div>
+
+                <h3>
+                    Profile
+                </h3>
+
+                <p>
+                    Manage your VicoPay Live
+                    profile and account information.
+                </p>
+
+            </a>
+
+
+            <!-- CREATOR WITHDRAWAL -->
+
+            <a
+                href="creator-withdrawal.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    💰
+                </div>
+
+                <h3>
+                    Creator Withdrawal
+                </h3>
+
+                <p>
+                    Manage eligible creator
+                    withdrawal requests.
+                </p>
+
+            </a>
+
+
+            <!-- HOME -->
+
+            <a
+                href="home.html"
+                class="menu-card">
+
+                <div class="menu-icon">
+                    🏠
+                </div>
+
+                <h3>
+                    VicoPay Live Home
+                </h3>
+
+                <p>
+                    Return to the main VicoPay
+                    Live homepage.
+                </p>
+
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- CREATOR AREA -->
+
+    <section class="creator">
+
+        <h2>
+            🎤 Creator Center
+        </h2>
+
+        <p>
+            Are you a VicoPay Live host?
+            Start your Live room, receive eligible
+            virtual gifts and manage your creator
+            activities.
+        </p>
+
+
+        <div class="creator-buttons">
+
+            <a
+                href="live-room.html"
+                class="creator-btn start-live">
+
+                🔴 Start Live
+
+            </a>
+
+
+            <a
+                href="creator-withdrawal.html"
+                class="creator-btn withdraw">
+
+                💰 Creator Withdrawal
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- RECENT ACTIVITY -->
+
+    <section class="activity">
+
+        <h2>
+            📋 Recent Activity
+        </h2>
+
+
+        <div class="activity-item">
+
+            <div class="activity-icon">
+                ❤️
+            </div>
+
+            <div class="activity-text">
+
+                <strong>
+                    Free Love
+                </strong>
+
+                <small>
+                    Free reactions can be sent
+                    to hosts without coin.
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="activity-item">
+
+            <div class="activity-icon">
+                🎁
+            </div>
+
+            <div class="activity-text">
+
+                <strong>
+                    Virtual Gifts
+                </strong>
+
+                <small>
+                    Paid gifts use coin purchased
+                    by the gifter.
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="activity-item">
+
+            <div class="activity-icon">
+                ⭐
+            </div>
+
+            <div class="activity-text">
+
+                <strong>
+                    Golden Stars
+                </strong>
+
+                <small>
+                    Creator star activity is tracked
+                    for eligible creator earnings.
+                </small>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+<footer>
+
+    <strong>VicoPay Live</strong>
+
+    <br><br>
+
+    Live Streaming • Chat • Gifts • Creators
+
+    <br><br>
+
+    © 2026 VicoPay Live.
+    All rights reserved.
+
+</footer>
+
+
+<script>
+
+const API_BASE = window.location.origin;
+
+function getUserId(){
+    return localStorage.getItem("vicoPayEmail") || localStorage.getItem("vicoPayUser") || "";
+}
+
+async function loadDashboard() {
+
+    const userId = getUserId();
+    if (!userId) return;
+
+    try {
+
+        // auth.js already attaches this signed-in user's token to
+        // every /api/ fetch automatically.
+        const [walletRes, statsRes, followersRes] = await Promise.all([
+            fetch(API_BASE + "/api/wallet/" + encodeURIComponent(userId)),
+            fetch(API_BASE + "/api/live/room/" + encodeURIComponent(userId)),
+            fetch(API_BASE + "/api/followers/" + encodeURIComponent(userId))
+        ]);
+
+        const wallet = await walletRes.json();
+        const stats = await statsRes.json();
+        const followers = await followersRes.json();
+
+        document.getElementById("coin").textContent =
+            Number((wallet && wallet.coins) || 0).toLocaleString();
+
+        document.getElementById("stars").textContent =
+            Number((stats && stats.goldenStars) || 0).toLocaleString();
+
+        document.getElementById("gifts").textContent =
+            Number((stats && stats.gifts) || 0).toLocaleString();
+
+        document.getElementById("followers").textContent =
+            Number((followers && followers.count) || 0).toLocaleString();
+
+    } catch (error) {
+        console.error("Dashboard load error:", error);
+    }
+
+}
+
+
+loadDashboard();
+
+</script>
+
+
+</body>
+</html>

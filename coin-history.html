@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0646b8">
+<title>Coin history - VicoPay Live</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef7ff;color:#082653;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:linear-gradient(90deg,#031c5d,#0646b8,#087fe8);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px}
+header b{font-size:20px;margin-right:auto}header b span{color:#57e5ff}header a{color:#fff;text-decoration:none;font-weight:700;font-size:14px}
+.wrap{max-width:720px;margin:0 auto;padding:18px 14px 60px}
+.bal{background:linear-gradient(135deg,#0646b8,#13d1ff);color:#fff;border-radius:20px;padding:22px;box-shadow:0 12px 30px rgba(6,70,184,.25)}
+.bal small{opacity:.85}.bal b{display:block;font-size:40px;margin-top:4px}.bal a{display:inline-block;margin-top:12px;background:#fff;color:#0646b8;border-radius:20px;padding:9px 18px;font-weight:800;text-decoration:none}
+h2{margin:24px 4px 10px;font-size:18px}
+.row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #cfe6fb;border-radius:14px;padding:13px 14px;margin-bottom:9px}
+.row .g{flex:1;min-width:0}.row .m{font-weight:700;overflow-wrap:anywhere}.row .t{color:#66809a;font-size:12px;margin-top:2px}
+.amt{font-weight:900;font-size:17px;white-space:nowrap}.pos{color:#0a9a55}.neg{color:#e11d48}.row .after{color:#66809a;font-size:11px;text-align:right}
+.empty{background:#fff;border:1px dashed #9cc8f3;border-radius:14px;padding:30px;text-align:center;color:#66809a}
+</style></head><body>
+<header><b>VicoPay <span>Live</span></b><a href="buy-coin.html">Buy coins</a><a href="live-room.html">Live</a></header>
+<div class="wrap">
+  <div class="bal"><small>Your coin balance</small><b id="bal">…</b><a href="buy-coin.html">🪙 Buy more coins</a></div>
+  <h2>Coin history</h2>
+  <div id="list"><div class="empty">Loading…</div></div>
+  <p style="color:#66809a;font-size:12px;margin-top:16px">Every coin you buy, send or get back is recorded here permanently. Nothing is ever edited or deleted.</p>
+</div>
+<script src="auth.js"></script>
+<script>
+if (window.VicoAuth && VicoAuth.requireLogin) VicoAuth.requireLogin();
+function esc(t){var d=document.createElement("div");d.textContent=t==null?"":String(t);return d.innerHTML}
+(async function(){
+  try{
+    var r=await fetch("/api/me/statement?limit=100",{headers:{Authorization:"Bearer "+localStorage.getItem("vicoPayToken")}});
+    var d=await r.json();
+    if(!r.ok||!d.success){document.getElementById("list").innerHTML='<div class="empty">'+esc(d.message||"Please sign in to see your coin history.")+'</div>';return;}
+    document.getElementById("bal").textContent="🪙 "+Number(d.balance).toLocaleString();
+    var rows=d.entries||[];
+    document.getElementById("list").innerHTML=rows.length?rows.map(function(e){
+      var pos=e.delta>0;
+      return '<div class="row"><div class="g"><div class="m">'+esc(e.memo||"Coin movement")+'</div><div class="t">'+new Date(e.createdAt).toLocaleString()+'</div></div>'+
+        '<div><div class="amt '+(pos?"pos":"neg")+'">'+(pos?"+":"")+Number(e.delta).toLocaleString()+'</div>'+(e.balanceAfter!=null?'<div class="after">balance '+Number(e.balanceAfter).toLocaleString()+'</div>':'')+'</div></div>';
+    }).join(""):'<div class="empty">No coin activity yet. Buy your first coins to start sending gifts.</div>';
+  }catch(e){document.getElementById("list").innerHTML='<div class="empty">Could not load. Check your connection and refresh.</div>';}
+})();
+</script></body></html>

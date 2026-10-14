@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VicoPay Live - Gift Shop</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #03142f;
+            color: white;
+        }
+
+        /* TOP BAR */
+
+        .topbar {
+            height: 80px;
+            background: #061a3b;
+            border-bottom: 1px solid #173d72;
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            gap: 30px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            min-width: 250px;
+        }
+
+        .logo span {
+            color: #00e5c3;
+        }
+
+        .live {
+            background: #ff2d8d;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            background: #102c5b;
+            border-radius: 30px;
+            padding: 14px 25px;
+            color: #a8c3e8;
+        }
+
+        .profile {
+            margin-left: auto;
+            font-weight: bold;
+        }
+
+        /* MAIN */
+
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 250px;
+            background: #041735;
+            border-right: 1px solid #173d72;
+            padding: 25px 10px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            margin-bottom: 7px;
+            border-radius: 10px;
+            color: #dceaff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .sidebar a:hover {
+            background: #103365;
+        }
+
+        .sidebar a.active {
+            background: linear-gradient(90deg, #00d9c0, #087d9e);
+            color: white;
+            font-weight: bold;
+        }
+
+        .support {
+            margin-top: 30px;
+            padding: 25px 15px;
+            border: 1px solid #194b82;
+            border-radius: 15px;
+            text-align: center;
+            background: #061d42;
+        }
+
+        .support .crown {
+            font-size: 42px;
+        }
+
+        .support h3 {
+            color: #ffd83d;
+        }
+
+        /* CONTENT */
+
+        .content {
+            flex: 1;
+            padding: 25px;
+            overflow-x: hidden;
+        }
+
+        /* HERO */
+
+        .hero {
+            min-height: 180px;
+            border-radius: 18px;
+            padding: 35px;
+            background:
+                radial-gradient(circle at 15% 50%, #7025c7, transparent 30%),
+                radial-gradient(circle at 80% 40%, #1649d8, transparent 35%),
+                linear-gradient(120deg, #241066, #06347e, #32136b);
+            border: 1px solid #3362c2;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: 52px;
+        }
+
+        .hero h1 span {
+            color: #00e5c3;
+        }
+
+        .hero p {
+            font-size: 19px;
+            color: #e0e9ff;
+        }
+
+        /* COIN BOX */
+
+        .coin-box {
+            background: #061e42;
+            border: 1px solid #1e5b94;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .coin-number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #ffd83d;
+        }
+
+        .buy-button {
+            border: none;
+            background: #00e5b7;
+            color: #06233d;
+            padding: 13px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .buy-button:hover {
+            background: #28ffd4;
+        }
+
+        /* CATEGORIES */
+
+        .categories {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            margin-bottom: 25px;
+        }
+
+        .category {
+            background: #0a2854;
+            border: 1px solid #17477c;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .category.active {
+            background: #00e5c3;
+            color: #03243b;
+            font-weight: bold;
+        }
+
+        /* GIFT GRID */
+
+        .gift-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .gift-card {
+            background: #061d42;
+            border: 1px solid #1a528a;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .gift-card:hover {
+            transform: translateY(-4px);
+            border-color: #00e5c3;
+            box-shadow: 0 0 20px rgba(0, 229, 195, 0.15);
+        }
+
+        .gift-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .gift-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .coin-price {
+            color: #ffd83d;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .naira-price {
+            color: #9cb8dc;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .send-button {
+            width: 100%;
+            border: none;
+            background: #ff2d8d;
+            color: white;
+            padding: 11px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .send-button:hover {
+            background: #ff58a5;
+        }
+
+        /* FREE LOVE */
+
+        .free {
+            border-color: #ff4f9a;
+            background: linear-gradient(145deg,
+                    #21143e,
+                    #35142d);
+        }
+
+        .free .coin-price {
+            color: #ff7eb7;
+        }
+
+        /* RIGHT INFORMATION */
+
+        .info {
+            width: 290px;
+            background: #041735;
+            border-left: 1px solid #173d72;
+            padding: 25px 20px;
+        }
+
+        .info-box {
+            background: #061d42;
+            border: 1px solid #1c4e83;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            margin-top: 0;
+            color: #b9d7ff;
+        }
+
+        .info-box li {
+            margin-bottom: 12px;
+            color: #c8d8ee;
+        }
+
+        .steps div {
+            margin: 15px 0;
+            color: #d4e4fa;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #1471c9;
+            margin-right: 8px;
+        }
+
+        /* MESSAGE */
+
+        #message {
+            display: none;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .success {
+            display: block !important;
+            background: #0c6d58;
+        }
+
+        .error {
+            display: block !important;
+            background: #7b2146;
+        }
+
+        /* FOOTER */
+
+        footer {
+            margin-top: 30px;
+            border-top: 1px solid #183c68;
+            padding: 20px;
+            text-align: center;
+            color: #829ec5;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1200px) {
+
+            .info {
+                display: none;
+            }
+
+            .gift-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+        }
+
+        @media (max-width: 850px) {
+
+            .sidebar {
+                width: 190px;
+            }
+
+            .gift-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .logo {
+                min-width: 150px;
+                font-size: 25px;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .gift-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .gift-icon {
+                font-size: 45px;
+            }
+
+            .hero h1 {
+                font-size: 35px;
+            }
+
+            .topbar {
+                padding: 0 10px;
+            }
+
+            .search {
+                display: none;
+            }
+
+        }
+    </style>
+    <script src="auth.js"></script>
+    <script>VicoAuth.requireLogin();</script>
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="logo">
+            👑 Vico<span>Pay</span>
+            <span class="live">Live</span>
+        </div>
+
+        <div class="search">
+            THANKS FOR SUPPORTING ...
+        </div>
+
+        <div class="profile">
+            🔔 &nbsp; 👤 Victor
+        </div>
+
+    </header>
+
+
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <a href="home.html">🏠 Home</a>
+
+            <a href="live-room.html">📡 Live Room</a>
+
+            <a href="live-room-dashboard.html">👤 Dashboard</a>
+
+            <a href="gift-shop.html" class="active">
+                🎁 Gift Shop
+            </a>
+
+            <a href="buy-coin.html">
+                🪙 Buy Coin
+            </a>
+
+            <a href="host-wallet.html">
+                💳 Wallet
+            </a>
+
+            <a href="gifters.html">
+                🏆 Rankings
+            </a>
+
+            <a href="creator-withdrawal.html">
+                💰 Creator Withdrawal
+            </a>
+
+            <a href="settings.html">
+                ⚙️ Settings
+            </a>
+
+
+            <div class="support">
+
+                <div class="crown">👑</div>
+
+                <h3>
+                    Support Your
+                    Favorite Hosts
+                </h3>
+
+                <p>
+                    Send gifts and show
+                    your support!
+                </p>
+
+                <div style="font-size:30px;">
+                    ❤️
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="content">
+
+            <section class="hero">
+
+                <h1>
+                    Gift <span>Shop</span>
+                </h1>
+
+                <p>
+                    Send gifts to your favorite hosts
+                    and show your support!
+                </p>
+
+            </section>
+
+
+            <!-- COIN BALANCE -->
+
+            <div class="coin-box">
+
+                <div>
+
+                    <div>
+                        🪙 Your Coin
+                    </div>
+
+                    <div class="coin-number" id="coinBalance">
+                        0
+                    </div>
+
+                </div>
+
+                <button class="buy-button" onclick="buyCoin()">
+
+                    🪙 Buy More Coin
+
+                </button>
+
+            </div>
+
+
+            <!-- CATEGORIES -->
+
+            <div class="categories">
+
+                <button class="category active">
+                    All Gifts
+                </button>
+
+                <button class="category">
+                    ❤️ Love
+                </button>
+
+                <button class="category">
+                    💎 Luxury
+                </button>
+
+                <button class="category">
+                    🐾 Animals
+                </button>
+
+                <button class="category">
+                    🚗 Vehicles
+                </button>
+
+                <button class="category">
+                    ⭐ Special
+                </button>
+
+            </div>
+
+
+            <!-- GIFT GRID -->
+
+            <div class="gift-grid">
+
+
+                <!-- FREE LOVE -->
+
+                <div class="gift-card free">
+
+                    <div class="gift-icon">
+                        ❤️
+                    </div>
+
+                    <div class="gift-name">
+                        Like
+                    </div>
+
+                    <div class="coin-price">
+                        ❤️ FREE
+                    </div>
+
+                    <div class="naira-price">
+                        No coin required
+                    </div>
+
+                    <button class="send-button" onclick="sendLove()">
+
+                        ❤️ Send Love
+
+                    </button>
+
+                </div>
+
+
+                <!-- ROSE -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🌹
+                    </div>
+
+                    <div class="gift-name">
+                        Rose
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 10 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦100
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Rose',10)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- FIRE -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🔥
+                    </div>
+
+                    <div class="gift-name">
+                        Fire
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 50 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦500
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Fire',50)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- STRAWBERRY -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🍓
+                    </div>
+
+                    <div class="gift-name">
+                        Strawberry
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 100 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦1,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Strawberry',100)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- STAR -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        ⭐
+                    </div>
+
+                    <div class="gift-name">
+                        Star
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 250 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦2,500
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Star',250)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- TROPHY -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🏆
+                    </div>
+
+                    <div class="gift-name">
+                        Trophy
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 750 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦7,500
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Trophy',750)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- CAR -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🚗
+                    </div>
+
+                    <div class="gift-name">
+                        Car
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 1,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦10,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Car',1000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- SILVER -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🥈
+                    </div>
+
+                    <div class="gift-name">
+                        Silver
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 2,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦20,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Silver',2000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- DIAMOND -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        💎
+                    </div>
+
+                    <div class="gift-name">
+                        Diamond
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 5,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦50,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Diamond',5000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- GOLD -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🪙
+                    </div>
+
+                    <div class="gift-name">
+                        Gold
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 10,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦100,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Gold',10000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- EAGLE -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🦅
+                    </div>
+
+                    <div class="gift-name">
+                        Eagle
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 12,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦120,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Eagle',12000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- LION -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🦁
+                    </div>
+
+                    <div class="gift-name">
+                        Lion
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 15,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦150,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Lion',15000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- DRAGON -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🐉
+                    </div>
+
+                    <div class="gift-name">
+                        Dragon
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 20,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦200,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Dragon',20000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- ELEPHANT -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🐘
+                    </div>
+
+                    <div class="gift-name">
+                        Elephant
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 30,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦300,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Elephant',30000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+
+                <!-- WHALE -->
+
+                <div class="gift-card">
+
+                    <div class="gift-icon">
+                        🐋
+                    </div>
+
+                    <div class="gift-name">
+                        Whale
+                    </div>
+
+                    <div class="coin-price">
+                        🪙 50,000 Coins
+                    </div>
+
+                    <div class="naira-price">
+                        ₦500,000
+                    </div>
+
+                    <button class="send-button" onclick="sendGift('Whale',50000)">
+
+                        Send
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div id="message"></div>
+
+
+            <footer>
+
+                <strong>VicoPay Live</strong>
+                — Gift Shop
+
+                <br>
+
+                © 2026 VicoPay Live.
+                All rights reserved.
+
+            </footer>
+
+        </main>
+
+
+        <!-- RIGHT PANEL -->
+
+        <aside class="info">
+
+            <div class="info-box">
+
+                <h3>🎁 Gift Information</h3>
+
+                <ul>
+
+                    <li>
+                        ❤️ Love/Like is completely FREE.
+                    </li>
+
+                    <li>
+                        Paid gifts require Coin.
+                    </li>
+
+                    <li>
+                        Gifters purchase Coin before
+                        sending paid gifts.
+                    </li>
+
+                    <li>
+                        Gifts support your favorite hosts.
+                    </li>
+
+                    <li>
+                        Hosts receive Golden Stars
+                        from eligible paid gifts.
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <h3>💡 How It Works</h3>
+
+                <div class="steps">
+
+                    <div>
+                        <span class="step-number">1</span>
+                        Buy Coin
+                    </div>
+
+                    <div>
+                        <span class="step-number">2</span>
+                        Choose a Gift
+                    </div>
+
+                    <div>
+                        <span class="step-number">3</span>
+                        Send it to a Host
+                    </div>
+
+                    <div>
+                        <span class="step-number">4</span>
+                        Host receives the
+                        applicable reward
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="info-box" style="text-align:center;">
+
+                <div style="font-size:40px;">
+                    👑
+                </div>
+
+                <h3>
+                    Support Your Favorite Hosts
+                </h3>
+
+                <p>
+                    Every gift helps make
+                    the live room more exciting.
+                </p>
+
+                <div style="font-size:30px;">
+                    ❤️
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+
+    <script>
+        let coinBalance = 0;
+        const API_BASE = window.location.origin;
+
+        function getSenderId() {
+            return (
+                localStorage.getItem("vicoPayEmail") ||
+                localStorage.getItem("vicoPayUser") ||
+                ""
+            );
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const hostId =
+            urlParams.get("hostId") ||
+            localStorage.getItem("currentHostId") ||
+            "demo-host";
+
+        function showMessage(text, type) {
+            const message = document.getElementById("message");
+            message.textContent = text;
+            message.className = type;
+            message.style.display = "block";
+        }
+
+        async function loadWallet() {
+            const coinDisplay = document.getElementById("coinBalance");
+            const senderId = getSenderId();
+
+            console.log("Wallet user:", senderId);
+
+            if (!senderId) {
+                coinBalance = 0;
+                coinDisplay.textContent = "0";
+                console.log("No wallet email found.");
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    API_BASE + "/api/wallet/" + encodeURIComponent(senderId)
+                );
+                const data = await response.json();
+
+                console.log("Wallet response:", data);
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Unable to load wallet.");
+                }
+
+                coinBalance = Number(data.coins || 0);
+                coinDisplay.textContent = coinBalance.toLocaleString();
+
+                localStorage.setItem("vicoPayEmail", senderId);
+                localStorage.setItem("vicoPayUser", senderId);
+            } catch (error) {
+                console.error("Wallet loading error:", error);
+                coinBalance = 0;
+                coinDisplay.textContent = "0";
+            }
+        }
+
+        function buyCoin() {
+            window.location.href = "buy-coin.html";
+        }
+
+        async function sendLove() {
+            const senderId = getSenderId();
+
+            if (!senderId) {
+                showMessage("Please enter your account email first.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    API_BASE + "/api/live/send-love",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            senderId: senderId,
+                            hostId: hostId
+                        })
+                    }
+                );
+                // Permanently record the gift transaction
+                liveGiftTransactions.push({
+                    id:
+                        "GIFT-" +
+                        Date.now() +
+                        "-" +
+                        Math.floor(
+                            Math.random() * 100000
+                        ),
+
+                    gift: gift,
+
+                    coins: price,
+
+                    senderId: senderId,
+
+                    hostId: hostId,
+
+                    createdAt:
+                        new Date().toISOString()
+                });
+
+                // Save gift transaction permanently
+                savePermanentData();
+                const data = await response.json();
+                console.log("Love response:", data);
+
+                if (!response.ok || !data.success) {
+                    showMessage(
+                        data.message || "Unable to send Love.",
+                        "error"
+                    );
+                    return;
+                }
+
+                showMessage("❤️ Love sent to the host for FREE!", "success");
+            } catch (error) {
+                console.error("Love error:", error);
+                showMessage("Connection error. Please try again.", "error");
+            }
+        }
+
+        async function sendGift(name, price) {
+            const senderId = getSenderId();
+
+            if (!senderId) {
+                showMessage(
+                    "Please enter your email in Buy Coin first.",
+                    "error"
+                );
+                return;
+            }
+
+            await loadWallet();
+
+            if (coinBalance < price) {
+                showMessage(
+                    "You need more coin to send " +
+                    name +
+                    ". Please buy coin first.",
+                    "error"
+                );
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    API_BASE + "/api/gifts/send",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            gift: name,
+                            senderId: senderId,
+                            hostId: hostId
+                        })
+                    }
+                );
+
+                const data = await response.json();
+                console.log("Gift response:", data);
+
+                if (!response.ok || !data.success) {
+                    showMessage(
+                        data.message || "Unable to send gift.",
+                        "error"
+                    );
+                    return;
+                }
+
+                coinBalance = Number(
+                    data.sender?.remainingCoins ?? 0
+                );
+
+                document.getElementById("coinBalance").textContent =
+                    coinBalance.toLocaleString();
+
+                showMessage(
+                    "🎉 " +
+                    name +
+                    " sent successfully! " +
+                    price.toLocaleString() +
+                    " coin deducted.",
+                    "success"
+                );
+            } catch (error) {
+                console.error("Gift error:", error);
+                showMessage("Connection error. Please try again.", "error");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadWallet();
+        });
+    </script>
+
+</body>
+
+</html>

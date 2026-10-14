@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VicoPay Live — Your Moment Starts Now</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#38bdf8;--deep:#050816;--purple:#8b5cf6}
+body{
+  min-height:100vh;font-family:Inter,Segoe UI,Arial,sans-serif;color:#fff;
+  background:
+    radial-gradient(circle at 50% 35%,#164e9a 0,transparent 25%),
+    radial-gradient(circle at 15% 85%,#4c1d95 0,transparent 30%),
+    radial-gradient(circle at 90% 15%,#075985 0,transparent 28%),
+    #030611;
+  overflow-x:hidden;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;
+  background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
+  background-size:70px 70px;
+  mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 75%,transparent);
+}
+header{
+  position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;
+  padding:22px 5%;border-bottom:1px solid #ffffff12;background:#03061155;backdrop-filter:blur(15px)
+}
+.logo{font-size:25px;font-weight:950;letter-spacing:-1px}.logo span{color:var(--blue)}
+.status{display:flex;align-items:center;gap:8px;color:#cbd5e1;font-size:12px;font-weight:800}
+.dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 14px #22c55e;animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.35;transform:scale(.75)}}
+.hero{
+  position:relative;z-index:2;min-height:calc(100vh - 76px);display:flex;
+  align-items:center;justify-content:center;text-align:center;padding:65px 20px 90px;
+}
+.content{width:min(980px,100%)}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid #38bdf855;
+  background:#0ea5e912;border-radius:30px;color:#bae6fd;font-size:11px;font-weight:900;
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:25px
+}
+h1{
+  font-size:clamp(46px,8vw,92px);line-height:.94;letter-spacing:-5px;font-weight:950;
+  text-shadow:0 15px 60px #0009
+}
+h1 .gradient{
+  display:block;background:linear-gradient(90deg,#fff,#67e8f9,#60a5fa,#a78bfa);
+  -webkit-background-clip:text;color:transparent
+}
+.lead{
+  max-width:720px;margin:27px auto 0;color:#b6c5dd;font-size:18px;line-height:1.7
+}
+.quote{
+  margin:28px auto 0;max-width:700px;color:#fff;font-size:21px;font-weight:800;
+  line-height:1.45
+}
+.quote span{color:#67e8f9}
+.actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:36px}
+.btn{
+  border:0;border-radius:15px;padding:15px 25px;font-size:14px;font-weight:950;
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+  transition:.2s
+}
+.btn:hover{transform:translateY(-3px)}
+.primary{
+  color:#fff;background:linear-gradient(135deg,#2563eb,#06b6d4,#7c3aed);
+  box-shadow:0 15px 45px #2563eb55
+}
+.secondary{color:#dbeafe;background:#ffffff0b;border:1px solid #ffffff25}
+.stats{
+  display:grid;grid-template-columns:repeat(3,1fr);max-width:680px;margin:48px auto 0;
+  border:1px solid #ffffff16;border-radius:20px;background:#ffffff06;backdrop-filter:blur(10px);overflow:hidden
+}
+.stat{padding:18px 10px;border-right:1px solid #ffffff12}.stat:last-child{border-right:0}
+.stat b{display:block;font-size:23px}.stat span{color:#7f91ad;font-size:11px}
+.scroll{
+  position:absolute;bottom:25px;left:50%;transform:translateX(-50%);
+  color:#71819b;font-size:10px;letter-spacing:2px;text-transform:uppercase
+}
+.scroll:after{content:"↓";display:block;font-size:18px;margin-top:5px;color:#38bdf8}
+.reveal{animation:rise .9s ease both}
+.delay1{animation-delay:.12s}.delay2{animation-delay:.22s}.delay3{animation-delay:.34s}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.modal{
+  position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;
+  z-index:20;padding:20px
+}.modal.open{display:flex}
+.box{width:min(500px,100%);padding:30px;border:1px solid #ffffff22;border-radius:22px;background:#091326}
+.box h2{margin-bottom:12px}.box p{color:#9fb0c8;line-height:1.7;font-size:14px}.close{margin-top:20px;width:100%}
+@media(max-width:600px){
+  header{padding:18px 20px}.status{font-size:10px}
+  h1{letter-spacing:-3px}.lead{font-size:15px}.quote{font-size:17px}
+  .stats{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid #ffffff12}.stat:last-child{border-bottom:0}
+  .hero{padding-top:45px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Vico<span>Pay</span> Live</div>
+  <div class="status"><span class="dot"></span> People are live now</div>
+</header>
+
+<main class="hero">
+  <div class="content">
+
+    <div class="eyebrow reveal">✦ This is your moment</div>
+
+    <h1 class="reveal delay1">
+      Don't just watch.
+      <span class="gradient">Be seen.</span>
+    </h1>
+
+    <p class="lead reveal delay2">
+      Every voice has a story. Every talent deserves an audience.
+      Every moment can become the moment people remember.
+    </p>
+
+    <p class="quote reveal delay2">
+      <span>You came here for a reason.</span><br>
+      Maybe it's time to stop waiting and start showing the world what you can do.
+    </p>
+
+    <div class="actions reveal delay3">
+      <a class="btn primary" href="join-now.html">join now →</a>
+    </div>
+
+    <div class="stats reveal delay3">
+      <div class="stat"><b>LIVE</b><span>Real people. Real moments.</span></div>
+      <div class="stat"><b>YOUR VOICE</b><span>Your room. Your story.</span></div>
+      <div class="stat"><b>YOUR MOMENT</b><span>Start when you're ready.</span></div>
+    </div>
+  </div>
+
+  <div class="scroll">Scroll to begin</div>
+</main>
+
+<div class="modal" id="welcomeModal">
+  <div class="box">
+    <h2>Your moment starts here.</h2>
+    <p>
+      VicoPay Live is a place to discover live rooms, meet people,
+      share your interests and create your own live experience.
+      Take your first step and see where it leads.
+    </p>
+    <a class="btn primary close" href="join-now.html">Let's Go →</a>
+  </div>
+</div>
+
+<script>
+document.querySelector(".eyebrow").addEventListener("click",function(){
+  document.getElementById("welcomeModal").classList.add("open");
+});
+</script>
+</body>
+</html>

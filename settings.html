@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VicoPay Live - Settings</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#070b18;color:#fff}
+button,input,select{font:inherit}button{cursor:pointer}
+.top{height:68px;display:flex;align-items:center;padding:0 22px;background:#0b1228;border-bottom:1px solid #ffffff12}
+.logo{font-size:22px;font-weight:900}.logo span{color:#38bdf8}.back{margin-left:auto;color:#cbd5e1;text-decoration:none;font-weight:700}
+.wrap{max-width:1150px;margin:28px auto;padding:0 16px 50px;display:grid;grid-template-columns:250px 1fr;gap:20px}
+.card{background:#0d1428;border:1px solid #ffffff12;border-radius:20px}.nav{padding:12px}.nav h3{margin:10px 12px 14px;color:#94a3b8;font-size:13px}
+.nav button{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:12px;border-radius:11px;margin-bottom:4px;font-weight:700}
+.nav button:hover,.nav button.active{background:#17254a;color:#fff}.nav button.active{box-shadow:inset 3px 0 #38bdf8}
+.content{padding:26px}.title{margin:0;font-size:28px}.sub{color:#94a3b8;margin:7px 0 22px}
+.section{border-top:1px solid #ffffff10;padding:20px 0}.section:first-of-type{border-top:0}
+.section h2{margin:0 0 5px;font-size:18px}.desc{color:#94a3b8;font-size:13px;margin:0 0 12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 0;border-top:1px solid #ffffff08}
+.row:first-of-type{border-top:0}.name{font-weight:800}.info{color:#94a3b8;font-size:12px;margin-top:4px;line-height:1.4}
+.select,.btn{border-radius:10px;padding:10px 14px}.select{background:#111b35;color:#fff;border:1px solid #ffffff18}
+.btn{border:1px solid #ffffff18;background:#111b35;color:#fff;font-weight:800}.primary{border:0;background:linear-gradient(135deg,#38bdf8,#2563eb,#7c3aed)}a.btn{text-decoration:none;display:inline-block;white-space:nowrap}
+.danger{border-color:#ef444455;background:#35121c;color:#fca5a5}
+.switch{width:50px;height:28px;position:relative;flex:0 0 auto}.switch input{display:none}.slider{position:absolute;inset:0;background:#334155;border-radius:20px}.slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.switch input:checked+.slider{background:#2563eb}.switch input:checked+.slider:before{transform:translateX(22px)}
+.save{display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #ffffff12;padding-top:20px;margin-top:15px}.status{display:none;margin-top:12px;padding:11px;border-radius:10px;background:#0b2030;border:1px solid #38bdf833;color:#bae6fd}
+@media(max-width:760px){.wrap{grid-template-columns:1fr}.nav{display:flex;overflow:auto;gap:4px}.nav h3{display:none}.nav button{white-space:nowrap;width:auto}.row{align-items:flex-start}}
+@media(max-width:520px){.row{flex-direction:column}.row>*{align-self:flex-start}.save button{flex:1}}
+</style>
+</head>
+<body>
+<header class="top"><div class="logo">VicoPay <span>Live</span></div><a class="back" href="live-room.html">← Back to Live</a></header>
+<div class="wrap">
+<aside class="card nav">
+<h3>SETTINGS</h3>
+<button class="active" onclick="show('account',this)">👤 Account & Security</button>
+<button onclick="show('notifications',this)">🔔 Notifications</button>
+<button onclick="show('live',this)">🎥 Live Settings</button>
+<button onclick="show('privacy',this)">🔒 Privacy</button>
+<button onclick="show('chat',this)">💬 Chat</button>
+<button onclick="show('host-wallet',this)">💰 Wallet & Payments</button>
+<button onclick="show('appearance',this)">🎨 Appearance</button>
+<button onclick="show('help',this)">❓ Help & Support</button>
+<button onclick="show('accountActions',this)">⚠️ Account</button>
+</aside>
+
+<main class="card content">
+<h1 class="title">Settings</h1><p class="sub">Manage your VicoPay Live account, live streams, privacy and preferences.</p>
+
+<section id="account" class="section panel">
+<h2>👤 Account & Security</h2><p class="desc">Manage your login and account security.</p>
+<div class="row"><div><div class="name">Email / Username</div><div class="info" id="accountId">Not signed in</div></div><button class="btn" onclick="editAccount()">Manage</button></div>
+<div class="row"><div><div class="name">Password</div><div class="info">Change your account password.</div></div><button class="btn" onclick="changePassword()">Change</button></div>
+<div class="row"><div><div class="name">Remember me</div><div class="info">Keep this device signed in.</div></div><label class="switch"><input id="remember" type="checkbox"><span class="slider"></span></label></div>
+</section>
+
+<section id="notifications" class="section panel" style="display:none">
+<h2>🔔 Notifications</h2><p class="desc">Choose which alerts VicoPay Live can show you.</p>
+<div class="row"><div><div class="name">Live notifications</div><div class="info">Alerts when followed hosts go live.</div></div><label class="switch"><input id="liveNotifications" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="row"><div><div class="name">Gift notifications</div><div class="info">Alerts about gifts and creator activity.</div></div><label class="switch"><input id="giftNotifications" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="row"><div><div class="name">Message notifications</div><div class="info">Alerts for new messages.</div></div><label class="switch"><input id="messageNotifications" type="checkbox" checked><span class="slider"></span></label></div>
+</section>
+
+<section id="live" class="section panel" style="display:none">
+<h2>🎥 Live Settings</h2><p class="desc">Control your live-room defaults.</p>
+<div class="row"><div><div class="name">Video quality</div><div class="info">Default quality for your camera preview.</div></div><select id="videoQuality" class="select"><option>Auto</option><option>720p</option><option>480p</option><option>360p</option></select></div>
+<div class="row"><div><div class="name">Camera</div><div class="info">Check camera permission.</div></div><button class="btn" onclick="testMedia('video')">Test Camera</button></div>
+<div class="row"><div><div class="name">Microphone</div><div class="info">Check microphone permission.</div></div><button class="btn" onclick="testMedia('audio')">Test Microphone</button></div>
+<div class="row"><div><div class="name">Allow viewer comments</div><div class="info">Allow comments while you are live.</div></div><label class="switch"><input id="allowComments" type="checkbox" checked><span class="slider"></span></label></div>
+</section>
+
+<section id="privacy" class="section panel" style="display:none">
+<h2>🔒 Privacy</h2><p class="desc">Control how other people interact with you.</p>
+<div class="row"><div><div class="name">Online status</div><div class="info">Show when you are online.</div></div><label class="switch"><input id="onlineStatus" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="row"><div><div class="name">Allow direct messages</div><div class="info">Let other users send you messages.</div></div><label class="switch"><input id="directMessages" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="row"><div><div class="name">Blocked users</div><div class="info">Manage accounts you have blocked.</div></div><button class="btn" onclick="alert('Blocked-user management can be connected to your backend here.')">Manage</button></div>
+</section>
+
+<section id="chat" class="section panel" style="display:none">
+<h2>💬 Chat Settings</h2><p class="desc">Manage comments and chat moderation.</p>
+<div class="row"><div><div class="name">Comment filter</div><div class="info">Filter common unwanted comments.</div></div><label class="switch"><input id="commentFilter" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="row"><div><div class="name">Chat sounds</div><div class="info">Play a sound for new chat activity.</div></div><label class="switch"><input id="chatSounds" type="checkbox" checked><span class="slider"></span></label></div>
+</section>
+
+<section id="wallet" class="section panel" style="display:none">
+<h2>💰 Wallet & Payments</h2><p class="desc">Access your coins, transactions and creator payment areas.</p>
+<div class="row"><div><div class="name">Buy Coins</div><div class="info">Purchase coins for gifts and live interactions.</div></div><a class="btn primary" href="buy-coin.html" style="text-decoration:none">Buy Coins</a></div>
+<div class="row"><div><div class="name">Transaction history</div><div class="info">View payment and coin activity.</div></div><button class="btn" onclick="alert('Connect this to your transaction-history page.')">Open</button></div>
+<div class="row"><div><div class="name">Creator Wallet</div><div class="info">View creator earnings and withdrawal information.</div></div><button class="btn" onclick="location.href='host-wallet.html'">Open Wallet</button></div>
+</section>
+
+<section id="appearance" class="section panel" style="display:none">
+<h2>🎨 Appearance</h2><p class="desc">Choose how VicoPay Live looks.</p>
+<div class="row"><div><div class="name">Theme</div><div class="info">Select the interface theme.</div></div><select id="theme" class="select"><option value="dark">Dark</option><option value="light">Light</option></select></div>
+<div class="row"><div><div class="name">Live Effects</div><div class="info">Effects are controlled from the Go Live / Live Room.</div></div><button class="btn" onclick="location.href='live-room.html'">Open Live Room</button></div>
+</section>
+
+<section id="help" class="section panel" style="display:none">
+<h2>❓ Help & Support</h2><p class="desc">Find answers, check a payment, or message our support team.</p>
+<div class="row"><div><div class="name">Help Center</div><div class="info">Search answers about coins, going live, gifts, withdrawals and the Forex Academy.</div></div><a class="btn" href="help-center.html">Open</a></div>
+<div class="row"><div><div class="name">Contact support</div><div class="info">Send us a message and get a reply inside the app.</div></div><a class="btn primary" href="help-center.html#contact">Contact</a></div>
+<div class="row"><div><div class="name">My support tickets <span id="ticketBadge" style="display:none;color:#38bdf8;font-size:12px">● new reply</span></div><div class="info">See your conversations with support and our replies.</div></div><a class="btn" href="help-center.html#tickets">View</a></div>
+<div class="row"><div><div class="name">Paid but nothing arrived?</div><div class="info">Check a payment with your Paystack reference. Coins or Forex Academy access are applied if the payment was successful.</div></div><a class="btn" href="help-center.html#pay">Check payment</a></div>
+<div class="row"><div><div class="name">Report a problem</div><div class="info">Something is broken or not working? Tell us what happened.</div></div><a class="btn" href="help-center.html?topic=bug#contact">Report</a></div>
+<div class="row"><div><div class="name">Terms & Privacy</div><div class="info">Read how VicoPay Live works and how your data is used.</div></div><span><a class="btn" href="terms.html">Terms</a> <a class="btn" href="privacy.html">Privacy</a></span></div>
+</section>
+
+<section id="accountActions" class="section panel" style="display:none">
+<h2>⚠️ Account</h2><p class="desc">Sign out or manage your account.</p>
+<div class="row"><div><div class="name">Sign out</div><div class="info">Sign out from this device.</div></div><button class="btn" onclick="signOut()">Sign Out</button></div>
+<div class="row"><div><div class="name">Delete account</div><div class="info">Permanently removes your sign-in. Coin and gift history are kept for financial records.</div></div><button class="btn danger" onclick="deleteAccount()">Delete Account</button></div>
+</section>
+
+<div class="save"><button class="btn" onclick="resetSettings()">Reset</button><button class="btn primary" onclick="saveSettings()">Save Settings</button></div>
+<div id="status" class="status"></div>
+</main>
+</div>
+
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+<script>
+const keys=['remember','liveNotifications','giftNotifications','messageNotifications','allowComments','onlineStatus','directMessages','commentFilter','chatSounds'];
+function show(id,btn){document.querySelectorAll('.panel').forEach(x=>x.style.display=x.id===id?'block':'none');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
+function data(){let d={};keys.forEach(k=>d[k]=document.getElementById(k).checked);d.videoQuality=document.getElementById('videoQuality').value;d.theme=document.getElementById('theme').value;return d}
+function apply(d){keys.forEach(k=>{if(typeof d[k]==='boolean')document.getElementById(k).checked=d[k]});if(d.videoQuality)document.getElementById('videoQuality').value=d.videoQuality;if(d.theme)document.getElementById('theme').value=d.theme}
+function saveSettings(){localStorage.setItem('vicoPaySettings',JSON.stringify(data()));msg('✓ Settings saved on this device.')}
+function resetSettings(){apply({remember:false,liveNotifications:true,giftNotifications:true,messageNotifications:true,allowComments:true,onlineStatus:true,directMessages:true,commentFilter:true,chatSounds:true,videoQuality:'Auto',theme:'dark'});saveSettings();msg('Settings reset to default.')}
+function msg(t){let e=document.getElementById('status');e.textContent=t;e.style.display='block';clearTimeout(window.mt);window.mt=setTimeout(()=>e.style.display='none',3000)}
+function editAccount(){let old=localStorage.getItem('vicoPayEmail')||localStorage.getItem('vicoPayUser')||'';let v=prompt('Enter your email or username:',old);if(v&&v.trim()){localStorage.setItem('vicoPayUser',v.trim());document.getElementById('accountId').textContent=v.trim();msg('✓ Account identifier updated on this device.')}}
+
+async function changePassword(){
+  const currentPassword=prompt('Enter your current password:');
+  if(currentPassword===null) return;
+  const newPassword=prompt('Enter your new password (at least 8 characters):');
+  if(newPassword===null) return;
+  if(newPassword.length<8){ msg('❌ New password must be at least 8 characters.'); return; }
+
+  try{
+    const r=await fetch('/api/auth/change-password',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({currentPassword,newPassword})
+    });
+    const d=await r.json();
+    if(!r.ok||!d.success){ msg('❌ '+(d.message||'Unable to change password.')); return; }
+    msg('✓ Password changed successfully.');
+  }catch(e){
+    console.error('Change password error:',e);
+    msg('❌ Connection error. Please try again.');
+  }
+}
+
+async function deleteAccount(){
+  if(!confirm('This permanently deletes your VicoPay Live account. You will be signed out immediately. This cannot be undone. Continue?')) return;
+  const password=prompt('Enter your password to confirm account deletion:');
+  if(password===null) return;
+
+  try{
+    const r=await fetch('/api/auth/delete-account',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password})
+    });
+    const d=await r.json();
+    if(!r.ok||!d.success){ msg('❌ '+(d.message||'Unable to delete account.')); return; }
+    alert('Your account has been deleted.');
+    VicoAuth.signOut();
+  }catch(e){
+    console.error('Delete account error:',e);
+    msg('❌ Connection error. Please try again.');
+  }
+}
+async function testMedia(type){try{let s=await navigator.mediaDevices.getUserMedia(type==='video'?{video:true}:{audio:true});s.getTracks().forEach(t=>t.stop());msg('✓ '+(type==='video'?'Camera':'Microphone')+' permission is working.')}catch(e){msg((type==='video'?'Camera':'Microphone')+' permission was not granted.')}}
+function signOut(){VicoAuth.signOut()}
+function load(){let s=localStorage.getItem('vicoPaySettings');if(s)try{apply(JSON.parse(s))}catch(e){}let id=localStorage.getItem('vicoPayEmail')||localStorage.getItem('vicoPayUser');document.getElementById('accountId').textContent=id||'No signed-in account found'}
+load();
+(function(){
+  if(location.hash==='#help'){const b=[...document.querySelectorAll('.nav button')].find(x=>/show\('help'/.test(x.getAttribute('onclick')||''));if(b)show('help',b)}
+  fetch('/api/support/tickets').then(r=>r.json()).then(d=>{if(d&&d.success&&(d.tickets||[]).some(t=>t.unread)){const b=document.getElementById('ticketBadge');if(b)b.style.display='inline'}}).catch(()=>{});
+})();
+</script>
+</body>
+</html>

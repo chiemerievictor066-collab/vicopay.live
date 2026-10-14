@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VicoPay Live - Welcome</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:#fff;background:radial-gradient(circle at 20% 10%,rgba(0,145,255,.25),transparent 35%),radial-gradient(circle at 80% 90%,rgba(0,80,220,.2),transparent 35%),linear-gradient(135deg,#020817,#061a38 50%,#020817);display:flex;align-items:center;justify-content:center;padding:24px}
+.container{width:100%;max-width:760px;background:rgba(5,19,43,.94);border:1px solid rgba(70,160,255,.25);border-radius:26px;box-shadow:0 30px 90px rgba(0,0,0,.55);padding:42px}
+.logo{text-align:center;font-size:27px;font-weight:900;margin-bottom:30px}.logo span{color:#22a8ff}
+.progress{height:6px;background:#132945;border-radius:10px;overflow:hidden;margin-bottom:34px}.progress-bar{height:100%;width:25%;background:linear-gradient(90deg,#079cff,#0062dc);transition:.25s}
+.step{display:none}.step.active{display:block}
+.icon{width:70px;height:70px;border-radius:20px;display:grid;place-items:center;margin:0 auto 20px;background:linear-gradient(135deg,#078fff,#0054c7);font-size:32px}
+h1{text-align:center;font-size:32px;margin-bottom:10px}.subtitle{text-align:center;color:#91a8c4;font-size:14px;line-height:1.6;margin-bottom:30px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.option{min-height:62px;border:1px solid #234263;border-radius:14px;background:#091e3a;color:#dcecff;cursor:pointer;padding:14px;text-align:left;font-size:14px;transition:.2s}
+.option:hover{border-color:#159fff;transform:translateY(-1px)}.option.selected{border-color:#159fff;background:rgba(0,137,255,.15);box-shadow:0 0 0 2px rgba(21,159,255,.08)}
+.option strong{display:block;margin-bottom:4px}.option small{color:#7f96b0}
+.text-field{margin-top:4px}.text-field label{display:block;color:#d8e6f5;font-size:13px;font-weight:700;margin-bottom:8px}
+.text-field input,.text-field select{width:100%;height:52px;border:1px solid #234263;border-radius:13px;background:#081d38;color:#fff;padding:0 15px;outline:none;font-size:14px}
+.text-field input:focus,.text-field select:focus{border-color:#159fff;box-shadow:0 0 0 3px rgba(21,159,255,.1)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:30px}.btn{min-width:130px;height:50px;border-radius:13px;border:1px solid #294866;background:#0a203d;color:#fff;font-weight:800;cursor:pointer}
+.btn.primary{border:0;background:linear-gradient(135deg,#0a9fff,#005bd5);box-shadow:0 10px 25px rgba(0,115,255,.2)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.note{text-align:center;color:#647b96;font-size:11px;margin-top:22px;line-height:1.5}
+.message{display:none;text-align:center;color:#ffbdc8;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);padding:10px;border-radius:10px;margin-bottom:18px;font-size:12px}
+@media(max-width:600px){body{padding:12px}.container{padding:28px 20px;border-radius:20px}h1{font-size:27px}.options{grid-template-columns:1fr}.actions .btn{width:50%;min-width:0}}
+</style>
+<script src="auth.js"></script>
+</head>
+<body>
+<main class="container">
+<div class="logo">Vico<span>Pay</span> Live</div>
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+<div id="message" class="message"></div>
+
+<section class="step active" data-step="1">
+<div class="icon">👋</div>
+<h1>Welcome to VicoPay Live</h1>
+<p class="subtitle">Before you enter, tell us a few things so we can prepare your VicoPay Live experience.</p>
+<div class="text-field">
+<label for="displayName">What should we call you?</label>
+<input id="displayName" type="text" maxlength="40" placeholder="Enter your preferred name">
+</div>
+<div class="actions"><span></span><button class="btn primary" onclick="nextStep()">Continue →</button></div>
+</section>
+
+<section class="step" data-step="2">
+<div class="icon">👤</div>
+<h1>Which gender are you?</h1>
+<p class="subtitle">Choose the option you are comfortable sharing.</p>
+<div class="options">
+<button class="option" data-field="gender" data-value="Male" onclick="selectOption(this)"><strong>♂ Male</strong><small>Male</small></button>
+<button class="option" data-field="gender" data-value="Female" onclick="selectOption(this)"><strong>♀ Female</strong><small>Female</small></button>
+<button class="option" data-field="gender" data-value="Prefer not to say" onclick="selectOption(this)"><strong>Prefer not to say</strong><small>You can keep this private</small></button>
+</div>
+<div class="actions"><button class="btn" onclick="prevStep()">← Back</button><button class="btn primary" onclick="nextStep()">Continue →</button></div>
+</section>
+
+<section class="step" data-step="3">
+<div class="icon">🎂</div>
+<h1>What is your age range?</h1>
+<p class="subtitle">This helps us provide an appropriate experience.</p>
+<div class="options">
+<button class="option" data-field="ageRange" data-value="18-24" onclick="selectOption(this)"><strong>18–24</strong></button>
+<button class="option" data-field="ageRange" data-value="25-34" onclick="selectOption(this)"><strong>25–34</strong></button>
+<button class="option" data-field="ageRange" data-value="35-44" onclick="selectOption(this)"><strong>35–44</strong></button>
+<button class="option" data-field="ageRange" data-value="45+" onclick="selectOption(this)"><strong>45+</strong></button>
+</div>
+<div class="actions"><button class="btn" onclick="prevStep()">← Back</button><button class="btn primary" onclick="nextStep()">Continue →</button></div>
+</section>
+
+<section class="step" data-step="4">
+<div class="icon">🎥</div>
+<h1>What brings you to VicoPay Live?</h1>
+<p class="subtitle">Choose what you are most interested in.</p>
+<div class="options">
+<button class="option" data-field="interest" data-value="Watch live streams" onclick="selectOption(this)"><strong>📺 Watch live streams</strong></button>
+<button class="option" data-field="interest" data-value="Chat and meet people" onclick="selectOption(this)"><strong>💬 Chat and meet people</strong></button>
+<button class="option" data-field="interest" data-value="Send gifts" onclick="selectOption(this)"><strong>🎁 Send virtual gifts</strong></button>
+<button class="option" data-field="interest" data-value="Become a host" onclick="selectOption(this)"><strong>🔴 Become a host</strong></button>
+<button class="option" data-field="interest" data-value="Music and entertainment" onclick="selectOption(this)"><strong>🎵 Music & entertainment</strong></button>
+<button class="option" data-field="interest" data-value="Gaming" onclick="selectOption(this)"><strong>🎮 Gaming</strong></button>
+</div>
+<div class="actions"><button class="btn" onclick="prevStep()">← Back</button><button class="btn primary" onclick="finishSetup()">Enter VicoPay Live →</button></div>
+</section>
+
+<p class="note">You can change your account information later from the appropriate settings/profile areas.</p>
+</main>
+
+<script>
+let currentStep=1;
+const totalSteps=4;
+const answers={displayName:"",gender:"",ageRange:"",interest:""};
+
+function showStep(){
+document.querySelectorAll(".step").forEach(step=>step.classList.toggle("active",Number(step.dataset.step)===currentStep));
+document.getElementById("progressBar").style.width=(currentStep/totalSteps*100)+"%";
+document.getElementById("message").style.display="none";
+}
+function showError(text){
+const box=document.getElementById("message");box.textContent=text;box.style.display="block";
+}
+function validateStep(){
+if(currentStep===1){answers.displayName=document.getElementById("displayName").value.trim();if(!answers.displayName){showError("Please enter a name before continuing.");return false;}}
+if(currentStep===2&&!answers.gender){showError("Please choose a gender option.");return false;}
+if(currentStep===3&&!answers.ageRange){showError("Please choose your age range.");return false;}
+if(currentStep===4&&!answers.interest){showError("Please choose what you are interested in.");return false;}
+return true;
+}
+function nextStep(){if(!validateStep())return;if(currentStep<totalSteps){currentStep++;showStep();}}
+function prevStep(){if(currentStep>1){currentStep--;showStep();}}
+function selectOption(button){
+const field=button.dataset.field;
+document.querySelectorAll('[data-field="'+field+'"]').forEach(item=>item.classList.remove("selected"));
+button.classList.add("selected");answers[field]=button.dataset.value;document.getElementById("message").style.display="none";
+}
+function finishSetup(){
+if(!validateStep())return;
+localStorage.setItem("vicoPayOnboardingComplete","true");
+localStorage.setItem("vicoPayOnboarding",JSON.stringify(answers));
+window.location.href="home.html";
+}
+</script>
+</body>
+</html>

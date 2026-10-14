@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>vicopayLive - Profile</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #101522;
+            color: white;
+        }
+
+        .header {
+            background: #171d2b;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #19d98b;
+        }
+
+        .top-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .top-buttons a {
+            text-decoration: none;
+            color: white;
+            background: #242c3d;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background: #1a2130;
+            border: 1px solid #2b3549;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .profile-picture {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #242c3d;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            border: 4px solid #19d98b;
+        }
+
+        .username {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0 5px;
+        }
+
+        .handle {
+            color: #aeb7c8;
+            margin-bottom: 15px;
+        }
+
+        .online {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #19d98b;
+            font-weight: bold;
+        }
+
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background: #19d98b;
+            border-radius: 50%;
+        }
+
+        .bio {
+            max-width: 650px;
+            margin: 20px auto;
+            color: #c5ccda;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .stat {
+            background: #242c3d;
+            padding: 18px;
+            border-radius: 14px;
+        }
+
+        .stat-number {
+            font-size: 23px;
+            font-weight: bold;
+            color: #ffd54a;
+        }
+
+        .stat-label {
+            color: #aeb7c8;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action {
+            text-decoration: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-align: center;
+            background: #242c3d;
+            color: white;
+        }
+
+        .action.green {
+            background: #19d98b;
+            color: #07140e;
+        }
+
+        .action.gold {
+            background: #ffd54a;
+            color: #151515;
+        }
+
+        .action.pink {
+            background: #ff4fa3;
+            color: white;
+        }
+
+        .section {
+            margin-top: 25px;
+            background: #1a2130;
+            border: 1px solid #2b3549;
+            border-radius: 18px;
+            padding: 25px;
+        }
+
+        .section h2 {
+            margin-top: 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 13px 0;
+            border-bottom: 1px solid #2b3549;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #aeb7c8;
+        }
+
+        .value {
+            font-weight: bold;
+        }
+
+        .edit-button {
+            margin-top: 20px;
+            border: none;
+            background: #19d98b;
+            color: #07140e;
+            padding: 13px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media (max-width: 700px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                justify-content: center;
+            }
+        }
+    </style>
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="logo">
+            vicopay<span>Live</span>
+        </div>
+
+        <div class="top-buttons">
+
+            <a href="home.html">
+                Home
+            </a>
+
+            <a href="live-room.html">
+                Join Live Room
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- PROFILE -->
+
+    <div class="container">
+
+        <div class="profile-card">
+
+            <div class="profile-picture" id="profilePicture">
+                👤
+            </div>
+            <label style="display:inline-block;margin:10px 0;cursor:pointer;color:#19d98b;font-weight:bold;">
+                Change profile picture
+                <input id="profilePictureInput" type="file" accept="image/*" style="display:none" onchange="saveProfilePicture(event)">
+            </label>
+
+            <div class="username" id="profileName">
+                Live Creator
+            </div>
+
+            <div class="handle" id="profileUsername">
+                @livecreator
+            </div>
+
+            <div class="online">
+                <span class="online-dot"></span>
+                Online
+            </div>
+
+            <div class="bio" id="profileBio">
+                Welcome to my vicopayLive profile.
+                Join my live room, interact with me,
+                and send virtual gifts.
+            </div>
+
+
+            <!-- STATS -->
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <div
+                        class="stat-number"
+                        id="starCount"
+                    >
+                        0
+                    </div>
+
+                    <div class="stat-label">
+                        Golden Stars
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div
+                        class="stat-number"
+                        id="giftCount"
+                    >
+                        0
+                    </div>
+
+                    <div class="stat-label">
+                        Gifts Received
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div
+                        class="stat-number"
+                        id="hostRank"
+                    >
+                        —
+                    </div>
+
+                    <div class="stat-label">
+                        Host Rank
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div
+                        class="stat-number"
+                        id="followers"
+                    >
+                        0
+                    </div>
+
+                    <div class="stat-label">
+                        Followers
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="actions">
+
+                <a
+                    href="live-room-dashboard.html"
+                    class="action green"
+                >
+                    📊 Creator Dashboard
+                </a>
+
+                <a
+                    href="host-wallet.html"
+                    class="action gold"
+                >
+                    ⭐ My Live Room Wallet
+                </a>
+
+                <a
+                    href="creator-withdrawal.html"
+                    class="action pink"
+                >
+                    💵 Creator Withdrawal
+                </a>
+
+                <a
+                    href="hosts.html"
+                    class="action"
+                >
+                    🏆 Host Ranking
+                </a>
+
+                <a
+                    href="gifters.html"
+                    class="action"
+                >
+                    🎁 Gifter Ranking
+                </a>
+
+                <a
+                    href="gift-shop.html"
+                    class="action"
+                >
+                    🎁 Gift Shop
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- PROFILE INFORMATION -->
+
+        <div class="section">
+
+            <h2>Profile Information</h2>
+
+            <div class="info-row">
+
+                <span class="label">
+                    Creator Name
+                </span>
+
+                <span
+                    class="value"
+                    id="infoName"
+                >
+                    Live Creator
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+                    Username
+                </span>
+
+                <span
+                    class="value"
+                    id="infoUsername"
+                >
+                    @livecreator
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+                    Account Type
+                </span>
+
+                <span class="value">
+                    Live Room Creator
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+                    Monthly Star Requirement
+                </span>
+
+                <span class="value">
+                    4,000 ⭐
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+                    First Payout Level
+                </span>
+
+                <span class="value">
+                    $9
+                </span>
+
+            </div>
+
+
+            <button
+                class="edit-button"
+                onclick="editProfile()"
+            >
+                ✏️ Edit Profile
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- PROFILE SCRIPT -->
+
+    <script>
+
+        const API_BASE = window.location.origin;
+
+        function getUserId() {
+            return localStorage.getItem("vicoPayEmail") || localStorage.getItem("vicoPayUser") || "";
+        }
+
+        async function loadProfile() {
+
+            const userId = getUserId();
+
+            const name = localStorage.getItem("vicoPayDisplayName") || userId || "VicoPay Host";
+            const nameEl = document.getElementById("profileName");
+            if (nameEl && userId) nameEl.textContent = name;
+            const infoName = document.getElementById("infoName");
+            if (infoName && userId) infoName.textContent = name;
+            const handle = document.getElementById("profileUsername");
+            if (handle && userId) handle.textContent = "@" + String(userId).split("@")[0];
+            const infoUser = document.getElementById("infoUsername");
+            if (infoUser && userId) infoUser.textContent = "@" + String(userId).split("@")[0];
+
+            if (!userId) return;
+
+            try {
+                const [earnRes, followRes] = await Promise.all([
+                    fetch(API_BASE + "/api/creator/earnings?email=" + encodeURIComponent(userId)),
+                    fetch(API_BASE + "/api/followers/" + encodeURIComponent(userId))
+                ]);
+
+                const earn = await earnRes.json();
+                const fol = await followRes.json();
+
+                if (earn.success) {
+                    document.getElementById("starCount").textContent =
+                        Number(earn.stars || 0).toLocaleString();
+                }
+
+                if (fol.success) {
+                    document.getElementById("followers").textContent =
+                        Number(fol.count || 0).toLocaleString();
+                }
+
+                // Gift count comes from the host's real received-gift stats
+                const roomRes = await fetch(API_BASE + "/api/live/room/" + encodeURIComponent(userId));
+                const room = await roomRes.json();
+                if (room.success) {
+                    document.getElementById("giftCount").textContent =
+                        Number(room.gifts || 0).toLocaleString();
+                }
+
+            } catch (error) {
+                console.error("Profile load error:", error);
+            }
+        }
+
+
+        function editProfile() {
+
+            alert(
+                "Profile editing will be connected next."
+            );
+
+        }
+
+
+
+        function saveProfilePicture(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+            if (file.size > 3 * 1024 * 1024) { alert('Please choose an image smaller than 3 MB.'); return; }
+            const reader = new FileReader();
+            reader.onload = function() { localStorage.setItem('vicoPayProfileImage', reader.result); applyProfilePicture(); };
+            reader.readAsDataURL(file);
+        }
+        function applyProfilePicture() {
+            const src = localStorage.getItem('vicoPayProfileImage');
+            const box = document.getElementById('profilePicture');
+            if (src && box) { box.textContent = ''; box.style.backgroundImage = `url("${src}")`; box.style.backgroundSize='cover'; box.style.backgroundPosition='center'; }
+        }
+        applyProfilePicture();
+
+        loadProfile();
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vicopay Global — Forex Livestream</title>
+<style>
+  :root{
+    --ink:#0d1117;
+    --panel:#141b24;
+    --panel-2:#1b2430;
+    --line:#2a3441;
+    --gold:#e0a640;
+    --green:#3fb27f;
+    --red:#e0605c;
+    --text:#e8ecf1;
+    --text-dim:#8b98a9;
+    --font-head: Georgia, 'Times New Roman', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-num: 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.5;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand h1{
+    font-family:var(--font-head);
+    font-size:22px;
+    font-weight:400;
+    letter-spacing:0.3px;
+  }
+  .brand span{
+    color:var(--gold);
+    font-style:italic;
+  }
+  .live-pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:6px 14px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+  .live-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--red);
+    animation:pulse 1.6s in
+    nite;
+  }
+  @keyframes pulse{
+    0%{opacity:1;} 50%{opacity:0.35;} 100%{opacity:1;}
+  }
+  .viewer-count{color:var(--text);font-family:var(--font-num);}
+
+  main{
+    display:grid;
+    grid-template-columns: 2.3fr 1fr;
+    gap:1px;
+    background:var(--line);
+    min-height:calc(100vh - 64px);
+  }
+  @media (max-width: 900px){
+    main{grid-template-columns:1fr;}
+  }
+
+  .stage{
+    background:var(--ink);
+    display:flex;
+    flex-direction:column;
+  }
+  .stage-head{
+    padding:16px 20px 0 20px;
+  }
+  .stage-head h2{
+    font-family:var(--font-head);
+    font-weight:400;
+    font-size:18px;
+    color:var(--text);
+  }
+  .stage-head p{
+    color:var(--text-dim);
+    font-size:13px;
+    margin-top:4px;
+  }
+  #chart-container{
+    flex:1;
+    min-height:480px;
+    padding:16px 20px 20px 20px;
+  }
+  .tv-frame{
+    height:100%;
+    width:100%;
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+
+  .chat-panel{
+    background:var(--panel);
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 64px);
+  }
+  .chat-head{
+    padding:16px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .chat-head h3{
+    font-family:var(--font-head);
+    font-weight:400;
+    font-size:16px;
+  }
+  .chat-head p{
+    color:var(--text-dim);
+    font-size:12px;
+    margin-top:2px;
+  }
+  #messages{
+    flex:1;
+    overflow-y:auto;
+    padding:14px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .msg{
+    font-size:14px;
+  }
+  .msg .who{
+    color:var(--gold);
+    font-weight:600;
+    margin-right:6px;
+  }
+  .msg .country{
+    color:var(--text-dim);
+    font-size:11px;
+    margin-left:6px;
+  }
+  .msg .body{
+    color:var(--text);
+  }
+  .msg.system{
+    color:var(--text-dim);
+    font-style:italic;
+    font-size:12px;
+  }
+  form#chat-form{
+    display:flex;
+    border-top:1px solid var(--line);
+    padding:12px;
+    gap:8px;
+  }
+  #chat-name{
+    width:88px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--text);
+    padding:8px 10px;
+    font-size:13px;
+  }
+  #chat-input{
+    flex:1;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--text);
+    padding:8px 12px;
+    font-size:14px;
+  }
+  #chat-input:focus, #chat-name:focus{
+    outline:1px solid var(--gold);
+  }
+  #chat-form button{
+    background:var(--gold);
+    color:#1a1305;
+    border:none;
+    border-radius:6px;
+    padding:0 16px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  #chat-form button:hover{
+    filter:brightness(1.08);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Vicopay <span>Global</span></h1>
+  </div>
+  <div class="live-pill">
+    <span class="live-dot"></span>
+    LIVE — <span class="viewer-count" id="viewer-count">0</span> watching worldwide
+  </div>
+</header>
+
+<main>
+  <section class="stage">
+    <div class="stage-head">
+      <h2>Forex Livestream</h2>
+      <p>Live global chart room — everyone worldwide watches and chats in the same room.</p>
+    </div>
+    <div id="chart-container">
+      <div class="tv-frame">
+        <!-- TradingView widget -->
+        <div class="tradingview-widget-container" style="height:100%;width:100%">
+          <div id="tradingview_chart" style="height:100%;width:100%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="chat-panel">
+    <div class="chat-head">
+      <h3>Global Chat</h3>
+      <p>One room. Every country. Real time.</p>
+    </div>
+    <div id="messages">
+      <div class="msg system">Connecting to the global room…</div>
+    </div>
+    <form id="chat-form">
+      <input id="chat-name" type="text" placeholder="Name" maxlength="16" required>
+      <input id="chat-input" type="text" placeholder="Say something…" maxlength="300" required autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+  </aside>
+</main>
+
+<!-- ============================================================
+     1) TradingView chart (free, no signup needed)
+     ============================================================ -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+  new TradingView.widget({
+    "container_id": "tradingview_chart",
+    "autosize": true,
+    "symbol": "FX:EURUSD",
+    "interval": "15",
+    "timezone": "Etc/UTC",
+    "theme": "dark",
+    "style": "1",
+    "locale": "en",
+    "toolbar_bg": "#141b24",
+    "enable_publishing": false,
+    "hide_top_toolbar": false,
+    "allow_symbol_change": true,
+    "studies": ["MASimple@tv-basicstudies"]
+  });
+</script>
+
+<!-- ============================================================
+     2) Global live chat, powered by Firebase Realtime Database
+     Firebase's free tier is enough to run a global chat room.
+     Steps to activate (see instructions below the code):
+       a) Create a free Firebase project
+       b) Turn on Realtime Database
+       c) Paste your config into firebaseConfig below
+     ============================================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getDatabase, ref, push, onChildAdded, onValue,
+    serverTimestamp, onDisconnect, set, remove
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // ---- PASTE YOUR OWN FIREBASE CONFIG HERE ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyDruIpDOrEkV6VVKV85-c2wrICfQtIScoc",
+
+    authDomain: "vicopay-global.firebaseapp.com",
+    databaseURL:  "https://vicopay-global-default-rtdb.firebaseio.com",
+    projectId:  "vicopay-global",
+    storageBucket:  "vicopay-global.firebasestorage.app",
+    messagingSenderId: "1043769850241",
+    appId:  "1:1043769850241:web:a8a166d0688c914199d080",
+  };
+  // ----------------------------------------------
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const messagesEl = document.getElementById("messages");
+  const form = document.getElementById("chat-form");
+  const nameInput = document.getElementById("chat-name");
+  const textInput = document.getElementById("chat-input");
+  const viewerCountEl = document.getElementById("viewer-count");
+
+  // one shared global room — every visitor worldwide lands here
+  const roomRef = ref(db, "vicopayglobal/rooms/global-chat");
+  const presenceRef = ref(db, "vicopayglobal/presence");
+  const myPresenceRef = push(presenceRef);
+
+  // presence: track who's currently watching, from anywhere
+  set(myPresenceRef, true);
+  onDisconnect(myPresenceRef).remove();
+  onValue(presenceRef, (snap) => {
+    const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+    viewerCountEl.textContent = count;
+  });
+
+  messagesEl.innerHTML = "";
+
+  onChildAdded(roomRef, (snap) => {
+    const m = snap.val();
+    const row = document.createElement("div");
+    row.className = "msg";
+    row.innerHTML =
+      `<span class="who">${escapeHtml(m.name)}</span>` +
+      (m.country ? `<span class="country">${escapeHtml(m.country)}</span>` : "") +
+      `<div class="body">${escapeHtml(m.text)}</div>`;
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+
+  let lastSent = 0;
+  const blockedWords = ["http://", "https://", "www."]; // add words as needed
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const now = Date.now();
+    if (now - lastSent < 2000) return; // 2-second cooldown, stops rapid spam
+    const name = nameInput.value.trim();
+    const text = textInput.value.trim();
+    if (!name || !text) return;
+    if (blockedWords.some(w => text.toLowerCase().includes(w))) {
+      alert("Links aren't allowed in chat.");
+      return;
+    }
+    lastSent = now;
+    push(roomRef, {
+      name,
+      text,
+      ts: serverTimestamp()
+    });
+    textInput.value = "";
+  });
+
+  function escapeHtml(str){
+    const d = document.createElement("div");
+    d.textContent = str ?? "";
+    return d.innerHTML;
+  }
+</script>
+
+</body>
+</html>

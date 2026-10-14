@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>VicoPay Live - Creator Withdrawal</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg, #061a3b, #0b3d70);
+    color: white;
+    min-height: 100vh;
+}
+
+/* HEADER */
+
+header {
+    background: #061a3b;
+    padding: 18px 25px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    border-bottom: 2px solid #f5b400;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #f5b400;
+}
+
+.host-label {
+    background: #102c5b;
+    border: 1px solid #f5b400;
+
+    padding: 10px 18px;
+
+    border-radius: 25px;
+
+    font-weight: bold;
+}
+
+/* CONTAINER */
+
+.container {
+    width: 92%;
+    max-width: 700px;
+
+    margin: 40px auto;
+}
+
+/* TITLE */
+
+.title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.title h1 {
+    color: #f5b400;
+    margin-bottom: 10px;
+}
+
+.title p {
+    color: #cbd5e1;
+}
+
+/* WITHDRAWAL CARD */
+
+.withdraw-card {
+    background: linear-gradient(
+        145deg,
+        #0a2854,
+        #0b3d70
+    );
+
+    border: 2px solid #f5b400;
+
+    border-radius: 22px;
+
+    padding: 30px;
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,0.25);
+}
+
+/* BALANCE */
+
+.balance {
+    text-align: center;
+
+    padding: 20px;
+
+    background: #071f42;
+
+    border-radius: 15px;
+
+    margin-bottom: 25px;
+}
+
+.balance-label {
+    color: #aebfd2;
+
+    font-size: 14px;
+}
+
+.balance-amount {
+    color: #ffd54a;
+
+    font-size: 42px;
+
+    font-weight: bold;
+
+    margin-top: 8px;
+}
+
+/* FORM */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #dceaff;
+
+    font-weight: bold;
+}
+
+input,
+select {
+    width: 100%;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    border: 1px solid #41698f;
+
+    background: #061a3b;
+
+    color: white;
+
+    font-size: 16px;
+
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #f5b400;
+}
+/* WITHDRAWAL SECURITY */
+
+.security-check {
+    background: #071f42;
+    border: 1px solid #41698f;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.security-title {
+    color: #ffd54a;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 18px;
+}
+
+.security-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #18395f;
+
+    color: #dceaff;
+}
+
+.security-item:last-of-type {
+    border-bottom: none;
+}
+
+.security-item strong {
+    color: #f87171;
+}
+
+.security-progress {
+    margin-top: 15px;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background: #102c5b;
+
+    color: #cbd5e1;
+
+    text-align: center;
+
+    font-size: 14px;
+}
+
+.security-ready {
+    color: #86efac !important;
+}
+
+.security-locked {
+    color: #fca5a5 !important;
+}
+/* WITHDRAW BUTTON */
+
+.withdraw-btn {
+    width: 100%;
+
+    margin-top: 10px;
+
+    padding: 15px;
+
+    border: none;
+
+    border-radius: 28px;
+
+    background: #f5b400;
+
+    color: #111;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.withdraw-btn:hover {
+    background: #ffd54a;
+}
+
+.withdraw-btn:disabled {
+    background: #596678;
+
+    color: #b9c1cb;
+
+    cursor: not-allowed;
+}
+
+/* MESSAGE */
+
+.message {
+    display: none;
+
+    margin-top: 20px;
+
+    padding: 15px;
+
+    border-radius: 12px;
+
+    text-align: center;
+
+    line-height: 1.5;
+}
+
+.success {
+    display: block;
+
+    background: #14532d;
+
+    color: #bbf7d0;
+}
+
+.error {
+    display: block;
+
+    background: #7f1d1d;
+
+    color: #fecaca;
+}
+
+/* INFO */
+
+.info {
+    margin-top: 20px;
+
+    padding: 15px;
+
+    background: #071f42;
+
+    border-radius: 12px;
+
+    color: #b9cbe0;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+/* BACK */
+
+.back {
+    display: block;
+
+    margin-top: 25px;
+
+    text-align: center;
+
+    color: #ffd54a;
+
+    text-decoration: none;
+}
+
+.back:hover {
+    text-decoration: underline;
+}
+
+/* FOOTER */
+
+footer {
+    text-align: center;
+
+    padding: 35px;
+
+    color: #9ca3af;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 15px;
+    }
+
+    .logo {
+        font-size: 22px;
+    }
+
+    .host-label {
+        font-size: 13px;
+    }
+
+    .container {
+        width: 94%;
+    }
+
+    .withdraw-card {
+        padding: 22px;
+    }
+
+    .balance-amount {
+        font-size: 34px;
+    }
+
+}
+
+</style>
+
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div class="logo">
+        VicoPay <span>Live</span>
+    </div>
+
+    <div class="host-label">
+        💰 Creator Withdrawal
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <div class="title">
+
+        <h1>
+            🏦 Withdraw Your Money
+        </h1>
+
+        <p>
+            Receive your eligible creator earnings.
+        </p>
+
+    </div>
+
+
+    <section class="withdraw-card">
+
+
+        <!-- AVAILABLE BALANCE -->
+
+        <div class="balance">
+
+            <div class="balance-label">
+                Available Withdrawal
+            </div>
+
+            <div
+                class="balance-amount"
+                id="withdrawBalance">
+
+                $0.00
+
+            </div>
+
+        </div>
+<!-- WITHDRAWAL SECURITY CHECK -->
+
+<div class="security-check" id="withdrawalSecurity">
+
+    <div class="security-title">
+        🔐 Withdrawal Security
+    </div>
+
+    <div class="security-item">
+        <span>Host Wallet Mode</span>
+        <strong id="walletModeStatus">🔒 Checking...</strong>
+    </div>
+
+    <div class="security-item">
+        <span>Daily Live Requirement</span>
+        <strong id="hoursStatus">🔒 Checking...</strong>
+    </div>
+
+    <div class="security-item">
+        <span>Golden Stars</span>
+        <strong id="starsStatus">🔒 Checking...</strong>
+    </div>
+
+    <div class="security-progress">
+        <div id="securityMessage">
+            Checking withdrawal eligibility...
+        </div>
+    </div>
+
+</div>
+
+        <!-- WITHDRAWAL METHOD -->
+
+        <div class="form-group">
+
+            <label for="method">
+                Withdrawal Method
+            </label>
+
+            <select id="method">
+
+                <option value="">
+                    Select withdrawal method
+                </option>
+
+                <option value="bank">
+                    🏦 Bank Transfer
+                </option>
+
+                <option value="paystack">
+                    💳 Paystack
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- ACCOUNT NAME -->
+
+        <div class="form-group">
+
+            <label for="accountName">
+                Account Holder Name
+            </label>
+
+            <input
+                type="text"
+                id="accountName"
+                placeholder="Enter account holder name">
+
+        </div>
+
+
+        <!-- BANK -->
+
+        <div class="form-group">
+
+            <label for="bankName">
+                Bank Name
+            </label>
+
+            <input
+                type="text"
+                id="bankName"
+                placeholder="Enter your bank name">
+
+        </div>
+
+
+        <!-- ACCOUNT NUMBER -->
+
+        <div class="form-group">
+
+            <label for="accountNumber">
+                Account Number
+            </label>
+
+            <input
+                type="text"
+                id="accountNumber"
+                inputmode="numeric"
+                maxlength="20"
+                placeholder="Enter account number">
+
+        </div>
+
+
+        <!-- AMOUNT -->
+
+        <div class="form-group">
+
+            <label for="amount">
+                Withdrawal Amount
+            </label>
+
+            <input
+                type="number"
+                id="amount"
+                min="9"
+                step="9"
+                placeholder="Amount in $9 steps (e.g. 9, 18, 27)">
+            <small style="display:block;margin-top:6px;color:#9fb3c8">Each $9 uses 3,000 Golden Stars.</small>
+
+        </div>
+
+
+        <!-- BUTTON -->
+
+        <button
+    class="withdraw-btn"
+    id="withdrawButton"
+    onclick="submitWithdrawal()"
+    disabled>
+
+    🔒 Withdrawal Locked
+
+</button>
+
+        <!-- MESSAGE -->
+
+        <div
+            id="message"
+            class="message">
+        </div>
+
+
+        <!-- INFO -->
+
+        <div class="info">
+
+            Your withdrawal request will be reviewed
+            before payment is released.
+
+        </div>
+
+
+    </section>
+
+
+    <a
+        href="host-wallet.html"
+        class="back">
+
+        ← Back to Host Wallet
+
+    </a>
+
+
+</main>
+
+
+<footer>
+
+    <strong>VicoPay Live</strong>
+
+    <br><br>
+
+    Creator Payments • Withdrawals
+
+    <br><br>
+
+    © 2026 VicoPay Live.
+    All rights reserved.
+
+</footer>
+
+
+<script>
+/*
+=====================================================
+CREATOR WITHDRAWAL SECURITY
+=====================================================
+
+Withdrawal is unlocked ONLY when the server confirms:
+
+1. Host Wallet Mode is active
+2. Creator has completed 3 live hours for the day
+3. Creator has reached at least 3,000 Golden Stars
+4. Creator has an eligible withdrawal balance
+
+The browser does NOT decide eligibility.
+server.js remains the final authority.
+=====================================================
+*/
+
+const API_BASE = window.location.origin;
+
+function getUserId(){
+    return localStorage.getItem("vicoPayEmail") || localStorage.getItem("vicoPayUser") || "";
+}
+
+let withdrawalEligible = false;
+let availableBalance = 0;
+
+async function checkWithdrawalSecurity() {
+
+    const walletModeStatus =
+        document.getElementById("walletModeStatus");
+
+    const hoursStatus =
+        document.getElementById("hoursStatus");
+
+    const starsStatus =
+        document.getElementById("starsStatus");
+
+    const securityMessage =
+        document.getElementById("securityMessage");
+
+    const withdrawButton =
+        document.getElementById("withdrawButton");
+
+    const userId = getUserId();
+
+    if (!userId) {
+        walletModeStatus.textContent = "🔒 Sign in required";
+        walletModeStatus.className = "security-locked";
+        withdrawButton.disabled = true;
+        withdrawButton.textContent = "🔒 Sign In First";
+        securityMessage.textContent = "Please sign in to check your withdrawal eligibility.";
+        securityMessage.className = "security-locked";
+        return;
+    }
+
+    try {
+
+        const [monthlyRes, withdrawRes] = await Promise.all([
+            fetch(API_BASE + "/api/creator/monthly-status?email=" + encodeURIComponent(userId)),
+            fetch(API_BASE + "/api/creator/withdrawal?email=" + encodeURIComponent(userId))
+        ]);
+
+        if (!monthlyRes.ok || !withdrawRes.ok) {
+            throw new Error("Security service unavailable.");
+        }
+
+        const monthly = await monthlyRes.json();
+        const data = await withdrawRes.json();
+
+        if (!monthly.success || !data.success) {
+            throw new Error(monthly.message || data.message || "Unable to load withdrawal status.");
+        }
+
+
+        /*
+        HOST WALLET MODE
+        (data loaded successfully = the account is recognized)
+        */
+
+        if (!data.banned) {
+
+            walletModeStatus.textContent =
+                "✓ Active";
+
+            walletModeStatus.className =
+                "security-ready";
+
+        } else {
+
+            walletModeStatus.textContent =
+                "🔒 Blocked";
+
+            walletModeStatus.className =
+                "security-locked";
+
+        }
+
+
+        /*
+        DAILY LIVE HOURS (today's hours, from real recorded sessions)
+        */
+
+        const liveHours =
+            Number(monthly.todayHours || 0);
+
+        hoursStatus.textContent =
+            liveHours.toFixed(1) +
+            " / 3 hours";
+
+        if (liveHours >= 3) {
+
+            hoursStatus.textContent =
+                "✓ " +
+                liveHours.toFixed(1) +
+                " / 3 hours";
+
+            hoursStatus.className =
+                "security-ready";
+
+        } else {
+
+            hoursStatus.className =
+                "security-locked";
+
+        }
+
+
+        /*
+        GOLDEN STARS
+        */
+
+        const stars =
+            Number(data.stars || monthly.stars || 0);
+
+        starsStatus.textContent =
+            stars.toLocaleString() +
+            " / 3,000";
+
+        if (stars >= 3000) {
+
+            starsStatus.textContent =
+                "✓ " +
+                stars.toLocaleString() +
+                " / 3,000";
+
+            starsStatus.className =
+                "security-ready";
+
+        } else {
+
+            starsStatus.className =
+                "security-locked";
+
+        }
+
+
+        /*
+        AVAILABLE BALANCE
+        */
+
+        availableBalance = Number(data.payout || 0);
+
+        document.getElementById("withdrawBalance").textContent =
+            "$" + availableBalance.toFixed(2);
+
+        const amountField = document.getElementById("amount");
+        if (amountField && !amountField.value) amountField.value = availableBalance.toFixed(2);
+        if (amountField) amountField.max = availableBalance.toFixed(2);
+
+
+        /*
+        FINAL ELIGIBILITY
+        */
+
+        withdrawalEligible =
+            data.withdrawalOpen === true && data.banned !== true;
+
+
+        if (data.banned) {
+
+            withdrawButton.disabled = true;
+            withdrawButton.textContent = "🚫 Withdrawal Blocked";
+            securityMessage.textContent =
+                "This account is blocked from withdrawal after repeated failed attempts. Contact support.";
+            securityMessage.className = "security-locked";
+
+        } else if (withdrawalEligible) {
+
+            withdrawButton.disabled =
+                false;
+
+            withdrawButton.textContent =
+                "💰 Request Withdrawal";
+
+            securityMessage.textContent =
+                "✓ All withdrawal requirements completed.";
+
+            securityMessage.className =
+                "security-ready";
+
+        } else {
+
+            withdrawButton.disabled =
+                true;
+
+            withdrawButton.textContent =
+                "🔒 Withdrawal Locked";
+
+            securityMessage.textContent =
+                (Array.isArray(data.lockedReasons) && data.lockedReasons.length)
+                    ? data.lockedReasons.join(" ")
+                    : (data.message || "Complete all requirements before requesting withdrawal.");
+
+            securityMessage.className =
+                "security-locked";
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error("Withdrawal security check error:", error);
+
+        withdrawalEligible =
+            false;
+
+        withdrawButton.disabled =
+            true;
+
+        withdrawButton.textContent =
+            "🔒 Withdrawal Locked";
+
+        securityMessage.textContent =
+            "Unable to verify withdrawal security.";
+
+        securityMessage.className =
+            "security-locked";
+
+    }
+
+}
+
+
+/*
+CHECK SECURITY WHEN PAGE LOADS
+*/
+
+document.addEventListener(
+    "DOMContentLoaded",
+    checkWithdrawalSecurity
+);
+/*
+=====================================================
+VICOPAY LIVE CREATOR WITHDRAWAL
+=====================================================
+
+This page is the withdrawal interface.
+
+The actual eligibility must be verified by
+server.js before a real withdrawal is processed.
+
+The creator must already have satisfied the
+requirements established in the Host Wallet.
+=====================================================
+*/
+
+
+/*
+    WITHDRAWAL
+    (availableBalance is populated for real by
+    checkWithdrawalSecurity() above, from server.js)
+*/
+
+async function submitWithdrawal() {
+
+    const method =
+        document.getElementById(
+            "method"
+        ).value;
+
+
+    const accountName =
+        document.getElementById(
+            "accountName"
+        ).value.trim();
+
+
+    const bankName =
+        document.getElementById(
+            "bankName"
+        ).value.trim();
+
+
+    const accountNumber =
+        document.getElementById(
+            "accountNumber"
+        ).value.trim();
+
+
+    const amount =
+        Number(
+            document.getElementById(
+                "amount"
+            ).value
+        );
+
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+
+    /*
+        RESET MESSAGE
+    */
+
+    message.className =
+        "message";
+
+    message.style.display =
+        "none";
+
+
+    /*
+        CHECK METHOD
+    */
+
+    if (!method) {
+
+        showError(
+            "Please select a withdrawal method."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        CHECK ACCOUNT NAME
+    */
+
+    if (!accountName) {
+
+        showError(
+            "Please enter the account holder name."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        CHECK BANK
+    */
+
+    if (!bankName) {
+
+        showError(
+            "Please enter your bank name."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        CHECK ACCOUNT NUMBER
+    */
+
+    if (!accountNumber) {
+
+        showError(
+            "Please enter your account number."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        CHECK ACCOUNT NUMBER
+    */
+
+    if (!/^[0-9]+$/.test(accountNumber)) {
+
+        showError(
+            "Account number must contain numbers only."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        CHECK AMOUNT
+    */
+
+    if (!amount || amount <= 0) {
+
+        showError(
+            "Please enter a valid withdrawal amount."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        CHECK BALANCE
+    */
+
+    if (amount > availableBalance) {
+
+        showError(
+            "The withdrawal amount is greater than your available balance."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        SHOW PROCESSING
+    */
+
+    message.textContent =
+        "Submitting withdrawal request...";
+
+    message.className =
+        "message success";
+
+
+    /*
+        PRODUCTION SERVER REQUEST
+
+        When server.js is ready, this section
+        should send the request to the server.
+    */
+
+    const userId = getUserId();
+
+    if (!userId) {
+        showError("Please sign in before requesting a withdrawal.");
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                API_BASE + "/api/creator/withdrawal/request" ,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        email:
+                            userId,
+
+                        method:
+                            method,
+
+                        accountName:
+                            accountName,
+
+                        bankName:
+                            bankName,
+
+                        accountNumber:
+                            accountNumber,
+
+                        amount:
+                            amount
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Withdrawal request could not be submitted."
+            );
+
+        }
+
+
+        message.textContent =
+            "✓ " + (data.message || "Withdrawal request submitted successfully.");
+
+        message.className =
+            "message success";
+
+
+        // Refresh eligibility/balance after a successful request
+        checkWithdrawalSecurity();
+
+    }
+
+
+    catch (error) {
+
+        message.textContent =
+            error.message ||
+            "Unable to submit withdrawal request.";
+
+        message.className =
+            "message error";
+
+    }
+
+}
+
+
+/*
+    ERROR MESSAGE
+*/
+
+function showError(text) {
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+    message.textContent =
+        text;
+
+    message.className =
+        "message error";
+
+}
+
+
+/*
+=====================================================
+IMPORTANT
+=====================================================
+
+The browser page alone must NOT be trusted to
+approve withdrawals.
+
+server.js should verify:
+
+1. Creator account
+2. Monthly eligibility
+3. Required live days
+4. Required live hours
+5. Golden Stars
+6. Available earnings
+7. Withdrawal amount
+
+Only after those checks pass should the
+withdrawal request be accepted.
+=====================================================
+*/
+
+</script>
+
+
+</body>
+</html>

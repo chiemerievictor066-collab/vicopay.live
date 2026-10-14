@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>VicoPay Live - Gifter Rankings</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #03142f;
+    color: white;
+}
+
+/* TOP BAR */
+
+.topbar {
+    height: 80px;
+    background: #061a3b;
+    border-bottom: 1px solid #173d72;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 25px;
+    gap: 30px;
+}
+
+.logo {
+    font-size: 30px;
+    font-weight: bold;
+    min-width: 230px;
+}
+
+.logo span {
+    color: #00e5c3;
+}
+
+.live {
+    background: #ff2d8d;
+    color: white;
+
+    padding: 6px 12px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    margin-left: 7px;
+}
+
+.search {
+    flex: 1;
+
+    max-width: 600px;
+
+    background: #102c5b;
+
+    border-radius: 30px;
+
+    padding: 14px 25px;
+
+    color: #a8c3e8;
+}
+
+.profile {
+    margin-left: auto;
+    font-weight: bold;
+}
+
+
+/* PAGE */
+
+.page {
+    min-height: calc(100vh - 80px);
+    padding: 30px;
+}
+
+
+/* HERO */
+
+.hero {
+    background:
+        radial-gradient(
+            circle at 20% 40%,
+            #7025c7,
+            transparent 30%
+        ),
+
+        radial-gradient(
+            circle at 80% 40%,
+            #1649d8,
+            transparent 35%
+        ),
+
+        linear-gradient(
+            120deg,
+            #241066,
+            #06347e,
+            #32136b
+        );
+
+    border: 1px solid #3564c7;
+
+    border-radius: 20px;
+
+    padding: 35px;
+
+    margin-bottom: 25px;
+}
+
+.hero h1 {
+    margin: 0;
+
+    font-size: 46px;
+}
+
+.hero h1 span {
+    color: #00e5c3;
+}
+
+.hero p {
+    color: #d9e7ff;
+
+    font-size: 18px;
+
+    margin-bottom: 0;
+}
+
+
+/* RANKING HEADER */
+
+.ranking-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.ranking-header h2 {
+    margin: 0;
+
+    font-size: 28px;
+}
+
+.period {
+    display: flex;
+    gap: 8px;
+}
+
+.period-btn {
+    background: #0b2a57;
+    border: 1px solid #1b568c;
+    padding: 10px 16px;
+    border-radius: 20px;
+    color: #d8e7ff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.period-btn.active {
+    background: #f5b400;
+    border-color: #f5b400;
+    color: #0a1a33;
+    font-weight: 700;
+}
+
+.ranking-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: #9fb3c8;
+}
+
+
+/* PODIUM */
+
+.podium {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+
+    margin-bottom: 30px;
+}
+
+.podium-card {
+    background: #061d42;
+
+    border: 1px solid #1a528c;
+
+    border-radius: 18px;
+
+    padding: 25px;
+
+    text-align: center;
+}
+
+.podium-card.first {
+    border-color: #ffd83d;
+
+    box-shadow:
+        0 0 25px
+        rgba(255,216,61,0.12);
+}
+
+.podium-card.second {
+    border-color: #c7d2e2;
+}
+
+.podium-card.third {
+    border-color: #cd8b54;
+}
+
+.medal {
+    font-size: 48px;
+}
+
+.avatar {
+    width: 70px;
+    height: 70px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        #00e5c3,
+        #3155ff
+    );
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin: 15px auto;
+
+    font-size: 28px;
+}
+
+.podium-name {
+    font-size: 21px;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+}
+
+.podium-coin {
+    color: #ffd83d;
+
+    font-weight: bold;
+
+    font-size: 18px;
+}
+
+.podium-gifts {
+    color: #9bb9df;
+
+    margin-top: 8px;
+}
+
+
+/* TABLE */
+
+.table-box {
+    background: #061b3c;
+
+    border: 1px solid #1a4e83;
+
+    border-radius: 18px;
+
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+thead {
+    background: #0a2854;
+}
+
+th {
+    text-align: left;
+
+    padding: 18px;
+
+    color: #bcd4f4;
+
+    font-size: 14px;
+
+    text-transform: uppercase;
+}
+
+td {
+    padding: 18px;
+
+    border-top: 1px solid #14385f;
+
+    color: #e2edff;
+}
+
+tbody tr:hover {
+    background: #092750;
+}
+
+.rank {
+    font-size: 20px;
+
+    font-weight: bold;
+
+    width: 80px;
+}
+
+.gifter {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+.small-avatar {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        #ff2d8d,
+        #7445ff
+    );
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+.coin {
+    color: #ffd83d;
+
+    font-weight: bold;
+}
+
+.stars {
+    color: #00e5c3;
+
+    font-weight: bold;
+}
+
+
+/* RANK BADGES */
+
+.badge {
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    border-radius: 15px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.gold {
+    background: #6f5710;
+    color: #ffe681;
+}
+
+.silver {
+    background: #465367;
+    color: #e5edf7;
+}
+
+.bronze {
+    background: #633d25;
+    color: #f2b58b;
+}
+
+.normal {
+    background: #12345e;
+    color: #9fc4ed;
+}
+
+
+/* INFORMATION */
+
+.info-section {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+
+    margin-top: 25px;
+}
+
+.info-card {
+    background: #061d42;
+
+    border: 1px solid #194c80;
+
+    border-radius: 15px;
+
+    padding: 22px;
+}
+
+.info-card h3 {
+    margin-top: 0;
+
+    color: #00e5c3;
+}
+
+.info-card p {
+    color: #a9c2e1;
+
+    line-height: 1.6;
+}
+
+
+/* FOOTER */
+
+footer {
+    text-align: center;
+
+    color: #7795bd;
+
+    padding: 30px 10px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+
+    .podium {
+        grid-template-columns: 1fr;
+    }
+
+    .info-section {
+        grid-template-columns: 1fr;
+    }
+
+    .search {
+        display: none;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .topbar {
+        padding: 0 12px;
+    }
+
+    .logo {
+        min-width: auto;
+
+        font-size: 23px;
+    }
+
+    .profile {
+        font-size: 13px;
+    }
+
+    .page {
+        padding: 15px;
+    }
+
+    .hero h1 {
+        font-size: 34px;
+    }
+
+    .table-box {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 700px;
+    }
+
+}
+
+</style>
+
+<script src="auth.js"></script>
+</head>
+
+
+<body>
+
+
+<!-- TOP BAR -->
+
+<header class="topbar">
+
+    <div class="logo">
+
+        👑 Vico<span>Pay</span>
+
+        <span class="live">
+            Live
+        </span>
+
+    </div>
+
+
+    <div class="search">
+
+        🔍 Search for gifters, hosts or users...
+
+    </div>
+
+
+    <div class="profile">
+
+        🔔 &nbsp; 👤 
+
+    </div>
+
+</header>
+
+
+
+<main class="page">
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <h1>
+            🏆 Gifter <span>Rankings</span>
+        </h1>
+
+        <p>
+            See the top supporters who are
+            sending gifts and supporting hosts
+            across VicoPay Live.
+        </p>
+
+    </section>
+
+
+
+    <!-- HEADER -->
+
+    <div class="ranking-header">
+
+        <h2>
+            Top Gifters
+        </h2>
+
+        <div class="period" id="periodTabs">
+            <button type="button" class="period-btn" data-period="daily" onclick="loadRanking('daily')">Today</button>
+            <button type="button" class="period-btn" data-period="weekly" onclick="loadRanking('weekly')">This Week</button>
+            <button type="button" class="period-btn active" data-period="monthly" onclick="loadRanking('monthly')">This Month</button>
+        </div>
+
+    </div>
+
+
+
+    <!-- TOP THREE (filled in by loadRanking() below) -->
+
+    <section class="podium" id="podium"></section>
+
+
+
+    <!-- FULL RANKING -->
+
+    <section class="table-box">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Rank
+                    </th>
+
+                    <th>
+                        Gifter
+                    </th>
+
+                    <th>
+                        Coins Sent
+                    </th>
+
+                    <th>
+                        Gifts
+                    </th>
+
+                    <th>
+                        Golden Stars
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="rankingBody"></tbody>
+
+        </table>
+
+    </section>
+
+
+
+    <!-- INFORMATION -->
+
+    <section class="info-section">
+
+
+        <div class="info-card">
+
+            <h3>
+                🎁 Gift Support
+            </h3>
+
+            <p>
+                Gifters support hosts by
+                purchasing Coins and using
+                those Coins to send paid gifts
+                during live streams.
+            </p>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <h3>
+                ⭐ Golden Stars
+            </h3>
+
+            <p>
+                Eligible paid gifts can generate
+                Golden Stars for hosts according
+                to your VicoPay Live reward
+                system.
+            </p>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <h3>
+                🏆 Monthly Ranking
+            </h3>
+
+            <p>
+                Gifter rankings are calculated
+                from eligible gift activity during
+                the selected ranking period.
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+
+    <footer>
+
+        <strong>
+            VicoPay Live
+        </strong>
+
+        — Gifter Rankings
+
+        <br><br>
+
+        © 2026 VicoPay Live.
+        All rights reserved.
+
+    </footer>
+
+
+</main>
+
+
+<script src="auth.js"></script>
+<script src="vico-ui.js"></script>
+<script>
+
+const API_BASE = window.location.origin;
+
+const PODIUM_ICONS = ["👑", "💎", "🦁"];
+const PODIUM_MEDALS = ["🥇", "🥈", "🥉"];
+
+function badgeFor(rank){
+    if (rank === 1) return { cls: "gold", label: "TOP GIFTER" };
+    if (rank === 2) return { cls: "silver", label: "ELITE" };
+    if (rank === 3) return { cls: "bronze", label: "ELITE" };
+    if (rank <= 6) return { cls: "normal", label: "VIP" };
+    return { cls: "normal", label: "SUPPORTER" };
+}
+
+function escapeHTML(t){
+    const d = document.createElement("div");
+    d.textContent = t;
+    return d.innerHTML;
+}
+
+async function loadRanking(period){
+    document.querySelectorAll(".period-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.period === period);
+    });
+
+    const podium = document.getElementById("podium");
+    const body = document.getElementById("rankingBody");
+    podium.innerHTML = "";
+    body.innerHTML = "<tr><td colspan=\"6\" class=\"ranking-empty\">Loading rankings…</td></tr>";
+
+    try {
+        const d = await VicoUI.api("/api/ranking/gifters/" + period);
+        if (!d._ok) throw new Error(d.message || "Unable to load rankings.");
+
+        const ranking = d.ranking || [];
+
+        if (ranking.length === 0) {
+            body.innerHTML = "<tr><td colspan=\"6\" class=\"ranking-empty\">No gifts sent yet " +
+                (period === "daily" ? "today" : period === "weekly" ? "this week" : "this month") +
+                " — be the first supporter on the board!</td></tr>";
+            return;
+        }
+
+        // Top 3 as podium cards
+        ranking.slice(0, 3).forEach((entry, i) => {
+            const card = document.createElement("div");
+            card.className = "podium-card " + ["first", "second", "third"][i];
+            card.innerHTML =
+                '<div class="medal">' + PODIUM_MEDALS[i] + '</div>' +
+                '<div style="display:grid;place-items:center;margin:6px 0 10px">' + VicoUI.avatar(entry.displayName, entry.isLive, entry.roomId, 72, entry.avatar) + '</div>' +
+                '<div class="podium-name">' + escapeHTML(entry.displayName || "Supporter") + '</div>' +
+                '<div class="podium-coin">🪙 ' + Number(entry.coin || 0).toLocaleString() + ' Coins</div>' +
+                '<div class="podium-gifts">' + Number(entry.gifts || 0).toLocaleString() + ' Gifts Sent</div>';
+            podium.appendChild(card);
+        });
+
+        // Full table, every entry
+        body.innerHTML = "";
+        ranking.forEach((entry, i) => {
+            const rank = i + 1;
+            const badge = badgeFor(rank);
+            const row = document.createElement("tr");
+            row.innerHTML =
+                '<td class="rank">#' + rank + '</td>' +
+                '<td><div class="gifter">' + VicoUI.avatar(entry.displayName, entry.isLive, entry.roomId, 38, entry.avatar) + '<strong>' + escapeHTML(entry.displayName || "Supporter") + '</strong>' + (entry.isLive ? ' <a href="live-feed.html?room=' + encodeURIComponent(entry.roomId) + '" style="color:#ff6b8a;font-size:12px;font-weight:900;text-decoration:none">🔴 Watch live</a>' : '') + '</div></td>' +
+                '<td class="coin">' + Number(entry.coin || 0).toLocaleString() + '</td>' +
+                '<td>' + Number(entry.gifts || 0).toLocaleString() + '</td>' +
+                '<td class="stars">' + Number(entry.coin || 0).toLocaleString() + ' ⭐</td>' +
+                '<td><span class="badge ' + badge.cls + '">' + badge.label + '</span></td>';
+            body.appendChild(row);
+        });
+
+    } catch (e) {
+        console.error("Ranking load error:", e);
+        body.innerHTML = "<tr><td colspan=\"6\" class=\"ranking-empty\">❌ " + escapeHTML(e.message) + "</td></tr>";
+    }
+}
+
+loadRanking("monthly");
+
+</script>
+
+
+</body>
+
+</html>

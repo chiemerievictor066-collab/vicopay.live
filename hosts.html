@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>VicoPay Live - Hosts</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #061426;
+    color: white;
+}
+
+header {
+    height: 75px;
+    background: #081a30;
+    border-bottom: 1px solid #24496f;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 28px;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #00e5c3;
+}
+
+.home {
+    color: white;
+    text-decoration: none;
+}
+
+.home:hover {
+    color: #00e5c3;
+}
+
+.container {
+    width: 94%;
+    max-width: 1200px;
+    margin: 35px auto;
+}
+
+.hero {
+    text-align: center;
+
+    padding: 45px 20px;
+
+    border-radius: 22px;
+
+    background:
+        radial-gradient(
+            circle at 25% 30%,
+            #43218c,
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 60%,
+            #07566f,
+            transparent 35%
+        ),
+        #0b2039;
+
+    border: 1px solid #315b7f;
+
+    margin-bottom: 30px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin: 0 0 12px;
+}
+
+.hero h1 span {
+    color: #00e5c3;
+}
+
+.hero p {
+    color: #b6c9dc;
+    font-size: 17px;
+}
+
+
+/* TOP HOSTS */
+
+.section-title {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.section-title h2 {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.section-title p {
+    color: #91aac4;
+}
+
+
+/* HOST GRID */
+
+.host-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+.host-card {
+    background: #0b2039;
+
+    border: 1px solid #294f70;
+
+    border-radius: 20px;
+
+    padding: 25px;
+
+    text-align: center;
+
+    transition: 0.2s;
+}
+
+.host-card:hover {
+    transform: translateY(-5px);
+
+    border-color: #00e5c3;
+}
+
+
+/* RANK */
+
+.rank {
+    font-size: 22px;
+
+    color: #ffd54a;
+
+    font-weight: bold;
+
+    margin-bottom: 15px;
+}
+
+
+/* AVATAR */
+
+.avatar {
+    width: 95px;
+    height: 95px;
+
+    margin: auto;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00e5c3,
+            #3e5be8
+        );
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 43px;
+
+    border: 3px solid #203d5b;
+}
+
+.host-name {
+    font-size: 22px;
+
+    font-weight: bold;
+
+    margin-top: 15px;
+}
+
+.host-id {
+    color: #8099b2;
+
+    font-size: 13px;
+
+    margin: 5px 0 15px;
+}
+
+
+/* LIVE */
+
+.live {
+    display: inline-block;
+
+    background: #173d35;
+
+    color: #65f0d0;
+
+    padding: 6px 12px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    margin-bottom: 18px;
+}
+
+.offline {
+    display: inline-block;
+
+    background: #263444;
+
+    color: #9caabd;
+
+    padding: 6px 12px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    margin-bottom: 18px;
+}
+
+
+/* STATS */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 8px;
+
+    margin-bottom: 20px;
+}
+
+.stat {
+    background: #102a45;
+
+    border-radius: 10px;
+
+    padding: 12px 5px;
+}
+
+.stat-number {
+    color: #ffd54a;
+
+    font-size: 16px;
+
+    font-weight: bold;
+}
+
+.stat-label {
+    color: #849db6;
+
+    font-size: 10px;
+
+    margin-top: 4px;
+}
+
+
+/* BUTTON */
+
+.join-btn {
+    display: block;
+
+    width: 100%;
+
+    padding: 12px;
+
+    border-radius: 25px;
+
+    background: #00e5c3;
+
+    color: #052027;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+.join-btn:hover {
+    background: #36f4d8;
+}
+
+.disabled-btn {
+    display: block;
+
+    width: 100%;
+
+    padding: 12px;
+
+    border-radius: 25px;
+
+    background: #26384a;
+
+    color: #8296aa;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+
+/* HOST CTA */
+
+.host-cta {
+    margin-top: 35px;
+
+    padding: 35px;
+
+    text-align: center;
+
+    border-radius: 20px;
+
+    background: #0b2039;
+
+    border: 1px solid #294f70;
+}
+
+.host-cta h2 {
+    color: #00e5c3;
+}
+
+.host-cta p {
+    color: #a5bad0;
+}
+
+
+/* GO-LIVE */
+
+.start-live {
+    display: block;
+
+    width: 100%;
+    max-width: 450px;
+
+    margin: 12px auto 0;
+
+    padding: 14px 28px;
+
+    border-radius: 28px;
+
+    background: #ffd54a;
+
+    color: #171200;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+.start-live:hover {
+    background: #ffe47a;
+}
+
+
+/* HOST WALLET */
+
+.host-wallet {
+    display: block;
+
+    width: 100%;
+    max-width: 450px;
+
+    margin: 12px auto 0;
+
+    padding: 14px 28px;
+
+    border-radius: 28px;
+
+    background: linear-gradient(
+        135deg,
+        #0b5cad,
+        #123b78
+    );
+
+    border: 2px solid #ffd54a;
+
+    color: white;
+
+    text-decoration: none;
+
+    font-weight: bold;
+
+    box-shadow:
+        0 5px 18px rgba(0,0,0,0.25);
+}
+
+.host-wallet:hover {
+    background: linear-gradient(
+        135deg,
+        #126ecb,
+        #174b96
+    );
+
+    color: #ffd54a;
+}
+
+
+/* FOOTER */
+
+footer {
+    text-align: center;
+
+    padding: 35px;
+
+    margin-top: 30px;
+
+    color: #7189a2;
+
+    border-top: 1px solid #203e5c;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+
+    .host-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 0 15px;
+    }
+
+    .logo {
+        font-size: 22px;
+    }
+
+    .host-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 34px;
+    }
+
+}
+
+</style>
+
+<script src="auth.js"></script>
+<script src="vico-ui.js"></script>
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div class="logo">
+        VicoPay <span>Live</span>
+    </div>
+
+    <a href="followers.html" class="home" style="margin-left:auto;margin-right:18px">👥 Followers</a>
+    <a
+        href="home.html"
+        class="home">
+
+        ← Home
+
+    </a>
+
+</header>
+
+
+<main class="container">
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <h1>
+            🎤 VicoPay
+            <span>Hosts</span>
+        </h1>
+
+        <p>
+            Discover live creators, join their
+            rooms and support your favourite hosts.
+        </p>
+
+    </section>
+
+
+    <!-- RANKING -->
+
+    <section>
+
+        <div class="section-title">
+
+            <h2>
+                🏆 Top Hosts
+            </h2>
+
+            <p>
+                Hosts are ranked by their eligible
+                live activity and Golden Stars.
+            </p>
+
+        </div>
+
+
+        <div style="display:flex;gap:8px;justify-content:center;margin:0 0 20px" id="periodTabs">
+            <button class="ptab" data-p="daily">Today</button><button class="ptab" data-p="weekly">This week</button><button class="ptab on" data-p="monthly">This month</button><button class="ptab" data-p="all">All time</button>
+        </div>
+        <style>.ptab{border:1px solid #294f70;background:#0b2039;color:#cfe3ff;border-radius:20px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer}.ptab.on{background:#00e5c3;border-color:#00e5c3;color:#031a2e}.fbtn{margin-top:10px;border:1px solid #00e5c3;background:none;color:#00e5c3;border-radius:20px;padding:8px 16px;font:inherit;font-weight:700;cursor:pointer}.fbtn.on{background:#1b3956;border-color:#1b3956;color:#9bb0ca}.host-card .va{margin:0 auto 8px;width:64px;height:64px;font-size:26px}</style>
+        <div
+            class="host-grid"
+            id="hostGrid">
+        </div>
+
+    </section>
+
+
+    <!-- HOST CTA -->
+
+    <section class="host-cta">
+
+        <h2>
+            🎤 Want to become a VicoPay Live Host?
+        </h2>
+
+        <p>
+            Start your live room and build your
+            audience on VicoPay Live.
+        </p>
+
+
+        <!-- START LIVE -->
+
+        <a
+            href="Go-Live.html"
+            class="start-live">
+
+            🔴 Start Live
+
+        </a>
+
+
+        <!-- HOST WALLET DIRECTLY BELOW START LIVE -->
+
+        <a
+            href="host-wallet.html"
+            class="host-wallet">
+
+            💰 Host Wallet
+
+        </a>
+
+    </section>
+
+
+</main>
+
+
+<footer>
+
+    <strong>VicoPay Live</strong>
+
+    <br><br>
+
+    Live Streaming • Chat • Gifts • Creators
+
+    <br><br>
+
+    © 2026 VicoPay Live.
+    All rights reserved.
+
+</footer>
+
+
+<script>
+
+
+const API_BASE = window.location.origin;
+
+function escapeHTML(t) {
+    const d = document.createElement("div");
+    d.textContent = t;
+    return d.innerHTML;
+}
+
+let period="monthly";
+document.getElementById("periodTabs").onclick=e=>{const b=e.target.closest(".ptab");if(!b)return;period=b.dataset.p;document.querySelectorAll(".ptab").forEach(x=>x.classList.toggle("on",x===b));loadHosts();};
+
+async function loadHosts() {
+    const grid = document.getElementById("hostGrid");
+    grid.innerHTML = "<p style=\"opacity:.7\">Loading hosts…</p>";
+    try {
+        const data = await VicoUI.api("/api/ranking/hosts" + (period === "all" ? "" : "/" + period));
+        if (!data._ok) throw new Error(data.message || "Could not load host ranking.");
+        const ranking = Array.isArray(data.ranking) ? data.ranking : [];
+        if (!ranking.length) { grid.innerHTML = "<p style=\"opacity:.7\">No host activity in this period yet.</p>"; return; }
+        displayHosts(ranking);
+    } catch (error) {
+        console.error("Load hosts error:", error);
+        grid.innerHTML = "<p style=\"opacity:.7\">❌ " + escapeHTML(error.message) + "</p>";
+    }
+}
+
+async function followHost(btn, handle, on) {
+    if (!VicoAuth.isSignedIn()) { location.href = "join-now.html?next=hosts.html"; return; }
+    const d = await VicoUI.api(on ? "/api/unfollow" : "/api/follow", { method: "POST", body: { hostId: handle } });
+    if (d._ok) loadHosts(); else VicoUI.toast(d.message || "Could not update follow.");
+}
+
+function displayHosts(ranking) {
+    const grid = document.getElementById("hostGrid");
+    grid.innerHTML = "";
+    ranking.forEach(function(entry, index) {
+        const isLive = !!entry.isLive;
+        const name = entry.displayName || "Host";
+        const card = document.createElement("div");
+        card.className = "host-card";
+        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "#" + (index + 1);
+        const buttonHTML = isLive
+            ? '<a href="live-feed.html?room=' + encodeURIComponent(entry.roomId) + '" class="join-btn">Enter Live Room</a>'
+            : '<span class="disabled-btn">Host Offline</span>';
+        card.innerHTML = `
+            <div class="rank">${medal}</div>
+            ${VicoUI.avatar(name, isLive, entry.roomId, null, entry.avatar)}
+            <div class="host-name">${escapeHTML(name)}</div>
+            <div class="host-id">@${escapeHTML(entry.handle || "")} · ${Number(entry.followers || 0).toLocaleString()} followers</div>
+            ${isLive ? '<div class="live">🔴 LIVE NOW' + (entry.liveTitle ? ' · ' + escapeHTML(entry.liveTitle) : '') + '</div>' : '<div class="offline">⚫ OFFLINE</div>'}
+            <div class="stats">
+                <div class="stat"><div class="stat-number">${Number(entry.viewers || 0).toLocaleString()}</div><div class="stat-label">Viewers</div></div>
+                <div class="stat"><div class="stat-number">${Number(entry.goldenStars || entry.stars || 0).toLocaleString()}</div><div class="stat-label">Stars</div></div>
+                <div class="stat"><div class="stat-number">${Number(entry.gifts || 0).toLocaleString()}</div><div class="stat-label">Gifts</div></div>
+            </div>
+            ${buttonHTML}
+            <button class="fbtn" id="f${index}">+ Follow</button>
+        `;
+        grid.appendChild(card);
+        const fb = card.querySelector(".fbtn");
+        fb.onclick = () => followHost(fb, entry.handle, fb.classList.contains("on"));
+    });
+    // mark the ones I already follow
+    if (VicoAuth.isSignedIn()) VicoUI.api("/api/following/me").then(d => {
+        if (!d._ok) return;
+        const mine = new Set(d.following.map(f => f.handle));
+        ranking.forEach((e, i) => { if (mine.has(e.handle)) { const b = document.getElementById("f" + i); if (b) { b.textContent = "✓ Following"; b.classList.add("on"); } } });
+    });
+}
+
+loadHosts();
+</script>
+
+
+</body>
+</html>

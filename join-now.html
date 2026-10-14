@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VicoPay Live - Sign in</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:#fff;
+  background:radial-gradient(circle at 15% 20%,rgba(0,132,255,.25),transparent 35%),
+             radial-gradient(circle at 85% 80%,rgba(0,92,255,.2),transparent 35%),
+             linear-gradient(135deg,#020817,#06142d 50%,#020817);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+.page{
+  width:100%;max-width:1100px;min-height:650px;display:grid;grid-template-columns:1fr 1fr;
+  overflow:hidden;border:1px solid rgba(86,161,255,.25);border-radius:28px;
+  background:rgba(5,18,40,.88);box-shadow:0 30px 100px rgba(0,0,0,.55);backdrop-filter:blur(18px);
+}
+.brand-panel{
+  position:relative;padding:55px;display:flex;flex-direction:column;justify-content:center;
+  background:radial-gradient(circle at 30% 20%,rgba(0,153,255,.3),transparent 35%),
+             linear-gradient(145deg,#062b62,#03132c 75%);
+  border-right:1px solid rgba(255,255,255,.08);overflow:hidden;
+}
+.brand-panel:after{
+  content:"";position:absolute;width:300px;height:300px;right:-120px;bottom:-120px;border-radius:50%;
+  border:1px solid rgba(54,170,255,.22);box-shadow:0 0 0 35px rgba(54,170,255,.04),0 0 0 70px rgba(54,170,255,.03);
+}
+.logo{position:absolute;top:30px;left:34px;font-size:26px;font-weight:900;letter-spacing:-1px}
+.logo span{color:#25a7ff}
+.brand-icon{
+  width:86px;height:86px;border-radius:24px;display:grid;place-items:center;font-size:43px;margin-bottom:28px;
+  background:linear-gradient(135deg,#078dff,#0052c9);box-shadow:0 15px 45px rgba(0,132,255,.35)
+}
+.brand-panel h1{font-size:clamp(38px,5vw,60px);line-height:1;margin-bottom:18px;letter-spacing:-2px}
+.brand-panel h1 span{color:#31b2ff}
+.brand-panel p{max-width:430px;color:#b9c9df;font-size:16px;line-height:1.7}
+.features{margin-top:35px;display:grid;gap:13px}
+.feature{display:flex;align-items:center;gap:12px;color:#dbeafe;font-size:14px}
+.check{
+  width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(0,145,255,.16);border:1px solid rgba(52,174,255,.35);color:#42b9ff;font-weight:bold
+}
+.form-panel{padding:55px;display:flex;align-items:center;justify-content:center}
+.form-box{width:100%;max-width:410px}
+.form-box h2{font-size:34px;margin-bottom:9px}
+.subtitle{color:#8fa3bd;font-size:14px;margin-bottom:28px;line-height:1.5}
+.message{display:none;padding:12px 14px;margin-bottom:17px;border-radius:12px;font-size:13px;line-height:1.4}
+.message.success{display:block;color:#b8ffd7;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3)}
+.message.error{display:block;color:#ffd0d8;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3)}
+.field{margin-bottom:17px}
+.field label{display:block;margin-bottom:8px;color:#d8e5f5;font-size:13px;font-weight:700}
+.input-wrap{position:relative}
+.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;opacity:.75}
+.field input{
+  width:100%;height:50px;padding:0 45px;border:1px solid #203a5d;border-radius:13px;outline:none;
+  color:#fff;background:#071a35;font-size:14px;transition:.2s
+}
+.field input:focus{border-color:#159eff;box-shadow:0 0 0 3px rgba(21,158,255,.1)}
+.password-toggle{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;
+  color:#91a9c4;cursor:pointer;padding:8px
+}
+.form-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 22px}
+.remember{display:flex;align-items:center;gap:8px;color:#9eb1c8;font-size:12px;cursor:pointer}
+.remember input{accent-color:#119cff}
+.forgot{color:#32adff;text-decoration:none;font-size:12px;font-weight:700}
+.forgot:hover{text-decoration:underline}
+.primary-btn{
+  width:100%;height:52px;border:0;border-radius:14px;background:linear-gradient(135deg,#0b9dff,#0059d6);
+  color:#fff;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 12px 30px rgba(0,115,255,.25);transition:.2s
+}
+.primary-btn:hover{transform:translateY(-1px);box-shadow:0 16px 35px rgba(0,115,255,.35)}
+.primary-btn:disabled{opacity:.7;cursor:wait;transform:none}
+.divider{display:flex;align-items:center;gap:12px;color:#667c98;font-size:12px;margin:23px 0}
+.divider:before,.divider:after{content:"";height:1px;flex:1;background:#1c3554}
+.google-btn{
+  width:100%;height:49px;border-radius:13px;border:1px solid #294462;background:#0a1d37;color:#fff;
+  font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px
+}
+.google-icon{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#4285f4;font-size:13px;font-weight:900}
+.signup{text-align:center;color:#899db6;font-size:13px;margin-top:24px}
+.signup a{color:#31aeff;text-decoration:none;font-weight:900}
+.back-link{display:block;text-align:center;margin-top:18px;color:#8095af;text-decoration:none;font-size:12px}
+.back-link:hover{color:#fff}
+.terms{margin-top:20px;text-align:center;color:#60758e;font-size:10px;line-height:1.6}
+.terms a{color:#7ea8d0;text-decoration:none}
+@media(max-width:820px){
+  body{padding:14px}.page{grid-template-columns:1fr;max-width:520px}
+  .brand-panel{min-height:300px;padding:45px 32px 35px;border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .brand-panel h1{font-size:40px}.features{display:none}.form-panel{padding:38px 28px 42px}
+}
+@media(max-width:450px){
+  .brand-panel{min-height:250px;padding:85px 24px 28px}.logo{left:24px}
+  .brand-icon{width:65px;height:65px;font-size:32px;margin-bottom:18px}.brand-panel h1{font-size:34px}
+  .form-panel{padding:32px 20px 36px}.form-box h2{font-size:29px}
+}
+</style>
+</head>
+<body>
+<main class="page">
+
+<section class="brand-panel">
+  <div class="logo">Vico<span>Pay</span> Live</div>
+  <div class="brand-icon">🔴</div>
+  <h1>Welcome to<br><span>VicoPay Live</span></h1>
+  <p>Sign in to enter live rooms, watch your favorite hosts, chat with people, send gifts, and enjoy live entertainment.</p>
+  <div class="features">
+    <div class="feature"><span class="check">✓</span><span>Join live rooms and watch hosts</span></div>
+    <div class="feature"><span class="check">✓</span><span>Chat and interact in real time</span></div>
+    <div class="feature"><span class="check">✓</span><span>Send virtual gifts and support creators</span></div>
+    <div class="feature"><span class="check">✓</span><span>Start your own live stream</span></div>
+  </div>
+</section>
+
+<section class="form-panel">
+<div class="form-box">
+  <h2>Sign In</h2>
+  <p class="subtitle">Sign in to your VicoPay account to continue.</p>
+  <div id="message" class="message"></div>
+
+  <form id="loginForm">
+    <div class="field">
+      <label for="email">Email or Username</label>
+      <div class="input-wrap">
+        <span class="input-icon">👤</span>
+        <input id="email" name="email" type="text" autocomplete="username" placeholder="Enter your email or username" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+        <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">👁</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="remember"><input type="checkbox" id="remember"><span>Remember me</span></label>
+      <a href="forgot-password.html" class="forgot">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="primary-btn" id="loginButton">Sign In</button>
+  </form>
+
+  <div class="divider" style="display:none">OR</div>
+
+  <button type="button" class="google-btn" id="googleButton" style="display:none">
+    <span class="google-icon">G</span> Continue with Google
+  </button>
+
+  <div class="signup">Don't have an account? <a href="signup.html">Create Account</a></div>
+  <a href="motivational-page.html" class="back-link">← Back to VicoPay Live</a>
+
+  <div class="terms">
+    By continuing, you agree to our
+    <a href="terms.html">Terms of Service</a> and
+    <a href="privacy.html">Privacy Policy</a>.
+  </div>
+</div>
+</section>
+</main>
+
+<script src="auth.js"></script>
+<script>
+const loginForm=document.getElementById("loginForm");
+const loginButton=document.getElementById("loginButton");
+const message=document.getElementById("message");
+const passwordInput=document.getElementById("password");
+const togglePassword=document.getElementById("togglePassword");
+const googleButton=document.getElementById("googleButton");
+
+function showMessage(text,type){
+  message.textContent=text;
+  message.className="message "+type;
+}
+
+togglePassword.addEventListener("click",function(){
+  if(passwordInput.type==="password"){
+    passwordInput.type="text";
+    togglePassword.textContent="🙈";
+  }else{
+    passwordInput.type="password";
+    togglePassword.textContent="👁";
+  }
+});
+
+loginForm.addEventListener("submit",async function(event){
+  event.preventDefault();
+
+  const email=document.getElementById("email").value.trim();
+  const password=passwordInput.value;
+  const remember=document.getElementById("remember").checked;
+
+  if(!email||!password){
+    showMessage("Please enter your email/username and password.","error");
+    return;
+  }
+
+  loginButton.disabled=true;
+  loginButton.textContent="Signing In...";
+  message.className="message";
+
+  try{
+    const response=await fetch(window.location.origin+"/api/auth/login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({login:email,password:password})
+    });
+    const data=await response.json();
+    if(!response.ok||!data.success){
+      throw new Error(data.message||"Unable to sign in.");
+    }
+
+    VicoAuth.setSession(data.token,data.user,remember);
+    showMessage("Signed in. Connecting to VicoPay Live...","success");
+
+    setTimeout(function(){
+      window.location.href=VicoAuth.nextUrl("welcome-page.html");
+    },600);
+
+  }catch(error){
+    showMessage(error.message||"Unable to sign in. Please try again.","error");
+    loginButton.disabled=false;
+    loginButton.textContent="Sign In";
+  }
+});
+
+googleButton.addEventListener("click",function(){
+  showMessage("Google sign-in must be connected to your Google authentication setup.","error");
+});
+
+const savedUser=localStorage.getItem("vicoPayUser");
+const savedRemember=localStorage.getItem("vicoPayRemember");
+
+if(savedUser&&savedRemember==="true"){
+  document.getElementById("email").value=savedUser;
+  document.getElementById("remember").checked=true;
+}
+</script>
+</body>
+</html>

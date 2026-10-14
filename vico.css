@@ -1,0 +1,96 @@
+/* VicoPay Live — shared blue design system (live room, feed, Go Live, profile) */
+:root{
+  --navy:#031c5d; --blue:#0646b8; --sky:#087fe8; --cyan:#13d1ff; --ice:#eef7ff; --mist:#d9eeff;
+  --line:#cfe6fb; --ink:#082653; --muted:#66809a; --live:#ff315a; --gold:#ffc83d; --ok:#16a34a;
+  --shadow:0 8px 24px rgba(0,72,150,.10);
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body.vico{margin:0;font-family:var(--font);background:var(--ice);color:var(--ink);min-height:100vh;padding-bottom:72px}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+.v-header{height:64px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--sky));display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:40;box-shadow:0 4px 18px rgba(0,55,150,.25)}
+.v-logo{color:#fff;font-size:24px;font-weight:900;text-decoration:none;letter-spacing:-.3px}
+.v-logo span{color:#57e5ff}
+.v-nav{display:flex;align-items:center;gap:18px;margin-left:auto}
+.v-nav a{color:#fff;text-decoration:none;font-weight:700;font-size:14px;opacity:.95}
+.v-nav a:hover,.v-nav a.on{color:#61e8ff}
+.v-search{flex:1;max-width:420px;margin-left:12px}
+.v-search input{width:100%;height:40px;border:0;border-radius:20px;padding:0 16px;background:rgba(255,255,255,.18);color:#fff;font:inherit;outline:none}
+.v-search input::placeholder{color:#d5ecff}
+.v-search input:focus{background:rgba(255,255,255,.28)}
+
+.v-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:24px;padding:12px 22px;font-weight:800;font-size:15px;cursor:pointer;color:#fff;background:linear-gradient(90deg,var(--sky),var(--blue));text-decoration:none;box-shadow:0 8px 20px rgba(0,87,200,.22);transition:transform .15s,filter .15s}
+.v-btn:hover{filter:brightness(1.08)}
+.v-btn:active{transform:scale(.97)}
+.v-btn.live{background:linear-gradient(90deg,#ff5a7d,var(--live))}
+.v-btn.ghost{background:#fff;color:var(--blue);border:1px solid var(--line);box-shadow:none}
+.v-btn.sm{padding:8px 14px;font-size:13px}
+.v-btn:disabled{opacity:.55;cursor:not-allowed}
+
+.v-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none}
+.v-chips::-webkit-scrollbar{display:none}
+.v-chip{flex:none;border:1px solid var(--line);background:#fff;color:#315779;border-radius:20px;padding:8px 16px;font-weight:700;font-size:14px;cursor:pointer}
+.v-chip.on{background:var(--sky);border-color:var(--sky);color:#fff}
+
+.v-card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.v-wrap{width:94%;max-width:1120px;margin:22px auto}
+
+/* ---- live grid: two across, like Bigo / a TikTok profile grid ---- */
+.lv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:700px){.lv-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}}
+@media(min-width:1150px){.lv-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
+.lv-card{position:relative;display:block;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#062c77,#0787ed 60%,#0bb8d9);text-decoration:none;color:#fff;box-shadow:var(--shadow);isolation:isolate}
+.lv-card:hover{box-shadow:0 12px 30px rgba(0,72,150,.28)}
+.lv-card .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
+.lv-card .big{position:absolute;inset:0;display:grid;place-items:center;z-index:-1}
+.lv-card .big .va{width:30%;height:auto;aspect-ratio:1;font-size:clamp(28px,6vw,54px);box-shadow:0 0 0 4px rgba(255,255,255,.35)}
+.lv-card .shade{position:absolute;inset:auto 0 0 0;height:58%;background:linear-gradient(0deg,rgba(2,18,60,.88),rgba(2,18,60,0));z-index:0}
+.lv-badge{position:absolute;top:8px;left:8px;z-index:2;display:flex;align-items:center;gap:5px;background:var(--live);border-radius:10px;padding:4px 8px;font-size:11px;font-weight:900}
+.lv-badge i{display:inline-flex;gap:2px;align-items:flex-end;height:10px}
+.lv-badge i b{width:2px;background:#fff;border-radius:1px;animation:eq 1s ease-in-out infinite}
+.lv-badge i b:nth-child(1){height:5px}.lv-badge i b:nth-child(2){height:10px;animation-delay:.2s}.lv-badge i b:nth-child(3){height:7px;animation-delay:.4s}
+@keyframes eq{50%{transform:scaleY(.4)}}
+.lv-pk{position:absolute;top:8px;right:8px;z-index:2;background:#7c3aed;border-radius:10px;padding:4px 8px;font-size:11px;font-weight:900}
+.lv-info{position:absolute;left:10px;right:10px;bottom:9px;z-index:2}
+.lv-title{font-size:13px;font-weight:700;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.lv-row{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px}
+.lv-row .name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.lv-row .vw{flex:none;background:rgba(0,0,0,.45);border-radius:10px;padding:3px 8px;font-weight:700}
+.lv-row .va{width:22px;height:22px;font-size:11px;box-shadow:0 0 0 1px rgba(255,255,255,.7)}
+.v-empty{display:none;text-align:center;padding:44px 20px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:18px}
+.v-empty b{display:block;color:var(--ink);font-size:19px;margin-bottom:6px}
+
+/* ---- avatars ---- */
+.va{width:44px;height:44px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:900;font-size:18px;flex:none;position:relative;text-decoration:none;overflow:visible;background-size:cover}
+.va img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.va.live{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--live)}
+.va .lv{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);background:var(--live);color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:8px;font-style:normal}
+
+/* ---- bottom nav (phones) + floating Go Live ---- */
+.v-bottom{position:fixed;left:0;right:0;bottom:0;height:62px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;z-index:45;padding-bottom:env(safe-area-inset-bottom)}
+.v-bottom a{flex:1;text-align:center;text-decoration:none;color:var(--muted);font-size:11px;font-weight:700;display:grid;gap:2px;padding:6px 0}
+.v-bottom a span{font-size:20px;line-height:1}
+.v-bottom a.on{color:var(--sky)}
+.v-bottom a.go{flex:none;width:62px;height:62px;margin-top:-22px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--sky) 55%,var(--blue));color:#fff;box-shadow:0 8px 20px rgba(0,87,200,.4);border:4px solid var(--ice);align-content:center}
+@media(min-width:1000px){.v-bottom{display:none}body.vico{padding-bottom:0}}
+@media(max-width:700px){.v-nav a.hide-sm{display:none}.v-search{display:none}.v-header{padding:0 14px}}
+
+/* ---- toast + notification bell ---- */
+.vtoast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--navy);border:1px solid #2b5da8;color:#fff;padding:12px 18px;border-radius:24px;z-index:999;font-weight:700;max-width:90%;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.vbell{position:relative;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px}
+.vbell b{position:absolute;top:-4px;right:-6px;background:var(--live);border-radius:9px;font-size:10px;padding:1px 5px}
+.vpanel{position:fixed;top:64px;right:12px;width:min(340px,94vw);max-height:70vh;overflow:auto;background:var(--navy);color:#fff;border:1px solid #2b5da8;border-radius:14px;z-index:998;padding:8px;display:none}
+.vpanel a{display:block;color:#fff;text-decoration:none;padding:10px;border-radius:8px;font-size:13px}
+.vpanel a:hover{background:#12356e}.vpanel .un{border-left:3px solid var(--cyan)}
+
+/* ---- rows / lists reused by panels ---- */
+.v-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid #e6f1fc}
+.v-row:last-child{border-bottom:0}
+.v-row .g{flex:1;min-width:0}.v-row .nm{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v-row .s{color:var(--muted);font-size:12px;margin-top:2px}
+.v-tag{background:#7c3aed;color:#fff;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

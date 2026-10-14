@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0646b8">
+<title>Live - VicoPay Live</title>
+<link rel="stylesheet" href="vico.css">
+<style>
+.lr-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.lr-top h1{margin:0;font-size:26px;letter-spacing:-.4px}
+.lr-top .count{color:var(--muted);font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}
+.lr-top .count i{width:8px;height:8px;border-radius:50%;background:var(--live);display:inline-block;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.lr-top .v-btn{margin-left:auto}
+.lr-sticky{position:sticky;top:64px;z-index:20;background:var(--ice);padding-top:6px;margin:0 -2px}
+.v-search.mobile{display:block;max-width:none;margin:0 0 8px}
+.v-search.mobile input{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.v-search.mobile input::placeholder{color:#7d98b3}
+@media(min-width:701px){.v-search.mobile{display:none}}
+.cta{margin-top:26px;background:linear-gradient(135deg,var(--navy),var(--blue),var(--sky));border-radius:22px;padding:24px 26px;color:#fff;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.cta h2{margin:0 0 6px;font-size:22px}.cta p{margin:0;color:#d8f3ff;max-width:520px}.cta .v-btn{margin-left:auto;background:var(--cyan);color:#00316b;box-shadow:none}
+.v-fab{position:fixed;right:18px;bottom:24px;z-index:30;display:none}
+@media(min-width:1000px){.v-fab{display:inline-flex}}
+</style>
+<script src="auth.js"></script>
+<script src="vico-ui.js"></script>
+</head>
+<body class="vico">
+
+<header class="v-header">
+  <a class="v-logo" href="home.html">VicoPay <span>Live</span></a>
+  <div class="v-search"><input id="search" type="search" placeholder="Search hosts or lives" autocomplete="off"></div>
+  <nav class="v-nav">
+    <a href="home.html" class="hide-sm">Home</a>
+    <a href="live-room.html" class="on">Live</a>
+    <a href="hosts.html" class="hide-sm">Hosts</a>
+    <a href="gifters.html" class="hide-sm">Gifters</a>
+    <a href="pk-battles.html" class="hide-sm">PK</a>
+    <span id="bellSlot"></span>
+    <a href="profile.html" id="meLink">👤</a>
+  </nav>
+</header>
+
+<main class="v-wrap">
+  <div class="lr-top">
+    <h1>Live</h1>
+    <div class="count"><i></i><span id="liveCount">0</span> live now</div>
+    <a class="v-btn live" href="Go-Live.html">🎥 Go Live</a>
+  </div>
+
+  <div class="lr-sticky">
+    <div class="v-search mobile"><input id="searchM" type="search" placeholder="Search hosts or lives" autocomplete="off"></div>
+    <div class="v-chips" id="chips"></div>
+  </div>
+
+  <section id="grid" class="lv-grid" aria-live="polite"></section>
+  <div id="empty" class="v-empty"></div>
+
+  <section class="cta">
+    <div>
+      <h2>Ready to be the next star?</h2>
+      <p>Start your own live in a minute. Followers get notified, viewers can send gifts, and you can battle other hosts in PK.</p>
+    </div>
+    <a class="v-btn" href="Go-Live.html">🎥 Go Live</a>
+  </section>
+</main>
+
+<a class="v-btn live v-fab" href="Go-Live.html">🎥 Go Live</a>
+
+<script>
+const U = VicoUI;
+const CATS = ["All","Following","Trending","Popular","Music","Dance","Gaming","Chat","Entertainment","Education","Comedy","Sports","Audio","Multi-Guest","PK","New Hosts"];
+let cat = sessionStorage.getItem("vicoLiveCat") || "All";
+let q = "";
+const cards = new Map();   // roomId -> element, so a refresh updates cards instead of rebuilding (no flicker)
+
+const chips = document.getElementById("chips");
+function drawChips(){
+  chips.innerHTML = CATS.map(c => '<button class="v-chip' + (c === cat ? ' on' : '') + '" data-c="' + c + '">' + (c === "Following" ? "❤️ " : "") + c + '</button>').join("");
+}
+chips.onclick = e => {
+  const b = e.target.closest(".v-chip"); if (!b) return;
+  cat = b.dataset.c; sessionStorage.setItem("vicoLiveCat", cat); drawChips(); cards.forEach(el => el.remove()); cards.clear(); load();
+};
+
+function onSearch(v){ clearTimeout(window.__t); window.__t = setTimeout(() => { q = v.trim(); document.getElementById("search").value = v; document.getElementById("searchM").value = v; load(); }, 300); }
+document.getElementById("search").oninput = e => onSearch(e.target.value);
+document.getElementById("searchM").oninput = e => onSearch(e.target.value);
+
+function cardHTML(r){
+  const thumb = r.thumb
+    ? '<img class="ph" src="' + U.esc(r.thumb) + '" alt="" loading="lazy">'
+    : '<div class="big">' + U.avatar(r.displayName, false, null, null, r.avatar) + '</div>';
+  return thumb +
+    '<div class="shade"></div>' +
+    '<div class="lv-badge"><i><b></b><b></b><b></b></i>LIVE</div>' +
+    (r.pkActive ? '<div class="lv-pk">⚔️ PK</div>' : '') +
+    '<div class="lv-info"><div class="lv-title">' + U.esc(r.title) + '</div>' +
+    '<div class="lv-row">' + U.avatar(r.displayName, false, null, 22, r.avatar) + '<span class="name">' + U.esc(r.displayName) + '</span><span class="vw">👁 ' + U.num(r.viewers) + '</span></div></div>';
+}
+
+async function load(){
+  let url = "/api/live/discover?";
+  if (cat === "Following") url += "following=1"; else if (cat !== "All") url += "category=" + encodeURIComponent(cat);
+  if (q) url += "&q=" + encodeURIComponent(q);
+  let rooms = [];
+  try { const d = await U.api(url); rooms = d.rooms || []; } catch (e) { console.error(e); }
+
+  const grid = document.getElementById("grid"), seen = new Set();
+  rooms.forEach((r, i) => {
+    seen.add(r.roomId);
+    let el = cards.get(r.roomId);
+    const sig = (r.thumb || "") + "|" + r.pkActive + "|" + r.viewers;
+    if (!el) {
+      el = document.createElement("a"); el.className = "lv-card"; el.dataset.room = r.roomId; cards.set(r.roomId, el);
+      // remember what the person was looking at, so the swipe feed opens with the same lives
+      el.onclick = () => sessionStorage.setItem("vicoFeedFilter", JSON.stringify({ cat: cat, q: q }));
+      el.innerHTML = cardHTML(r); el.dataset.sig = sig;
+    } else if (el.dataset.sig !== sig) { el.innerHTML = cardHTML(r); el.dataset.sig = sig; }
+    el.href = "live-feed.html?room=" + encodeURIComponent(r.roomId);
+    if (grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);
+  });
+  cards.forEach((el, id) => { if (!seen.has(id)) { el.remove(); cards.delete(id); } });
+
+  document.getElementById("liveCount").textContent = U.num(rooms.length);
+  const empty = document.getElementById("empty");
+  if (rooms.length) { empty.style.display = "none"; return; }
+  empty.style.display = "block";
+  if (cat === "Following") empty.innerHTML = VicoAuth.isSignedIn()
+    ? "<b>Nobody you follow is live</b>Follow hosts from the Live page and they will show up here the moment they go live."
+    : "<b>Sign in to see your follows</b><a class='v-btn sm' href='join-now.html?next=live-room.html'>Sign in</a>";
+  else if (q) empty.innerHTML = "<b>No lives match “" + U.esc(q) + "”</b>Try a different name.";
+  else empty.innerHTML = "<b>No one is live right now</b>Be the first. Your live will appear here for everyone.<br><br><a class='v-btn live' href='Go-Live.html'>🎥 Go Live</a>";
+}
+
+drawChips(); load(); setInterval(load, 10000);
+U.bell(document.getElementById("bellSlot"));
+U.bottomNav("live");
+if (VicoAuth.isSignedIn()) U.api("/api/me").then(d => { if (d._ok) document.getElementById("meLink").innerHTML = U.avatar(d.displayName, false, null, 32, d.avatar); });
+</script>
+</body>
+</html>

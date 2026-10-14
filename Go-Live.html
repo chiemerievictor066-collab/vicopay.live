@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0646b8">
+<title>VicoPay Live - Live Room</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#07050f;--panel:#100d1d;--panel2:#171326;--line:#2a2340;
+  --text:#fff;--muted:#9badc4;--purple:#53a0ff;--pink:#3c91f8;
+  --cyan:#22d3ee;--gold:#fbbf24;--danger:#ff3b67;
+}
+body{margin:0;background:radial-gradient(circle at 35% 10%,#0b2a50 0,#07050f 42%,#05040a 100%);
+font-family:Inter,Arial,sans-serif;color:var(--text);min-height:100vh}
+button,a{font:inherit}
+button{cursor:pointer}
+.topbar{height:66px;border-bottom:1px solid var(--line);background:rgba(9,7,17,.92);backdrop-filter:blur(16px);display:flex;align-items:center;gap:24px;padding:0 22px;position:sticky;top:0;z-index:30}
+.logo{font-size:24px;font-weight:900;white-space:nowrap}.logo span{color:#81baff}
+.search{flex:1;max-width:460px;background:#0f1822;border:1px solid #223348;border-radius:25px;padding:11px 16px;color:#fff;outline:none}
+.top-actions{margin-left:auto;display:flex;gap:9px;align-items:center}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:1px solid #26384d;background:#0f1b29;color:#fff;display:grid;place-items:center;font-size:19px;text-decoration:none}
+.coin{background:#19152a;border:1px solid #6c5420;color:#ffd86a;border-radius:22px;padding:9px 14px;font-weight:800}
+
+.layout{display:grid;grid-template-columns:78px minmax(0,1fr) 330px;min-height:calc(100vh - 66px)}
+.sidebar{border-right:1px solid var(--line);background:rgba(10,8,17,.7);padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.side-item{width:58px;height:58px;border-radius:17px;color:#9aabbf;text-decoration:none;display:grid;place-items:center;font-size:23px;border:1px solid transparent}
+.side-item:hover,.side-item.active{color:#fff;background:linear-gradient(145deg,#0e2b4f,#0e1824);border-color:#356db1;box-shadow:0 0 22px #2d89fa25}
+.side-item small{display:block;font-size:9px;margin-top:-5px}
+
+.main{padding:18px;min-width:0}
+.live-stage{position:relative;min-height:680px;height:calc(100vh - 104px);max-height:820px;border-radius:24px;overflow:hidden;border:1px solid #1f3e63;background:#060a10;box-shadow:0 25px 80px #0008}
+video#camera{width:100%;height:100%;object-fit:cover;background:linear-gradient(135deg,#0d2c52,#080b18)}
+.camera-placeholder{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#20569755,transparent 38%),linear-gradient(135deg,#0d1b2d,#070911);z-index:1}
+.camera-placeholder.hidden{display:none}
+.placeholder-content{text-align:center;color:#ddd}.placeholder-content .big{font-size:70px;margin-bottom:12px}.placeholder-content h2{margin:0 0 6px}.placeholder-content p{color:#aaa}
+
+.stage-top{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;z-index:5}
+.live-pill{background:#ff315e;padding:8px 13px;border-radius:10px;font-size:12px;font-weight:900;box-shadow:0 0 20px #ff315e55}
+.viewer-pill,.host-card{background:#07070caa;border:1px solid #ffffff22;backdrop-filter:blur(12px)}
+.viewer-pill{padding:9px 14px;border-radius:20px;font-weight:700}
+.host-card{position:absolute;left:18px;top:70px;padding:9px 12px;border-radius:16px;display:flex;gap:9px;align-items:center;z-index:5}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#3c91f8,#2d89fa);font-size:18px}
+.host-name{font-weight:800}.follow{margin-left:8px;border:0;background:#fff;color:#111;border-radius:15px;padding:5px 10px;font-size:11px;font-weight:800}
+
+.stage-bottom{position:absolute;left:18px;right:18px;bottom:18px;z-index:6}
+.messages{max-width:60%;display:flex;flex-direction:column;gap:7px;margin-bottom:15px}
+.msg{background:#07070c99;border-radius:12px;padding:7px 10px;width:max-content;max-width:100%;text-shadow:0 1px 4px #000}
+.msg b{color:#a7cfff;margin-right:4px}
+.action-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.round-action{width:48px;height:48px;border-radius:50%;border:1px solid #ffffff26;background:#0a0910cc;color:#fff;font-size:21px;display:grid;place-items:center}
+.round-action:hover{border-color:#84bbff;transform:translateY(-1px)}
+.gift-main{background:linear-gradient(135deg,#3c91f8,#53a0ff);border:0;padding:13px 20px;border-radius:25px;color:#fff;font-weight:900;box-shadow:0 8px 25px #53a0ff44}
+.end-live{margin-left:auto;background:#ff315e;border:0;color:#fff;padding:12px 17px;border-radius:22px;font-weight:900}
+
+.right{border-left:1px solid var(--line);background:rgba(11,8,18,.85);display:flex;flex-direction:column;min-width:0}
+.tabs{height:55px;display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;border:0;background:transparent;color:#7e90a7;font-weight:800}.tab.active{color:#fff;border-bottom:2px solid #4d9dff}
+.chat{flex:1;overflow:auto;padding:15px}.chat-row{display:flex;gap:9px;margin-bottom:16px}.chat-avatar{width:34px;height:34px;border-radius:50%;background:#1c2b3d;display:grid;place-items:center;flex:none}.chat-text{background:#171326;border-radius:12px;padding:8px 10px;line-height:1.35}.chat-text b{color:#a7cfff}
+.chat-input{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px}.chat-input input{flex:1;background:#171326;border:1px solid #25374c;color:#fff;border-radius:22px;padding:11px 13px;outline:none}.send{width:42px;border:0;border-radius:50%;background:#53a0ff;color:#fff}
+
+.panel{border-top:1px solid var(--line);padding:13px}
+.panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:900}
+.gifts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.gift{background:#171326;border:1px solid #213246;border-radius:12px;color:#fff;padding:8px 3px;text-align:center}.gift .gicon{font-size:23px;display:block}.gift small{color:#f5cf5d}
+.link{color:#9cc9ff;text-decoration:none;font-size:12px}
+
+.pk-bar{margin:12px 0;background:linear-gradient(90deg,#0b2a50,#0c233f);border:1px solid #2c67af;border-radius:16px;padding:11px;display:flex;align-items:center;justify-content:space-between}
+.pk-btn{background:linear-gradient(135deg,#f43f5e,#53a0ff);border:0;color:#fff;border-radius:20px;padding:9px 16px;font-weight:900}
+
+.modal{position:fixed;inset:0;background:#0009;display:none;place-items:center;z-index:100;padding:20px}.modal.open{display:grid}.modal-card{width:min(440px,100%);background:#120e20;border:1px solid #2b496e;border-radius:22px;padding:22px;box-shadow:0 30px 90px #000}.modal-head{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#182739;color:#fff;border-radius:50%;width:38px;height:38px}.modal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}.modal-grid button{padding:14px;border-radius:14px;background:#1b1530;color:#fff;border:1px solid #253c58}
+
+@media(max-width:1050px){.layout{grid-template-columns:68px minmax(0,1fr)}.right{display:none}}
+@media(max-width:650px){.topbar{padding:0 10px;gap:10px}.search{display:none}.coin{padding:8px 9px;font-size:12px}.layout{grid-template-columns:1fr}.sidebar{position:fixed;bottom:0;left:0;right:0;height:64px;z-index:50;flex-direction:row;justify-content:space-around;border-top:1px solid var(--line);border-right:0;padding:3px}.side-item{width:45px;height:50px;font-size:20px}.side-item small{display:none}.main{padding:8px;padding-bottom:74px}.live-stage{height:calc(100vh - 82px);min-height:560px;border-radius:18px}.messages{max-width:90%}.host-card{top:62px}.end-live{margin-left:0}.action-row{gap:6px}.round-action{width:43px;height:43px}}
+
+/* ADDED VicoPay Live creator enhancements - original styles above are retained */
+.creator-tools{position:absolute;top:126px;right:18px;z-index:7;display:flex;flex-direction:column;gap:8px}
+.creator-tool{border:1px solid #ffffff26;background:#07070cdd;color:#fff;border-radius:14px;padding:9px 11px;font-size:12px;font-weight:800;backdrop-filter:blur(12px)}
+.creator-tool:hover{border-color:#22d3ee;background:#071b2bdd}
+.live-info{position:absolute;left:18px;top:126px;z-index:5;background:#07070cdd;border:1px solid #ffffff18;border-radius:14px;padding:9px 12px;font-size:12px;backdrop-filter:blur(10px)}
+.live-info b{color:#fff}.live-info span{color:#aaa}
+.creator-comment{margin-top:12px;max-width:680px;background:#07070ccc;border:1px solid #ffffff1c;border-radius:14px;padding:10px 12px;color:#d9e6f2;font-size:13px;line-height:1.45}
+.creator-comment b{color:#22d3ee}
+.modal input,.modal select,.modal textarea{width:100%;margin-top:8px;background:#171326;color:#fff;border:1px solid #2b3e56;border-radius:12px;padding:11px;outline:none}
+.modal label{display:block;margin-top:10px;color:#a7b9ce;font-size:12px;font-weight:700}
+
+/* ADDED: Host comment controls — existing code preserved */
+.host-comment-wrap{
+  flex-basis:100%;
+  width:100%;
+  margin-top:10px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:8px;
+  border:1px solid #ffffff22;
+  border-radius:16px;
+  background:#07070cdd;
+  backdrop-filter:blur(10px);
+}
+.host-comment-wrap .host-label{color:#22d3ee;font-size:11px;font-weight:900}
+.host-comment-wrap input{flex:1;min-width:0;background:#171326;color:#fff;border:1px solid #25374c;border-radius:12px;padding:10px 12px;outline:none}
+.host-comment-wrap input:focus{border-color:#22d3ee}
+.host-comment-wrap button{border:0;border-radius:12px;padding:10px 14px;color:#fff;background:linear-gradient(135deg,#22d3ee,#53a0ff);font-weight:900}
+@media(max-width:650px){.host-comment-wrap .host-label{display:none}.host-comment-wrap button{padding:10px 12px}}
+
+/* ADDED: Camera / Microphone / Start Live controls */
+.live-controls{
+  flex-basis:100%;
+  width:100%;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+.live-control-btn{
+  border:1px solid #ffffff25;
+  background:linear-gradient(135deg,#171326,#112d4f);
+  color:#fff;
+  border-radius:14px;
+  padding:11px 15px;
+  font-weight:900;
+  min-width:130px;
+}
+.live-control-btn:hover{border-color:#22d3ee;transform:translateY(-1px)}
+.live-control-btn.start{background:linear-gradient(135deg,#22d3ee,#2563eb,#53a0ff);border:0}
+.live-status{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:14px;background:#07070cdd;border:1px solid #ffffff22;color:#aaa;font-size:12px;font-weight:800}
+.live-status .dot{width:9px;height:9px;border-radius:50%;background:#777}
+.live-status.live .dot{background:#ff315e;box-shadow:0 0 12px #ff315e}
+@media(max-width:650px){
+  .live-control-btn{min-width:0;flex:1;padding:10px 11px;font-size:12px}
+  .live-status{width:100%;justify-content:center}
+}
+
+/* ADDED: VicoPay Live Effects */
+.effects-card{width:min(620px,100%);max-height:90vh;overflow:auto}
+.effects-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.effect-option{min-height:118px;border:1px solid #25374c;background:#171326;color:#fff;border-radius:16px;padding:12px 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.effect-option:hover,.effect-option.active{border-color:#22d3ee;box-shadow:0 0 20px #22d3ee33}
+.effect-icon{font-size:32px}.effect-option small{color:#aaa;font-size:10px}
+.selected-effect{margin-top:14px;padding:11px 13px;border:1px solid #ffffff18;background:#07070c;border-radius:13px;color:#aaa;font-size:12px}
+.selected-effect strong{color:#fff;margin-left:5px}
+.effect-close-btn{width:100%;margin-top:12px;border:0;border-radius:14px;padding:12px;background:linear-gradient(135deg,#22d3ee,#53a0ff);color:#fff;font-weight:900}
+#effectOverlay{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden;border-radius:24px}
+#effectOverlay.sparkle{background:radial-gradient(circle at 20% 20%,#fff8 0 2px,transparent 3px),radial-gradient(circle at 75% 35%,#fff8 0 2px,transparent 3px),radial-gradient(circle at 55% 75%,#fff8 0 2px,transparent 3px);animation:effectPulse 1.7s infinite alternate}
+#effectOverlay.hearts:before{content:"❤️  💗  ❤️  💗";position:absolute;left:10%;bottom:-20px;font-size:32px;letter-spacing:25px;animation:floatHearts 5s linear infinite}
+#effectOverlay.fire{background:linear-gradient(0deg,#ff5a0020,transparent 45%,#ff9d0010);box-shadow:inset 0 -100px 100px #ff4d0020}
+#effectOverlay.gold{background:radial-gradient(circle at 50% 30%,#ffd70030,transparent 55%);box-shadow:inset 0 0 80px #ffd70018}
+#effectOverlay.diamond{background:radial-gradient(circle at 25% 25%,#22d3ee25,transparent 30%),radial-gradient(circle at 80% 70%,#53a0ff25,transparent 35%)}
+#effectOverlay.love{background:radial-gradient(circle at 50% 50%,#3c91f825,transparent 65%);box-shadow:inset 0 0 90px #3c91f815}
+#effectOverlay.party{background:linear-gradient(120deg,#3c91f818,#22d3ee18,#fbbf2418,#53a0ff18);animation:partyGlow 2s infinite alternate}
+@keyframes effectPulse{from{opacity:.35}to{opacity:1}}
+@keyframes floatHearts{from{transform:translateY(0);opacity:.1}to{transform:translateY(-700px);opacity:1}}
+@keyframes partyGlow{from{filter:hue-rotate(0deg);opacity:.45}to{filter:hue-rotate(35deg);opacity:.9}}
+@media(max-width:650px){.effects-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+/* ===== VicoPay blue theme (matches live-room) ===== */
+body{background:linear-gradient(180deg,#05153f 0,#041030 55%,#030b22 100%)!important}
+.topbar{background:linear-gradient(90deg,#031c5d,#0646b8,#087fe8)!important;border-bottom:0!important;box-shadow:0 4px 18px rgba(0,55,150,.35)}
+.logo span{color:#57e5ff!important}.coin{background:#ffffff1f!important;border-color:#ffffff40!important;color:#fff!important}
+.icon-btn{background:#ffffff1f!important;border-color:#ffffff40!important}
+.top-link{color:#fff;text-decoration:none;font-weight:800;font-size:14px;padding:9px 14px;border-radius:20px;background:#ffffff1f}.top-link:hover{background:#ffffff38}
+.sidebar{background:#061a4a!important}.right{background:#07194a!important}
+.gift-main,.live-control-btn.start,.effect-close-btn,.host-comment-wrap button{background:linear-gradient(135deg,#13d1ff,#0787ed,#0646b8)!important;color:#fff!important}
+.tabs{overflow-x:auto;scrollbar-width:none;flex:none}.tabs::-webkit-scrollbar{display:none}.tab{flex:1 0 auto;padding:0 12px;white-space:nowrap;position:relative}
+.tab .dotb{position:absolute;top:12px;right:4px;width:8px;height:8px;border-radius:50%;background:#ff315e;display:none}.tab.alert .dotb{display:block}
+.right{min-height:0}.pane{display:none;flex:1;min-height:0;overflow:auto;flex-direction:column}.pane.on{display:flex}
+.pane .pad{padding:14px}.hint{color:#9fc3e8;font-size:13px;line-height:1.5}
+.pcard{background:#0b2766;border:1px solid #2b5da8;border-radius:14px;padding:12px;margin-bottom:10px}
+.prow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1b3b80}.prow:last-child{border:0}.prow .g{flex:1;min-width:0}.prow .n{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prow .s{font-size:12px;color:#9fc3e8}
+.chips{display:flex;gap:8px;margin:6px 0 10px}.chips button{flex:1;border:1px solid #2b5da8;background:#0b2766;color:#cfe3ff;border-radius:16px;padding:8px;font-weight:800;cursor:pointer}.chips button.on{background:#0787ed;border-color:#0787ed;color:#fff}
+.sm{border:0;border-radius:16px;padding:8px 14px;font-weight:900;font-size:12px;cursor:pointer;color:#fff;background:#0787ed;white-space:nowrap;text-decoration:none;display:inline-block}.sm.red{background:#ff315e}.sm.gray{background:#1c3f86;color:#a9c9ea}.sm.violet{background:#7c3aed}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.stat3 div{background:#0b2766;border:1px solid #2b5da8;border-radius:12px;padding:10px 6px;text-align:center}.stat3 b{display:block;font-size:17px;color:#ffc83d}.stat3 span{font-size:11px;color:#9fc3e8}
+.lvl{background:#7c3aed;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}
+.pkscore{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;text-align:center;align-items:center}.pkscore .big{font-size:22px;font-weight:900;color:#ffc83d}
+.pkbar{height:12px;border-radius:7px;background:#ff315e;overflow:hidden;margin-top:10px}.pkbar i{display:block;height:100%;background:#0787ed;transition:width .6s}
+.stage-pk{position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:6;display:none;min-width:260px;background:#031030d9;border:1px solid #7c3aed;border-radius:16px;padding:8px 14px;text-align:center;font-weight:900;backdrop-filter:blur(8px)}
+.stage-pk.on{display:block}.stage-pk .row{display:flex;justify-content:space-between;gap:14px;font-size:14px}.stage-pk .t{color:#ffc83d;font-size:13px}
+.opp{position:absolute;right:18px;top:310px;width:150px;aspect-ratio:9/16;max-height:270px;z-index:6;border-radius:14px;overflow:hidden;border:2px solid #7c3aed;background:#000;display:none}
+.opp video{width:100%;height:100%;object-fit:cover}.opp span{position:absolute;left:0;right:0;bottom:0;background:#000a;font-size:11px;padding:3px 6px;text-align:center}
+.gpop{position:absolute;left:50%;bottom:34%;transform:translateX(-50%);z-index:8;pointer-events:none;text-align:center;font-size:54px;animation:gp 3.2s ease-out forwards;text-shadow:0 4px 20px #000}.gpop small{display:block;font-size:14px;font-weight:900;background:#000b;border-radius:12px;padding:3px 10px}
+@keyframes gp{0%{opacity:0;transform:translate(-50%,40px) scale(.5)}15%{opacity:1;transform:translate(-50%,0) scale(1.15)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-150px)}}
+.va2{width:38px;height:38px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:900;flex:none;overflow:hidden;position:relative}.va2 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.live-status.live{color:#ffb3c2}.live-info{background:#031030d9!important}
+@media(max-width:1050px){.right{display:flex!important;grid-column:1/-1;min-height:560px;border-left:0!important;border-top:1px solid #2b5da8}.opp{top:auto;bottom:250px}}
+@media(max-width:650px){.right{margin-bottom:64px}.stage-pk{top:118px;min-width:220px}.opp{width:110px}.top-link{display:none}}
+@media(prefers-reduced-motion:reduce){.gpop{animation-duration:.01s}}
+
+/* ===== VicoPay LIGHT-BLUE theme v2: same look as the live room (ice-blue page, blue header, white panels) =====
+   The camera stage stays dark so the video is easy to see. */
+:root{--ice:#eef7ff;--ink:#082653;--mut:#66809a;--ln:#cfe6fb;--blue:#0646b8;--sky:#0787ed}
+body{background:var(--ice)!important;color:var(--ink)!important}
+.topbar .logo,.topbar a{color:#fff}
+.sidebar{background:#fff!important;border-right:1px solid var(--ln)!important}
+.side-item{background:transparent;border:1px solid transparent;color:#4a6a8a!important;cursor:pointer}
+.side-item:hover,.side-item.active{background:#e3f1ff!important;border-color:#b9dbfb!important;color:var(--blue)!important;box-shadow:none!important}
+.side-item small{color:inherit;font-weight:700}
+.main{background:transparent}
+.live-stage{color:#fff;border:1px solid #9cc8f3!important;box-shadow:0 14px 40px rgba(0,72,150,.22)!important;background:#031030!important}
+.camera-placeholder{background:radial-gradient(circle at 50% 35%,#13d1ff44,transparent 40%),linear-gradient(160deg,#062c77,#0646b8 60%,#087fe8)!important}
+.right{background:#fff!important;border-left:1px solid var(--ln)!important;color:var(--ink)}
+.tabs{border-bottom:1px solid var(--ln)!important;background:#f5faff}
+.tab{color:#5b7692!important}.tab.active{color:var(--blue)!important;border-bottom:3px solid var(--sky)!important}
+.chat-row .chat-text,.chat-text{background:#eaf4ff!important;color:var(--ink)!important}.chat-text b{color:var(--blue)!important}
+.chat-avatar{background:#d9eeff!important}
+.chat-input{border-top:1px solid var(--ln)!important;background:#fff}
+.chat-input input{background:#f2f9ff!important;border:1px solid var(--ln)!important;color:var(--ink)!important}
+.send{background:linear-gradient(135deg,var(--sky),var(--blue))!important}
+.hint{color:var(--mut)!important}
+.pane a[style*="13d1ff"]{color:var(--blue)!important;font-weight:700}
+.pcard{background:#f2f9ff!important;border:1px solid var(--ln)!important;color:var(--ink)}
+.pcard[style*="gradient"]{background:linear-gradient(135deg,#2a1a7a,#5b2fc7)!important;border-color:#7c3aed!important}
+@media(min-width:1051px){.opp{right:auto!important;left:18px;top:185px!important;width:96px;max-height:125px}}
+.pcard[style*="gradient"]{color:#fff!important}.pcard[style*="gradient"] .hint{color:#e5d9ff!important}
+.pcard[style*="7c3aed"]:not([style*="gradient"]){border-color:#7c3aed!important;background:#f6f0ff!important}
+.prow{border-bottom:1px solid #e1effc!important}.prow .s{color:var(--mut)!important}.prow b[style*="9fc3e8"]{color:#7a97b3!important}
+.chips button{background:#fff!important;border:1px solid var(--ln)!important;color:#315779!important}.chips button.on{background:var(--sky)!important;border-color:var(--sky)!important;color:#fff!important}
+.sm.gray{background:#e1effc!important;color:#315779!important}
+.stat3 div{background:#f2f9ff!important;border:1px solid var(--ln)!important}.stat3 b{color:var(--blue)!important}.stat3 span{color:var(--mut)!important}
+.pkscore .big{color:var(--blue)!important}
+.panel,.panel-title{color:var(--ink)}
+.pane .gift{background:#f2f9ff;border-color:var(--ln);color:var(--ink)}
+/* pop-up windows */
+.modal{background:rgba(3,28,93,.55)!important}
+.modal-card{background:#fff!important;color:var(--ink)!important;border:1px solid var(--ln)!important;box-shadow:0 24px 70px rgba(0,50,130,.35)!important}
+.modal-head h2{color:var(--blue)}.modal .close{background:#e1effc;color:var(--blue);border:0}
+.modal p,.modal label{color:var(--mut)!important}
+.modal input,.modal select,.modal textarea{background:#f2f9ff!important;color:var(--ink)!important;border:1px solid var(--ln)!important}
+.modal-grid button,.effect-option{background:#f2f9ff!important;color:var(--ink)!important;border:1px solid var(--ln)!important}
+.effect-option small{color:var(--mut)!important}.effect-option:hover,.effect-option.active{border-color:var(--sky)!important;box-shadow:0 0 0 3px #13d1ff33!important}
+.selected-effect{background:#f2f9ff!important;color:var(--mut)!important;border-color:var(--ln)!important}.selected-effect strong{color:var(--ink)!important}
+.link{color:var(--blue)!important}
+/* the red LIVE badge only appears while you are really live */
+@supports selector(:has(a)){.live-stage:not(:has(.live-status.live)) .live-pill{display:none}}
+@media(max-width:1050px){.right{border-top:1px solid var(--ln)!important}}
+@media(max-width:650px){.sidebar{background:#fff!important;border-top:1px solid var(--ln)!important}}
+
+/* ---- gifts & hearts on the host's screen ---- */
+.gstack{position:absolute;left:14px;bottom:222px;z-index:9;display:flex;flex-direction:column;gap:7px;pointer-events:none;max-width:min(300px,72%)}
+.grow2{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(6,70,184,.92),rgba(6,70,184,.35));border:1px solid rgba(87,229,255,.45);border-radius:30px;padding:5px 12px 5px 5px;color:#fff;animation:rowin .35s ease-out}
+.grow2 .gt{display:flex;flex-direction:column;line-height:1.15;min-width:0}.grow2 .gt b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}.grow2 .gt span{font-size:11px;color:#bfe3ff}
+.grow2 em{font-style:normal;font-size:26px}.grow2 .cx{font-style:italic;font-weight:900;font-size:20px;color:#ffd54a;text-shadow:0 2px 6px #000}
+.grow2.bump{animation:bump .3s ease-out}
+@keyframes rowin{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}@keyframes bump{50%{transform:scale(1.12)}}
+.gpop.big{font-size:120px;bottom:30%}.gpop.big small{font-size:18px;background:linear-gradient(90deg,#ff5a7d,#ff9f43);border-radius:20px;padding:6px 16px;margin-top:6px}
+.hpop{position:absolute;bottom:130px;font-size:30px;z-index:8;pointer-events:none;animation:hrise 2.5s ease-out forwards;text-align:center}.hpop small{display:block;font-size:11px;font-weight:800;background:rgba(3,28,93,.8);color:#fff;border-radius:10px;padding:2px 8px;margin-top:2px}
+@keyframes hrise{0%{opacity:0;transform:translateY(0) scale(.5)}15%{opacity:1}100%{opacity:0;transform:translateY(-330px) translateX(-26px) scale(1.15)}}
+@media(prefers-reduced-motion:reduce){.grow2,.hpop{animation-duration:.01s}}
+
+/* ===== FIX: keep the Go Live screen clear (compact bottom dock) ===== */
+.stage-bottom{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom))}
+.messages{max-height:22%;overflow:hidden;margin-bottom:8px}
+.dock{display:flex;flex-direction:column;gap:8px}
+.dock-row{display:flex;align-items:center;gap:8px;width:100%}
+.dock .round-action{width:40px;height:40px;font-size:18px;flex:none}
+.dock .live-status{margin-left:auto;display:none;padding:7px 10px;font-size:11px;white-space:nowrap}
+.dock-live{flex:none;border:0;border-radius:22px;padding:11px 18px;font-weight:900;color:#fff;background:linear-gradient(135deg,#13d1ff,#0787ed,#0646b8);box-shadow:0 6px 18px #0787ed55}
+.dock-live:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.dock-live.ending{background:#ff315e;box-shadow:0 6px 18px #ff315e55}
+.dock .host-comment-wrap{margin-top:0;padding:6px}
+/* creator tool buttons: smaller, icon-only on phones so they stop covering the video */
+.creator-tools{top:118px;gap:6px}
+.creator-tool{padding:7px 9px;font-size:11px}
+@media(max-width:650px){
+  .creator-tools{top:112px;right:10px}
+  .creator-tool{width:38px;height:38px;padding:0;font-size:0;border-radius:50%;display:grid;place-items:center}
+  .creator-tool::first-letter{font-size:17px}
+  .dock .live-status{display:none}
+  .dock-live{padding:11px 14px;font-size:13px}
+  .live-info{top:112px;left:10px;font-size:11px;padding:7px 10px}
+}
+
+/* ===== Effects & Filters ===== */
+#effectOverlay{display:none!important}
+.fx-tabs{display:flex;gap:6px;margin-top:10px}
+.fx-tab{flex:1;border:1px solid var(--ln,#cfe3f7);background:#f2f9ff;color:#0b2a4a;border-radius:12px;padding:9px 6px;font-weight:800;font-size:12px}
+.fx-tab.on{background:linear-gradient(135deg,#13d1ff,#0787ed);color:#fff;border-color:transparent}
+.fx-hint{font-size:12px;color:#5b7692;margin:10px 0 0}
+.effects-grid{max-height:46vh;overflow-y:auto}
+.effect-option{min-height:92px!important}
+@media(max-width:650px){.effects-grid{grid-template-columns:repeat(3,1fr)}.effect-icon{font-size:26px}}
+/* follow / gift / love activity feed (left side of the live screen) */
+.gstack{left:12px!important;top:196px!important;bottom:auto!important;z-index:12!important;max-width:min(300px,78%)}
+.grow2.follow{background:linear-gradient(90deg,rgba(18,140,70,.92),rgba(18,140,70,.35));border-color:rgba(120,255,170,.5)}
+@media(max-width:650px){.gstack{top:170px!important}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">VicoPay <span>Live</span></div>
+  <a class="top-link" href="live-room.html">📺 Live Room</a><a class="top-link" href="pk-battles.html">⚔️ PK</a>
+  <div class="top-actions">
+    <div class="coin">🪙 <span id="coinBalance">0</span></div>
+    <a class="icon-btn" href="profile.html" title="My profile">👤</a>
+    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <a class="side-item" href="home.html" title="Home">⌂<small>Home</small></a>
+    <a class="side-item" href="live-room.html" title="Live Room">📺<small>Live</small></a>
+    <button class="side-item" onclick="setTab('pk')" title="PK">⚔️<small>PK</small></button>
+    <button class="side-item" onclick="setTab('fans')" title="Fan Club">💜<small>Fans</small></button>
+    <a class="side-item" href="hosts.html" title="Hosts">🎤<small>Hosts</small></a>
+    <a class="side-item" href="buy-coin.html" title="Buy Coins">🪙<small>Coins</small></a>
+    <a class="side-item" href="profile.html" title="Profile">👤<small>Me</small></a>
+  </nav>
+
+  <main class="main">
+    <section class="live-stage">
+      <video id="camera" autoplay muted playsinline></video>
+      <div id="effectOverlay"></div>
+      <div id="placeholder" class="camera-placeholder">
+        <div class="placeholder-content">
+          <div class="big">🎥</div>
+          <h2>VicoPay Live</h2>
+          <p>Your live video will appear here.</p>
+          <button class="gift-main" onclick="startCamera()">Start Camera</button>
+        </div>
+      </div>
+
+      <div class="stage-top">
+        <div class="live-pill">🔴 LIVE</div>
+        <div class="viewer-pill">👁️ <span id="viewerCount">0</span></div>
+      </div>
+
+      <div class="host-card">
+        <span id="hcAvatar" class="va2" style="background:#0787ed">🎤</span>
+        <div><div class="host-name" id="hcName">You</div><small style="color:#9fc3e8" id="hcSub">0 followers</small></div>
+      </div>
+
+      <div class="stage-pk" id="stagePK"><div class="t" id="spTimer">⚔️ PK Battle</div><div class="row"><span id="spA"></span><span id="spB"></span></div><div class="pkbar"><i id="spBar" style="width:50%"></i></div></div>
+      <div class="opp" id="oppBox"><video id="oppVideo" autoplay playsinline></video><span>⚔️ <b id="oppName"></b></span></div>
+      <div class="live-info">
+        <b id="roomTitle">VicoPay Live Room</b><br>
+        <span id="roomCategory">General Live</span>
+      </div>
+      <div class="creator-tools">
+        <button class="creator-tool" onclick="openLiveSetup()">📝 Live Info</button>
+        <button class="creator-tool" onclick="openSettings()">⚙️ Controls</button>
+        <button class="creator-tool" onclick="openEffects()">✨ Effects</button>
+        <button class="creator-tool" onclick="setTab('pk')">⚔️ PK</button>
+        <button class="creator-tool" onclick="setTab('fans')">💜 Fan Club</button>
+      </div>
+
+      <div class="stage-bottom">
+        <div class="messages" id="stageMessages">
+          
+        </div>
+        <div class="action-row dock">
+          <div class="dock-row">
+            <button id="startLiveBtn" class="dock-live" type="button" onclick="startLive()">🔴 Start Live</button>
+            <button id="endLiveBtn" class="dock-live ending" type="button" onclick="endLive()" disabled>⏹ End Live</button>
+            <span id="liveStatus" class="live-status"><span class="dot"></span> Not live</span>
+          </div>
+
+          <div class="host-comment-wrap">
+            <span class="host-label">HOST</span>
+            <input id="hostCommentInput" type="text" maxlength="300" placeholder="Comment as host..." onkeydown="if(event.key==='Enter')sendHostComment()">
+            <button type="button" onclick="sendHostComment()">Comment</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="right" id="rightPanel">
+    <div class="tabs" id="gtabs" role="tablist">
+      <button class="tab active" data-t="chat">💬 Chat</button>
+      <button class="tab" data-t="pk">⚔️ PK<i class="dotb"></i></button>
+      <button class="tab" data-t="fans">💜 Fans</button>
+      <button class="tab" data-t="gifts">🎁 Gifts</button>
+      <button class="tab" data-t="people">👥 Followers</button>
+    </div>
+    <div class="pane on" id="pane-chat">
+      <div class="chat" id="chatList"></div>
+      <div class="chat-input">
+        <input id="chatInput" placeholder="Type a message..." maxlength="200" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="send" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+    <div class="pane" id="pane-pk"></div>
+    <div class="pane" id="pane-fans"></div>
+    <div class="pane" id="pane-gifts"></div>
+    <div class="pane" id="pane-people"></div>
+  </aside>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-card">
+    <div class="modal-head"><h2>⚙️ Settings &amp; Privacy</h2><button class="close" onclick="closeModal('settingsModal')">×</button></div>
+    <div class="modal-grid">
+      <button id="cameraControlBtn" type="button" onclick="toggleCamera()">📷 Camera</button>
+      <button id="micControlBtn" type="button" onclick="toggleLiveMicrophone()">🎙️ Microphone: On</button>
+      <button onclick="openEffects()">✨ Effects</button>
+      <button onclick="openShare()">↗️ Share Live</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="effectsModal">
+  <div class="modal-card effects-card">
+    <div class="modal-head"><h2>✨ Effects &amp; Filters</h2><button class="close" onclick="closeModal('effectsModal')">×</button></div>
+    <div class="fx-tabs">
+      <button class="fx-tab on" data-k="filter" onclick="fxTab('filter')">🎨 Colour Filters</button>
+      <button class="fx-tab" data-k="sticker" onclick="fxTab('sticker')">😺 Face Stickers</button>
+      <button class="fx-tab" data-k="fx" onclick="fxTab('fx')">✨ Effects</button>
+    </div>
+    <p class="fx-hint" id="fxHint"></p>
+    <div class="effects-grid" id="fxGrid"></div>
+    <div class="selected-effect">Now using: <strong id="currentEffect">Normal</strong></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="effect-close-btn" style="margin:0;background:#ff315e!important" onclick="fxClear()">Clear all</button>
+      <button class="effect-close-btn" style="margin:0" onclick="closeModal('effectsModal')">✓ Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="liveSetupModal">
+  <div class="modal-card">
+    <div class="modal-head"><h2>📝 Set Up Your Live</h2><button class="close" onclick="closeModal('liveSetupModal')">×</button></div>
+    <p style="color:#aaa">Set the information viewers will see before you start.</p>
+    <label>Live title</label>
+    <input id="setupTitle" value="My VicoPay Live" maxlength="70">
+    <label>Category</label>
+    <select id="setupCategory"><option>Chat</option><option>Music</option><option>Dance</option><option>Gaming</option><option>Entertainment</option><option>Education</option><option>Comedy</option><option>Sports</option><option>Audio</option><option>Multi-Guest</option><option>Popular</option><option>New Hosts</option></select>
+    <label>Description</label>
+    <textarea id="setupDescription" rows="3" placeholder="Tell viewers what your live is about..."></textarea>
+    <div class="modal-grid">
+      <button onclick="saveLiveSetup()">✓ Save Information</button>
+      <button onclick="startCameraFromSetup()">🔴 Start Live</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="shareModal">
+  <div class="modal-card">
+    <div class="modal-head"><h2>↗️ Share Live</h2><button class="close" onclick="closeModal('shareModal')">×</button></div>
+    <p style="color:#aaa">Invite viewers to your VicoPay live room.</p>
+    <div class="modal-grid">
+      <button onclick="copyRoomLink()">🔗 Copy Link</button>
+      <button onclick="shareRoom()">📤 Share</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+let coinBalance = 0;
+let stream = null;
+let muted = false;
+let liveStarted = false;
+
+function getUserId(){
+  return localStorage.getItem("vicoPayEmail") || localStorage.getItem("vicoPayUser") || "";
+}
+
+async function loadWallet(){
+  const userId=getUserId();
+  if(!userId){
+    document.getElementById("coinBalance").textContent="0";
+    return;
+  }
+  try{
+    const r=await fetch(API_BASE+"/api/wallet/"+encodeURIComponent(userId));
+    const d=await r.json();
+    if(r.ok && d.success){
+      coinBalance=Number(d.coins||0);
+      document.getElementById("coinBalance").textContent=coinBalance.toLocaleString();
+    }
+  }catch(e){
+    console.error("Wallet error:",e);
+  }
+}
+
+async function startCamera(){
+  await startLiveCamera();
+}
+
+async function startLiveCamera(){
+  if(stream){
+    document.getElementById("placeholder").classList.add("hidden");
+    showToast("📷 Camera is already ready.");
+    return;
+  }
+
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      alert("Camera access requires localhost or HTTPS.");
+      return;
+    }
+
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:true,
+      audio:true
+    });
+
+    document.getElementById("camera").srcObject=stream;
+    try{ if(window.VicoFX) VicoFX.startPreview(document.getElementById("camera"),stream); }catch(e){ console.error("Preview effects:",e); }
+    document.getElementById("placeholder").classList.add("hidden");
+
+    muted=false;
+
+    const micButton=document.getElementById("micControlBtn");
+    if(micButton){
+      micButton.textContent="🎙️ Microphone: On";
+    }
+
+    showToast("📷 Camera and microphone are ready.");
+
+  }catch(e){
+    console.error("Camera error:",e);
+    alert("Camera or microphone access was blocked. Please allow Camera and Microphone permission in your browser.");
+  }
+}
+
+function toggleLiveMicrophone(){
+  if(!stream){
+    showToast("🎙️ Start the camera first.");
+    return;
+  }
+
+  const audioTracks=stream.getAudioTracks();
+
+  if(!audioTracks.length){
+    showToast("❌ Microphone was not found.");
+    return;
+  }
+
+  muted=!muted;
+
+  audioTracks.forEach(function(track){
+    track.enabled=!muted;
+  });
+
+  const micButton=document.getElementById("micControlBtn");
+
+  if(micButton){
+    micButton.textContent=muted
+      ? "🎙️ Microphone: Off"
+      : "🎙️ Microphone: On";
+  }
+
+  showToast(muted
+    ? "🎙️ Microphone turned off."
+    : "🎙️ Microphone turned on."
+  );
+}
+
+function toggleCamera(){
+  if(!stream){
+    return startLiveCamera();
+  }
+
+  const track=stream.getVideoTracks()[0];
+
+  if(!track){
+    showToast("❌ Camera was not found.");
+    return;
+  }
+
+  track.enabled=!track.enabled;
+
+  showToast(track.enabled
+    ? "📷 Camera turned on."
+    : "📷 Camera turned off."
+  );
+}
+
+function toggleMute(){
+  toggleLiveMicrophone();
+}
+
+
+var fxCurrentTab="filter";
+var FX_HINTS={
+  filter:"Pick a colour filter. Your viewers see it too.",
+  sticker:"Face stickers follow your face. Keep your face in the camera. (The first time, they need a few seconds to load.)",
+  fx:"Screen effects float over your live video."
+};
+function openEffects(){
+  document.getElementById("effectsModal").classList.add("open");
+  fxTab(fxCurrentTab);
+}
+function fxList(kind){return kind==="filter"?VicoFX.FILTERS:kind==="sticker"?VicoFX.STICKERS:VicoFX.EFFECTS;}
+function fxTab(kind){
+  fxCurrentTab=kind;
+  document.querySelectorAll(".fx-tab").forEach(function(t){t.classList.toggle("on",t.dataset.k===kind);});
+  document.getElementById("fxHint").textContent=FX_HINTS[kind];
+  document.getElementById("fxGrid").innerHTML=fxList(kind).map(function(o){
+    return '<button class="effect-option'+(VicoFX.state[kind]===o.id?' active':'')+'" onclick="fxPick(\''+kind+'\',\''+o.id+'\')"><span class="effect-icon">'+o.icon+'</span><b>'+o.name+'</b></button>';
+  }).join("");
+  fxLabel();
+}
+function fxPick(kind,id){
+  VicoFX.set(kind,id);
+  fxTab(kind);
+  var o=fxList(kind).filter(function(x){return x.id===id;})[0];
+  showToast(id==="none"?"✨ Removed.":o.icon+" "+o.name+" applied.");
+}
+function fxClear(){VicoFX.clear();fxTab(fxCurrentTab);showToast("✨ All effects cleared.");}
+function fxLabel(){
+  function nm(list,id){return list.filter(function(x){return x.id===id;})[0].name;}
+  var st=VicoFX.state,parts=[];
+  if(st.filter!=="none")parts.push(nm(VicoFX.FILTERS,st.filter));
+  if(st.sticker!=="none")parts.push(nm(VicoFX.STICKERS,st.sticker));
+  if(st.fx!=="none")parts.push(nm(VicoFX.EFFECTS,st.fx));
+  var el=document.getElementById("currentEffect");
+  if(el)el.textContent=parts.length?parts.join(" + "):"Normal";
+}
+
+// =====================================================
+// REAL SHARED CHAT (over the LiveKit data channel)
+// =====================================================
+// Every message goes out to everyone currently connected to this
+// LiveKit room (host + all viewers) via publishData. LiveKit does
+// NOT echo a participant's own published data back to them, so we
+// render our own messages locally the moment we send them, and
+// render everyone else's the moment DataReceived fires above.
+
+function broadcastChatMessage(text, isHost){
+  const safeText = text.trim();
+  if (!safeText) return;
+
+  const msg = {
+    type: "chat",
+    name: localStorage.getItem("vicoPayDisplayName") || getUserId() || "You",
+    isHost: !!isHost,
+    text: safeText,
+    ts: Date.now()
+  };
+
+  // Render on our own screen right away.
+  renderChatMessage(msg, true);
+
+  // Send to everyone else in the room, if we're actually connected.
+  if (vicoLiveKitRoom && vicoLiveRoomId) {
+    try {
+      const payload = new TextEncoder().encode(JSON.stringify(msg));
+      vicoLiveKitRoom.localParticipant.publishData(payload, { reliable: true });
+    } catch (e) {
+      console.error("Chat broadcast error:", e);
+    }
+
+    // Save it too, so a viewer who joins after this point still sees
+    // it (LiveKit's data channel itself keeps no history at all).
+    saveChatToHistory(vicoLiveRoomId, msg);
+  } else {
+    showToast("⚠️ Not live yet — this message is only visible to you.");
+  }
+}
+
+function saveChatToHistory(roomId, msg){
+  // auth.js already attaches this signed-in host's token to every
+  // /api/ fetch automatically, so nothing extra is needed here.
+  fetch(API_BASE + "/api/live/chat/" + encodeURIComponent(roomId), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: msg.name, isHost: msg.isHost, text: msg.text })
+  }).catch(err => console.error("Chat history save error:", err));
+}
+
+function renderChatMessage(msg, isMine){
+  const safeName = escapeHTML(msg.name || (isMine ? "You" : "Viewer"));
+  const safeText = escapeHTML(msg.text || "");
+  const hostBadge = msg.isHost ? ' <span style="color:#22d3ee;font-size:11px">• HOST</span>' : "";
+  const avatar = msg.isHost ? "🎥" : "👤";
+
+  const row=document.createElement("div");
+  row.className="chat-row";
+  row.innerHTML='<div class="chat-avatar">'+avatar+'</div><div class="chat-text"><b>'+(isMine?"You":safeName)+'</b>'+hostBadge+'<br>'+safeText+'</div>';
+  const chat=document.getElementById("chatList");
+  if(chat){
+    chat.appendChild(row);
+    chat.scrollTop=chat.scrollHeight;
+  }
+
+  const stage=document.getElementById("stageMessages");
+  if(stage){
+    const stageMsg=document.createElement("div");
+    stageMsg.className="msg";
+    stageMsg.innerHTML="<b>"+(isMine?"You":safeName)+"</b>"+hostBadge+" "+safeText;
+    stage.appendChild(stageMsg);
+  }
+}
+
+function sendChat(){
+  const input=document.getElementById("chatInput");
+  const text=input.value;
+  if(!text.trim())return;
+  broadcastChatMessage(text, false);
+  input.value="";
+  document.getElementById("chatList").scrollTop=999999;
+}
+
+function sendHostComment(){
+  const input=document.getElementById("hostCommentInput");
+  if(!input)return;
+  const text=input.value;
+  if(!text.trim())return;
+  broadcastChatMessage(text, true);
+  input.value="";
+  showToast("💬 Host comment posted.");
+}
+
+function escapeHTML(t){
+  const d=document.createElement("div");
+  d.textContent=t;
+  return d.innerHTML;
+}
+
+function sendLove(){
+  showToast("❤️ Your viewers send you love from the watch page.");
+}
+
+
+
+function openSettings(){
+  document.getElementById("settingsModal").classList.add("open");
+}
+
+function closeModal(id){
+  const modal=document.getElementById(id);
+  if(modal)modal.classList.remove("open");
+}
+
+function showToast(text){
+  let t=document.getElementById("toast");
+
+  if(!t){
+    t=document.createElement("div");
+    t.id="toast";
+    t.style.cssText=
+      "position:fixed;left:50%;bottom:30px;"+
+      "transform:translateX(-50%);"+
+      "background:#171326;border:1px solid #356db1;"+
+      "padding:12px 18px;border-radius:25px;"+
+      "z-index:200;box-shadow:0 15px 40px #000;"+
+      "color:#fff;font-weight:700";
+    document.body.appendChild(t);
+  }
+
+  t.textContent=text;
+  t.style.display="block";
+
+  clearTimeout(t._timer);
+
+  t._timer=setTimeout(
+    ()=>t.style.display="none",
+    3000
+  );
+}
+
+function openLiveSetup(){
+  document.getElementById("liveSetupModal").classList.add("open");
+}
+
+function saveLiveSetup(){
+  const title=
+    document.getElementById("setupTitle").value.trim()
+    ||"VicoPay Live Room";
+
+  const category=
+    document.getElementById("setupCategory").value;
+
+  const description=
+    document.getElementById("setupDescription").value.trim();
+
+  document.getElementById("roomTitle").textContent=title;
+  document.getElementById("roomCategory").textContent=category;
+
+  localStorage.setItem("vicoPayLiveTitle",title);
+  localStorage.setItem("vicoPayLiveCategory",category);
+  localStorage.setItem("vicoPayLiveDescription",description);
+
+  closeModal("liveSetupModal");
+
+  showToast("✓ Live information saved.");
+}
+
+async function startCameraFromSetup(){
+  saveLiveSetup();
+  setTimeout(()=>startLive(),50);
+}
+
+function openShare(){
+  document.getElementById("shareModal").classList.add("open");
+}
+
+function getWatchLink(){
+  if (!vicoLiveRoomId) {
+    showToast("Start your live first, then share the link.");
+    return null;
+  }
+  return location.origin + "/live-feed.html?room=" + encodeURIComponent(vicoLiveRoomId);
+}
+
+function copyRoomLink(){
+  const link = getWatchLink();
+  if (!link) return;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(link)
+      .then(()=>showToast("🔗 Live room link copied."));
+  }else{
+    showToast("Copy is not available in this browser.");
+  }
+}
+
+function shareRoom(){
+  const link = getWatchLink();
+  if (!link) return;
+  if(navigator.share){
+    navigator.share({
+      title:document.getElementById("roomTitle").textContent,
+      text:"Join my VicoPay live room",
+      url:link
+    }).catch(()=>{});
+  }else{
+    copyRoomLink();
+  }
+}
+
+(function loadSavedLiveInfo(){
+  const title=localStorage.getItem("vicoPayLiveTitle");
+  const category=localStorage.getItem("vicoPayLiveCategory");
+  const description=localStorage.getItem("vicoPayLiveDescription");
+
+  if(title){
+    document.getElementById("setupTitle").value=title;
+    document.getElementById("roomTitle").textContent=title;
+  }
+
+  if(category){
+    document.getElementById("setupCategory").value=category;
+    document.getElementById("roomCategory").textContent=category;
+  }
+
+  if(description){
+    document.getElementById("setupDescription").value=description;
+  }
+})();
+
+loadWallet();
+</script>
+
+<script>
+// =====================================================
+// VicoPay Live - real multi-user video streaming
+// Powered by LiveKit WebRTC SFU
+// =====================================================
+let vicoLiveKitRoom = null;
+let vicoLiveRoomId = null;
+let vicoLiveKitTracks = [];
+
+function toggleLive() {
+  if (vicoLiveKitRoom) return endLive();
+  return startLive();
+}
+
+async function startLive() {
+  if (vicoLiveKitRoom) {
+    showToast("🔴 Your live is already connected.");
+    return;
+  }
+
+  const hostId = getUserId();
+  if (!hostId) {
+    alert("Please sign in before starting a live stream.");
+    return;
+  }
+
+  const title = document.getElementById("setupTitle")?.value.trim() || localStorage.getItem("vicoPayLiveTitle") || "VicoPay Live";
+  const category = document.getElementById("setupCategory")?.value || localStorage.getItem("vicoPayLiveCategory") || "Trending";
+
+  try {
+    if (!window.LivekitClient) throw new Error("Live video library did not load.");
+
+    // If the preview camera is already open, release it before LiveKit captures the camera.
+    if (window.VicoFX) VicoFX.stopPreview();
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+
+    // ONE call: creates the room record AND returns a ready host token.
+    const createResponse = await fetch(API_BASE + "/api/live/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        hostId,
+        title,
+        category,
+        liveType: "video",
+        description: (document.getElementById("setupDescription")||{}).value || localStorage.getItem("vicoPayLiveDescription") || "",
+        name: localStorage.getItem("vicoPayDisplayName") || String(hostId)
+      })
+    });
+    const created = await createResponse.json();
+    if (!createResponse.ok || !created.success) throw new Error(created.message || "Could not create live room.");
+
+    vicoLiveRoomId = created.room.roomId;
+
+    const LK = window.LivekitClient;
+    vicoLiveKitRoom = new LK.Room({ adaptiveStream: true, dynacast: true });
+
+    vicoLiveKitRoom.on(LK.RoomEvent.Disconnected, () => {
+      vicoLiveKitRoom = null;
+    });
+
+    // Real viewer count — remoteParticipants excludes the host
+    // themself, so this is exactly "how many people are watching".
+    function updateViewerCount() {
+      const el = document.getElementById("viewerCount");
+      if (el && vicoLiveKitRoom) el.textContent = vicoLiveKitRoom.remoteParticipants.size.toLocaleString();
+    }
+    vicoLiveKitRoom.on(LK.RoomEvent.ParticipantConnected, updateViewerCount);
+    vicoLiveKitRoom.on(LK.RoomEvent.ParticipantDisconnected, updateViewerCount);
+
+    // Real shared chat: anyone in this LiveKit room (viewers included)
+    // who sends a chat message arrives here — this is what makes chat
+    // actually shared instead of only visible on the sender's screen.
+    vicoLiveKitRoom.on(LK.RoomEvent.DataReceived, (payload) => {
+      try {
+        const msg = JSON.parse(new TextDecoder().decode(payload));
+        if (msg.type === "chat") renderChatMessage(msg, false);
+      } catch (e) { /* ignore malformed data messages */ }
+    });
+
+    await vicoLiveKitRoom.connect(created.livekit.url, created.livekit.token);
+    await vicoLiveKitRoom.localParticipant.enableCameraAndMicrophone();
+
+    const localVideo = document.getElementById("camera");
+    // Colour filters, face stickers and effects are applied here, so VIEWERS see them too
+    try {
+      const camPub = vicoLiveKitRoom.localParticipant.getTrackPublication(LK.Track.Source.Camera);
+      if (camPub && camPub.videoTrack && window.VicoFX) await camPub.videoTrack.setProcessor(VicoFX.createProcessor());
+    } catch (fxError) {
+      console.error("Effects could not start:", fxError);
+      showToast("⚠️ Effects could not start, your live is still running normally.");
+    }
+    const publications = Array.from(vicoLiveKitRoom.localParticipant.trackPublications.values());
+    publications.forEach(pub => {
+      if (pub.track && pub.kind === "video") {
+        pub.track.attach(localVideo);
+      }
+    });
+
+    liveStarted = true;
+    document.getElementById("placeholder")?.classList.add("hidden");
+    const status = document.getElementById("liveStatus");
+    if (status) status.innerHTML = '<span class="dot"></span> LIVE NOW';
+    const startButton = document.getElementById("startLiveBtn");
+    if (startButton) {
+      startButton.textContent = "🔴 Live Started";
+      startButton.disabled = true;
+    }
+    const endButton = document.getElementById("endLiveBtn");
+    if (endButton) endButton.disabled = false;
+    document.querySelector(".live-pill")?.replaceChildren(document.createTextNode("🔴 LIVE NOW"));
+    showToast("🔴 You are live. Other users can now enter this room.");
+  } catch (error) {
+    console.error("LiveKit host error:", error);
+    if (vicoLiveKitRoom) {
+      await vicoLiveKitRoom.disconnect().catch(() => {});
+      vicoLiveKitRoom = null;
+    }
+    if (vicoLiveRoomId) {
+      await fetch(API_BASE + "/api/live/end/" + encodeURIComponent(vicoLiveRoomId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hostId })
+      }).catch(() => {});
+    }
+    vicoLiveRoomId = null;
+    showToast("❌ " + error.message);
+  }
+}
+
+async function endLive() {
+  if (!confirm("End this live session?")) return;
+  const hostId = getUserId();
+
+  try {
+    if (vicoLiveKitRoom) await vicoLiveKitRoom.disconnect();
+    if (vicoLiveRoomId) {
+      await fetch(API_BASE + "/api/live/end/" + encodeURIComponent(vicoLiveRoomId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hostId })
+      });
+    }
+  } finally {
+    vicoLiveKitRoom = null;
+    vicoLiveRoomId = null;
+    if (window.VicoFX) VicoFX.stopPreview();
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    stream = null;
+    liveStarted = false;
+    document.getElementById("camera").srcObject = null;
+    document.getElementById("placeholder")?.classList.remove("hidden");
+    const status = document.getElementById("liveStatus");
+    if (status) status.innerHTML = '<span class="dot"></span> Not live';
+    const startButton = document.getElementById("startLiveBtn");
+    if (startButton) {
+      startButton.disabled = false;
+      startButton.textContent = "🔴 Start Live";
+    }
+    const endButton = document.getElementById("endLiveBtn");
+    if (endButton) endButton.disabled = true;
+    showToast("🔴 Live session ended.");
+  }
+}
+</script>
+
+<script src="live-effects.js"></script>
+<script src="go-live-studio.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "vicopay-live",
+  "version": "1.0.0",
+  "description": "VicoPay Live - live streaming with gifts, coins (Paystack), PostgreSQL ledger and creator payouts, powered by LiveKit",
+  "main": "server.js",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js",
+    "smoke": "node smoke-test.js",
+    "db:selftest": "node db-selftest.js",
+    "db:verify": "node ledger-verify.js",
+    "backup": "node backup.js",
+    "restore": "node restore.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "livekit-server-sdk": "^2.7.0",
+    "pg": "^8.13.0"
+  }
+}
