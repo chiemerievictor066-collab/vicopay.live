@@ -128,7 +128,7 @@ Settings (Render > Environment). All are optional except the Paystack key and AP
 | Name | What it does | Default |
 | --- | --- | --- |
 | `PAYSTACK_SECRET_KEY` | already used for coins | required |
-| `APP_URL` | your site address, Paystack sends people back to `APP_URL/forex.html` after paying | `http://localhost:3000` |
+| `APP_URL` | only a backup address. After paying, Paystack now sends people back to the same site they paid on (forex.html or payment-success.html) | `http://localhost:3000` |
 | `FOREX_PRICE_USD` | dollar price | `9.99` |
 | `FOREX_PRICE_NGN` | naira price | `$ price x NGN_PER_USD`, rounded up to the next 100 (₦15,000) |
 | `NGN_PER_USD` | exchange rate used for the naira price | `1500` |
