@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vicopayLive - Edit Profile</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, sans-serif; background: #101522; color: #fff; }
+  .header { background: #171d2b; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+  .logo { font-size: 24px; font-weight: bold; }
+  .logo span { color: #19d98b; }
+  .top-buttons a { text-decoration: none; color: #fff; background: #242c3d; padding: 10px 15px; border-radius: 10px; display: inline-block; }
+  .container { max-width: 560px; margin: 30px auto; padding: 20px; }
+  .card { background: #171d2b; border-radius: 20px; padding: 28px; }
+  h1 { margin: 0 0 6px; font-size: 24px; }
+  .sub { color: #9aa4bd; font-size: 14px; margin-bottom: 24px; }
+  .pic-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; }
+  .pic { width: 120px; height: 120px; border-radius: 50%; background: #242c3d center/cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: bold; color: #19d98b; border: 3px solid #19d98b; overflow: hidden; }
+  .pic-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+  .btn { border: 0; border-radius: 12px; padding: 11px 18px; font-size: 14px; font-weight: bold; cursor: pointer; background: #242c3d; color: #fff; }
+  .btn.green { background: #19d98b; color: #07130d; }
+  .btn.red { background: #3a1f28; color: #ff8aa0; }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  label { display: block; font-size: 13px; color: #9aa4bd; margin: 18px 0 6px; }
+  input[type=text], textarea { width: 100%; background: #101522; color: #fff; border: 1px solid #2e374d; border-radius: 12px; padding: 13px 14px; font-size: 15px; font-family: inherit; outline: none; }
+  input[type=text]:focus, textarea:focus { border-color: #19d98b; }
+  input[disabled] { color: #7f8aa6; }
+  textarea { resize: vertical; min-height: 90px; }
+  .count { text-align: right; font-size: 12px; color: #7f8aa6; margin-top: 4px; }
+  .row { display: flex; gap: 12px; margin-top: 26px; }
+  .row .btn { flex: 1; padding: 14px; font-size: 15px; text-align: center; text-decoration: none; }
+  #msg { margin-top: 16px; font-size: 14px; min-height: 20px; text-align: center; }
+  #msg.err { color: #ff8aa0; }
+  #msg.ok { color: #19d98b; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">vicopay<span>Live</span></div>
+  <div class="top-buttons"><a href="live-room-profile.html">← Back to Profile</a></div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h1>Edit Profile</h1>
+    <div class="sub">Change your photo, name and bio. Everyone who visits your live room will see these.</div>
+
+    <div class="pic-wrap">
+      <div class="pic" id="pic">?</div>
+      <div class="pic-actions">
+        <button class="btn" type="button" id="changeBtn">📷 Change photo</button>
+        <button class="btn red" type="button" id="removeBtn">Remove photo</button>
+      </div>
+      <input type="file" id="file" accept="image/jpeg,image/png,image/webp,image/*" style="display:none">
+    </div>
+
+    <label for="name">Display name</label>
+    <input type="text" id="name" maxlength="30" placeholder="Your name" autocomplete="off">
+    <div class="count"><span id="nameCount">0</span>/30</div>
+
+    <label for="bio">Bio</label>
+    <textarea id="bio" maxlength="160" placeholder="Tell people about yourself and your live room"></textarea>
+    <div class="count"><span id="bioCount">0</span>/160</div>
+
+    <label for="handle">Username (cannot be changed)</label>
+    <input type="text" id="handle" disabled>
+
+    <label for="email">Email (cannot be changed)</label>
+    <input type="text" id="email" disabled>
+
+    <div id="msg"></div>
+
+    <div class="row">
+      <a class="btn" href="live-room-profile.html">Cancel</a>
+      <button class="btn green" type="button" id="saveBtn">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var pic = $("pic"), nameI = $("name"), bioI = $("bio"), msg = $("msg"), saveBtn = $("saveBtn");
+  var pendingImage = null;   // a new picture chosen but not saved yet (data URL)
+  var removePhoto = false;   // the person tapped "Remove photo"
+  var serverAvatar = null;
+  var initialLetter = "?";
+
+  function say(text, kind) { msg.textContent = text || ""; msg.className = kind || ""; }
+  function counts() { $("nameCount").textContent = nameI.value.length; $("bioCount").textContent = bioI.value.length; }
+  function showPic(src) {
+    if (src) { pic.textContent = ""; pic.style.backgroundImage = 'url("' + src + '")'; }
+    else { pic.style.backgroundImage = "none"; pic.textContent = initialLetter; }
+  }
+  function api(path, body) {
+    return fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    }).then(function (r) { return r.json(); });
+  }
+
+  // ---- load the current profile
+  fetch("/api/me").then(function (r) { return r.json(); }).then(function (d) {
+    if (!d || !d.success) { say((d && d.message) || "Could not load your profile. Please sign in again.", "err"); return; }
+    nameI.value = d.displayName || "";
+    bioI.value = d.bio || "";
+    $("handle").value = "@" + (d.handle || "");
+    $("email").value = d.email || "";
+    initialLetter = (d.displayName || d.handle || "?").trim().charAt(0).toUpperCase() || "?";
+    serverAvatar = d.avatar || null;
+    showPic(serverAvatar);
+    counts();
+  }).catch(function () { say("Could not reach the server. Please try again.", "err"); });
+
+  nameI.addEventListener("input", counts);
+  bioI.addEventListener("input", counts);
+
+  // ---- choose a picture: crop to a square and shrink it so it uploads fast
+  $("changeBtn").onclick = function () { $("file").click(); };
+  $("file").onchange = function (e) {
+    var f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    if (!/^image\//.test(f.type)) { say("Please choose a picture (JPG, PNG or WebP).", "err"); return; }
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function () {
+      var size = 320, c = document.createElement("canvas");
+      c.width = c.height = size;
+      var ctx = c.getContext("2d"), s = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      var q = 0.85, data = c.toDataURL("image/jpeg", q);
+      while (data.length > 150000 && q > 0.3) { q -= 0.1; data = c.toDataURL("image/jpeg", q); }
+      if (data.length > 150000) { say("That picture is too large. Please choose a smaller one.", "err"); return; }
+      pendingImage = data; removePhoto = false;
+      showPic(data); say("");
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); say("That file could not be read as a picture.", "err"); };
+    img.src = url;
+  };
+  $("removeBtn").onclick = function () {
+    pendingImage = null; removePhoto = true; showPic(null); say("");
+  };
+
+  // ---- save
+  saveBtn.onclick = function () {
+    var name = nameI.value.replace(/[<>]/g, "").trim(), bio = bioI.value.replace(/[<>]/g, " ").trim();
+    if (name.length < 2) { say("Your name must be at least 2 characters.", "err"); nameI.focus(); return; }
+    saveBtn.disabled = true; say("Saving…");
+
+    api("/api/profile/update", { displayName: name, bio: bio }).then(function (d) {
+      if (!d.success) throw new Error(d.message || "Could not save your profile.");
+      if (pendingImage) return api("/api/profile/avatar", { image: pendingImage });
+      if (removePhoto && serverAvatar) return api("/api/profile/avatar/remove", {});
+      return { success: true };
+    }).then(function (d) {
+      if (!d.success) throw new Error(d.message || "Your details were saved, but the picture could not be.");
+      localStorage.setItem("vicoPayDisplayName", name);
+      localStorage.removeItem("vicoPayProfileImage"); // the server copy is now the real one
+      say("Saved ✔", "ok");
+      setTimeout(function () { location.href = "live-room-profile.html"; }, 700);
+    }).catch(function (err) {
+      saveBtn.disabled = false;
+      say(err.message || "Something went wrong. Please try again.", "err");
+    });
+  };
+})();
+</script>
+</body>
+</html>
