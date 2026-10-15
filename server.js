@@ -458,6 +458,13 @@ async function logUnmatchedPayment(reference, payment, where) {
   } catch (e) { /* logging must never break a payment */ }
 }
 
+// The address the person is on right now: Paystack sends them back here after paying (never to another website).
+function siteUrlOf(req) {
+  const host = String(req.get("host") || "").trim();
+  if (/^[a-z0-9.-]+(:\d{1,5})?$/i.test(host)) return `${req.protocol}://${host}`;
+  return String(process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
+}
+
 // Home page
 app.get("/", async (req, res) => {
   res.sendFile(path.join(SITE_DIR, "motivational-page.html"));
@@ -521,7 +528,7 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
             coinPackage: coinPackages[selectedAmount] || 0
         },
 
-        callback_url: `${process.env.APP_URL || "http://localhost:3000"}/payment-success.html`
+        callback_url: `${siteUrlOf(req)}/payment-success.html`
     },
     {
         headers: {
@@ -3176,4 +3183,4 @@ server.on("error", (error) => {
 });
   process.on("SIGTERM", () => { console.log("Shutting down..."); server.close(() => store.flushLoves().catch(() => {}).then(() => db.close()).then(() => process.exit(0), () => process.exit(0))); });
 }
-start().catch((e) => {   console.error("STARTUP FAILED - FULL ERROR:", e);   if (e && e.stack) console.error(e.stack);   process.exit(1); });
+start().catch((e) => { console.error("STARTUP FAILED:", e.message); process.exit(1); });
