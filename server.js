@@ -3176,4 +3176,4 @@ server.on("error", (error) => {
 });
   process.on("SIGTERM", () => { console.log("Shutting down..."); server.close(() => store.flushLoves().catch(() => {}).then(() => db.close()).then(() => process.exit(0), () => process.exit(0))); });
 }
-start().catch((e) => { console.error("STARTUP FAILED:", e.message); process.exit(1); });
+start().catch((e) => {   console.error("STARTUP FAILED - FULL ERROR:", e);   if (e && e.stack) console.error(e.stack);   process.exit(1); });
