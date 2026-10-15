@@ -24,6 +24,14 @@ module.exports = function (ctx) {
   const DAYS = process.env.FOREX_ACCESS_DAYS !== undefined && process.env.FOREX_ACCESS_DAYS !== "" ? Number(process.env.FOREX_ACCESS_DAYS) : 30;
   const minorFor = (cur) => (cur === "USD" ? Math.round(PRICE_USD * 100) : Math.round(PRICE_NGN * 100));
 
+  // The address the person is on RIGHT NOW (e.g. https://yoursite.onrender.com). Paystack sends them back here after paying,
+  // so it can never land on another website, even if APP_URL on Render is wrong or points to an older site.
+  function siteUrl(req) {
+    const host = String(req.get("host") || "").trim();
+    if (/^[a-z0-9.-]+(:\d{1,5})?$/i.test(host)) return `${req.protocol}://${host}`;
+    return String(process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
+  }
+
   const ok = (res, extra) => res.json({ success: true, ...extra });
   const fail = (res, code, message) => res.status(code).json({ success: false, message });
 
@@ -137,7 +145,7 @@ module.exports = function (ctx) {
         amount: minorFor(currency),
         currency,
         metadata: { type: "forex_membership", website: "Victopay", plan: DAYS === 0 ? "lifetime" : DAYS + "-days", currency },
-        callback_url: `${process.env.APP_URL || "http://localhost:3000"}/forex.html?paid=1`
+        callback_url: `${siteUrl(req)}/forex.html?paid=1`
       };
       let r;
       try {
