@@ -467,7 +467,7 @@
                 </span>
 
                 <span class="value">
-                    3,000 ⭐
+                    4,000 ⭐
                 </span>
 
             </div>
@@ -558,11 +558,30 @@
 
 
         function editProfile() {
+            window.location.href = "edit-profile.html";
+        }
 
-            alert(
-                "Profile editing will be connected next."
-            );
-
+        // Show the saved name, bio and picture from the server (what Edit Profile saves)
+        async function loadMe() {
+            try {
+                const res = await fetch(API_BASE + "/api/me");
+                const d = await res.json();
+                if (!d || !d.success) return;
+                const nm = d.displayName || d.email;
+                localStorage.setItem("vicoPayDisplayName", nm);
+                ["profileName", "infoName"].forEach(function (id) { const el = document.getElementById(id); if (el) el.textContent = nm; });
+                ["profileUsername", "infoUsername"].forEach(function (id) { const el = document.getElementById(id); if (el && d.handle) el.textContent = "@" + d.handle; });
+                const bio = document.getElementById("profileBio");
+                if (bio && d.bio) bio.textContent = d.bio;
+                const box = document.getElementById("profilePicture");
+                if (box && d.avatar) {
+                    localStorage.removeItem("vicoPayProfileImage");
+                    box.textContent = "";
+                    box.style.backgroundImage = 'url("' + d.avatar + '")';
+                    box.style.backgroundSize = "cover";
+                    box.style.backgroundPosition = "center";
+                }
+            } catch (e) { console.error("Profile load error:", e); }
         }
 
 
@@ -584,6 +603,7 @@
         applyProfilePicture();
 
         loadProfile();
+        loadMe();
 
     </script>
 
