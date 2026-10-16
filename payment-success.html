@@ -272,9 +272,11 @@ async function verifyPayment() {
 
 
         const paymentCoins =
-            Number(data.coinsAdded) > 0
-                ? Number(data.coinsAdded)
-                : storedCoins;
+            Number(data.coins) > 0
+                ? Number(data.coins)
+                : (Number(data.coinsAdded) > 0
+                    ? Number(data.coinsAdded)
+                    : storedCoins);
 
 
         /*
@@ -293,16 +295,14 @@ async function verifyPayment() {
         let currentBalance = 0;
 
 
-        if (savedEmail) {
+        {
 
             try {
 
+                // "me" = the account you are signed in with, which is where the coins were added
                 const walletResponse =
                     await fetch(
-                        window.location.origin + "/api/wallet/" +
-                        encodeURIComponent(
-                            savedEmail
-                        )
+                        window.location.origin + "/api/wallet/me"
                     );
 
 
