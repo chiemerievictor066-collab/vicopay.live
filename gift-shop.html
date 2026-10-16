@@ -1163,6 +1163,15 @@
 
         async function loadWallet() {
             const coinDisplay = document.getElementById("coinBalance");
+            // Coins belong to the account you are signed in with: ask the server who that is and repair the saved email
+            try {
+                const meRes = await fetch(API_BASE + "/api/me");
+                const me = await meRes.json();
+                if (me && me.success && me.email) {
+                    localStorage.setItem("vicoPayEmail", me.email);
+                    localStorage.setItem("vicoPayUser", me.email);
+                }
+            } catch (e) { /* the saved email is used below */ }
             const senderId = getSenderId();
 
             console.log("Wallet user:", senderId);
@@ -1176,7 +1185,7 @@
 
             try {
                 const response = await fetch(
-                    API_BASE + "/api/wallet/" + encodeURIComponent(senderId)
+                    API_BASE + "/api/wallet/me"
                 );
                 const data = await response.json();
 
