@@ -34,4 +34,35 @@ function packageForPayment(coinPackages, payment) {
   return null;
 }
 
-module.exports = { packageForPayment, maxFeeFor };
+// ------------------------------------------------------------------------------------------------------------------
+// DOLLAR (USD) payments.  A package is still identified by its naira price (the key of coinPackages, e.g. 10000), and
+// its dollar price is that naira price divided by NGN_PER_USD, rounded to cents. Packages that would cost less than
+// minUsd dollars are not offered in dollars. Returns { "10000": 6.67, ... }.
+function usdPackages(coinPackages, ngnPerUsd, minUsd) {
+  const out = {};
+  const rate = Number(ngnPerUsd) > 0 ? Number(ngnPerUsd) : 1500;
+  for (const key of Object.keys(coinPackages)) {
+    const usd = round2(Number(key) / rate);
+    if (usd >= (Number(minUsd) || 0)) out[key] = usd;
+  }
+  return out;
+}
+
+// The most extra money a normal Paystack fee could add on top of a dollar price (6% + $1 is generous).
+const maxUsdFeeFor = (usd) => round2(usd * 0.06 + 1);
+
+// Works out which package a USD payment was for. The package is the one OUR server put in the payment's metadata when
+// it started the payment (a customer cannot change that), and the amount actually paid must be at least its dollar
+// price and only a believable Paystack fee above it.
+function packageForUsdPayment(coinPackages, usdTable, payment) {
+  if (!payment || String(payment.currency || "").toUpperCase() !== "USD") return null;
+  const paid = Number(payment.amount) / 100;
+  if (!(paid > 0)) return null;
+  const key = String(Number(payment.metadata && payment.metadata.packagePrice));
+  if (!Object.prototype.hasOwnProperty.call(usdTable, key) || !coinPackages[key]) return null;
+  const price = usdTable[key];
+  if (paid < price - 0.005 || paid - price > maxUsdFeeFor(price)) return null;
+  return { price: Number(key), coins: coinPackages[key], usd: price, paid: round2(paid), fee: round2(paid - price), currency: "USD" };
+}
+
+module.exports = { packageForPayment, maxFeeFor, usdPackages, packageForUsdPayment, maxUsdFeeFor };
