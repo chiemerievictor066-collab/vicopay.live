@@ -233,6 +233,8 @@ function asSelf(...fields) {
                     req.body[f.slice(5)] = req.userEmail;
                 } else if (f.startsWith("param.")) {
                     const k = f.slice(6);
+                    // "me" means the signed-in account, so a page never has to guess the right email
+                    if (String(req.params[k]).toLowerCase() === "me") req.params[k] = req.userEmail;
                     if (String(req.params[k]).toLowerCase() !== req.userEmail) {
                         return res.status(403).json({ success: false, message: "You can only access your own account." });
                     }
