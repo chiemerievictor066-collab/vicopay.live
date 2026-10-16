@@ -679,28 +679,33 @@ fetch("/api/coin-prices").then(function (r) { return r.json(); }).then(function 
    LOAD WALLET BALANCE
 ========================================= */
 
+// The coins are always added to the account you are SIGNED IN with, so we ask the server who that is
+// (and repair the email saved in this browser) instead of trusting an email that was typed in a box.
+async function syncAccountEmail() {
+    try {
+        const r = await fetch(window.location.origin + "/api/me");
+        const d = await r.json();
+        if (d && d.success && d.email) {
+            localStorage.setItem("vicoPayEmail", d.email);
+            localStorage.setItem("vicoPayUser", d.email);
+            const box = document.getElementById("email");
+            if (box) { box.value = d.email; box.readOnly = true; box.title = "Coins are added to the account you are signed in with."; }
+        }
+    } catch (e) { /* the wallet call below still works */ }
+}
+
 async function loadWallet() {
 
     const coinBalance =
         document.getElementById("coinBalance");
 
-    const savedEmail =
-        localStorage.getItem("vicoPayEmail") ||
-        localStorage.getItem("vicoPayUser");
-
-    if (!savedEmail) {
-
-        coinBalance.textContent = "0";
-
-        return;
-    }
+    await syncAccountEmail();
 
     try {
 
         const response =
             await fetch(
-                window.location.origin + "/api/wallet/" +
-                encodeURIComponent(savedEmail)
+                window.location.origin + "/api/wallet/me"
             );
 
         const data =
@@ -860,19 +865,9 @@ async function startPayment() {
 
 
     /*
-     * IMPORTANT:
-     * Use the same email as the wallet ID.
+     * The server adds the coins to the account you are signed in with (not to a typed email),
+     * so the email saved in this browser is left exactly as the sign-in set it.
      */
-
-    localStorage.setItem(
-        "vicoPayEmail",
-        email
-    );
-
-    localStorage.setItem(
-        "vicoPayUser",
-        email
-    );
 
 
     if (button) {
