@@ -444,13 +444,14 @@ const coinPackages = {
 
 // Paystack adds its fee ON TOP of the package price (your account passes the fee to customers), so a customer who buys
 // the ₦500,000 package is really charged about ₦502,000. payments.js works out which package a payment was for.
-const { packageForPayment } = require("./payments");
+const { packageForPayment, usdPackages, packageForUsdPayment } = require("./payments");
 
 // A customer paid but the amount matches no package. Never ignore it silently: log it and put it in Admin, Reports.
 async function logUnmatchedPayment(reference, payment, where) {
   const paid = Number(payment && payment.amount) / 100;
+  const sym = String(payment && payment.currency || "NGN").toUpperCase() === "USD" ? "$" : "₦";
   const who = (payment && payment.customer && payment.customer.email) || "unknown";
-  const msg = "UNMATCHED PAYMENT " + reference + ": " + who + " paid ₦" + paid + " but that is not a coin package (" + where + "). Check it in Paystack, then open /api/paystack/verify?reference=" + reference + " to retry.";
+  const msg = "UNMATCHED PAYMENT " + reference + ": " + who + " paid " + sym + paid + " but that is not a coin package (" + where + "). Check it in Paystack, then open /api/paystack/verify?reference=" + reference + " to retry.";
   console.error(msg);
   try {
     const seen = await db.get("SELECT 1 AS x FROM reports WHERE reporter = 'system' AND reason LIKE ?", ["%" + reference + "%"]);
@@ -458,12 +459,28 @@ async function logUnmatchedPayment(reference, payment, where) {
   } catch (e) { /* logging must never break a payment */ }
 }
 
+// ---------- Dollar (USD) coin prices ----------
+// A package is still named by its naira price. Its dollar price = naira price / NGN_PER_USD, to the cent.
+// Set NGN_PER_USD in Render (default 1500). Packages under COIN_MIN_USD dollars (default 1) are only sold in naira.
+// To switch dollar payments off, set ENABLE_USD_PAYMENTS=false in Render.
+const usdEnabled = () => String(process.env.ENABLE_USD_PAYMENTS || "true").toLowerCase() !== "false";
+const coinUsdTable = () => usdEnabled() ? usdPackages(coinPackages, Number(process.env.NGN_PER_USD || 1500), Number(process.env.COIN_MIN_USD || 1)) : {};
+
 // The address the person is on right now: Paystack sends them back here after paying (never to another website).
 function siteUrlOf(req) {
   const host = String(req.get("host") || "").trim();
   if (/^[a-z0-9.-]+(:\d{1,5})?$/i.test(host)) return `${req.protocol}://${host}`;
   return String(process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
 }
+
+// The buy-coins page reads its prices here (naira and dollars)
+app.get("/api/coin-prices", async (req, res) => {
+  const usd = coinUsdTable();
+  res.json({
+    success: true, currencies: usdEnabled() ? ["NGN", "USD"] : ["NGN"],
+    packages: Object.keys(coinPackages).map(Number).sort((a, b) => a - b).map((ngn) => ({ coins: coinPackages[ngn], ngn, usd: usd[ngn] === undefined ? null : usd[ngn] }))
+  });
+});
 
 // Home page
 app.get("/", async (req, res) => {
@@ -493,6 +510,10 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
     }
 
     const selectedAmount = Number(packageAmount || amount);
+    const currency = String(req.body.currency || "NGN").toUpperCase();
+    if (currency !== "NGN" && currency !== "USD") {
+      return res.status(400).json({ success: false, message: "Choose naira (NGN) or dollars (USD)." });
+    }
 
     if (!selectedAmount || selectedAmount <= 0) {
       return res.status(400).json({
@@ -513,19 +534,28 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
       });
     }
 
-    // Paystack expects the amount in the currency subunit.
-    const amountInKobo = Math.round(selectedAmount * 100);
+    // What the customer is charged: the naira price, or the dollar price of the same package.
+    let chargeAmount = selectedAmount;
+    if (currency === "USD") {
+      const usdPrice = coinUsdTable()[selectedAmount];
+      if (!usdPrice) return res.status(400).json({ success: false, message: "This package is not available in dollars. Please pay in naira or choose a bigger package." });
+      chargeAmount = usdPrice;
+    }
+    // Paystack expects the amount in the currency subunit (kobo for naira, cents for dollars).
+    const amountInKobo = Math.round(chargeAmount * 100);
 
     const response = await axios.post(
     "https://api.paystack.co/transaction/initialize",
     {
         email: email,
         amount: amountInKobo,
+        currency: currency,
 
         metadata: {
             website: "Victopay",
             packagePrice: selectedAmount,
-            coinPackage: coinPackages[selectedAmount] || 0
+            coinPackage: coinPackages[selectedAmount] || 0,
+            currency: currency
         },
 
         callback_url: `${siteUrlOf(req)}/payment-success.html`
@@ -551,7 +581,8 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
       authorization_url: response.data.data.authorization_url,
       access_code: response.data.data.access_code,
       reference: response.data.data.reference,
-      amount: selectedAmount,
+      amount: chargeAmount,
+      currency: currency,
       coin: coinPackages[selectedAmount] || 0
     });
 
@@ -625,15 +656,16 @@ app.get("/api/paystack/verify", async (req, res) => {
         }
 
         // Paystack reports what the customer really paid: the package price PLUS Paystack's fee. Find the package.
-        const match = packageForPayment(coinPackages, payment);
+        const payCurrency = String(payment.currency || "NGN").toUpperCase();
+        if (payCurrency !== "NGN" && payCurrency !== "USD") {
+            return res.status(400).json({ success: false, message: "Only naira (NGN) and dollar (USD) payments are accepted." });
+        }
+        const match = payCurrency === "USD" ? packageForUsdPayment(coinPackages, coinUsdTable(), payment) : packageForPayment(coinPackages, payment);
         if (!match) {
             await logUnmatchedPayment(reference, payment, "verify page");
             return res.status(400).json({ success: false, message: "We received your payment, but its amount does not match a coin package. Please contact support and quote this reference: " + reference });
         }
         const amountInNaira = match.price, coin = match.coins;
-        if (payment.currency && String(payment.currency).toUpperCase() !== "NGN") {
-            return res.status(400).json({ success: false, message: "Only NGN payments are accepted." });
-        }
         // Use the customer's actual Paystack email
         const userId = String(payment.customer?.email || "").toLowerCase();
         if (!userId) {
@@ -652,7 +684,7 @@ app.get("/api/paystack/verify", async (req, res) => {
         console.log(
             `Payment verified: ${reference} | ` +
             `Email: ${userId} | ` +
-            `₦${amountInNaira} | ` +
+            (payCurrency === "USD" ? `$${match.usd} (package ₦${amountInNaira}) | ` : `₦${amountInNaira} | `) +
             `${coin} coins | ` +
             `Balance: ${newBalance}`
         );
@@ -670,6 +702,8 @@ app.get("/api/paystack/verify", async (req, res) => {
 
             amount:
                 amountInNaira,
+            currency: payCurrency,
+            chargedAmount: match.paid,
             feePaid: match.fee,
 
             coins:
@@ -3090,13 +3124,14 @@ app.post("/api/paystack/webhook", async (req, res) => {
         else if (!f.ok) console.error("Forex payment not activated:", reference, f.message);
         return res.sendStatus(200);
       }
-      const match = packageForPayment(coinPackages, payment);
-      const isNgn = String(payment?.currency || "NGN").toUpperCase() === "NGN";
+      const payCurrency = String(payment?.currency || "NGN").toUpperCase();
+      const isNgn = payCurrency === "NGN" || payCurrency === "USD"; // naira and dollar coin payments are both handled
+      const match = payCurrency === "USD" ? packageForUsdPayment(coinPackages, coinUsdTable(), payment) : packageForPayment(coinPackages, payment);
       if (reference && userId && isNgn && !match) await logUnmatchedPayment(reference, payment, "webhook");
       if (reference && userId && isNgn && match) {
         // Safe to receive the same event many times: a reference is credited once (primary key + transaction).
         const r = await ledger.creditPurchase({ email: userId, coins: match.coins, reference, amountNgn: match.price });
-        if (r.credited) console.log(`Paystack webhook credited ${match.coins} coins to ${userId} (paid ₦${match.paid} = package ₦${match.price} + ₦${match.fee} fee)`);
+        if (r.credited) console.log(`Paystack webhook credited ${match.coins} coins to ${userId} (paid ${payCurrency === "USD" ? "$" : "₦"}${match.paid} = package ₦${match.price}, fee ${payCurrency === "USD" ? "$" : "₦"}${match.fee})`);
       }
     }
     if (event?.event === "charge.dispute.create" || event?.event === "refund.processed") {
