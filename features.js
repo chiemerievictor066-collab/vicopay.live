@@ -5,6 +5,7 @@
 // Data is stored in PostgreSQL (see db.js). The real-time bits (who is watching right now, gift pop-ups, chat pulse)
 // live in this server's memory because they only matter for seconds.
 // =====================================================
+const mailer = require("./mailer"); // email through Resend (see mailer.js)
 module.exports = function (ctx) {
   const {
     app, db, ledger, store, axios, crypto, liveRooms, giftPrices, getAuthEmail, requireAuth, requireAdmin,
@@ -440,11 +441,13 @@ module.exports = function (ctx) {
   // ---------- self-service password reset ----------
   const sha = (t) => crypto.createHash("sha256").update(t).digest("hex");
   async function sendResetMail(email, link) {
-    if (process.env.RESEND_API_KEY && process.env.MAIL_FROM) {
-      await axios.post("https://api.resend.com/emails", {
-        from: process.env.MAIL_FROM, to: [email], subject: "Reset your VicoPay Live password",
+    if (mailer.ready()) {
+      // resend.emails.send({ from, to, subject, html }) — see mailer.js
+      const r = await mailer.sendMail({
+        to: email, subject: "Reset your VicoPay Live password",
         html: '<p>Click the button below to choose a new password. This link works for 30 minutes.</p><p><a href="' + link + '" style="background:#0787ed;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none">Reset password</a></p><p>If you did not ask for this, ignore this email.</p>'
-      }, { headers: { Authorization: "Bearer " + process.env.RESEND_API_KEY }, timeout: 10000 });
+      });
+      if (r.error) throw new Error("Resend: " + r.error.message);
       return "email";
     }
     console.log("PASSWORD RESET LINK (no email provider configured) for " + email + ": " + link);
@@ -457,11 +460,57 @@ module.exports = function (ctx) {
   }
   app.post("/api/auth/forgot", authRateLimit, async (req, res) => {
     const email = lc((req.body || {}).email).trim();
-    let delivery = process.env.RESEND_API_KEY && process.env.MAIL_FROM ? "email" : "console";
+    let delivery = mailer.ready() ? "email" : "console";
     try { if (email && await users.exists(email) && !bannedUsers.has(email)) delivery = await sendResetMail(email, await makeResetLink(email)); }
     catch (e) { console.error("RESET MAIL ERROR:", e.message); }
     // same answer whether or not the account exists
     ok(res, { delivery, message: "If an account exists for that email, a reset link has been sent. It works for 30 minutes." });
+  });
+  // ---------- email (Resend): status, test, and RECEIVING ----------
+  // Admin: is email set up?
+  app.get("/api/admin/email/status", requireAdmin, async (req, res) => {
+    ok(res, {
+      canSend: mailer.ready(), from: mailer.mailFrom() || null,
+      canReceive: !!(process.env.RESEND_WEBHOOK_SECRET && process.env.INBOX_FORWARD_TO && process.env.RESEND_API_KEY),
+      forwardTo: process.env.INBOX_FORWARD_TO || null,
+      webhookUrl: (process.env.APP_URL || "").replace(/\/$/, "") + "/api/resend/webhook"
+    });
+  });
+  // Admin: send yourself a test email  { "to": "you@gmail.com" }
+  app.post("/api/admin/email/test", requireAdmin, async (req, res) => {
+    const to = String((req.body || {}).to || process.env.INBOX_FORWARD_TO || "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return fail(res, 400, 'Send { "to": "your@email.com" }.');
+    const r = await mailer.sendMail({
+      to, subject: "VicoPay Live test email",
+      html: "<p>Your VicoPay Live website can send email through Resend. ✅</p>"
+    });
+    if (r.error) return fail(res, 502, "Resend could not send: " + r.error.message);
+    ok(res, { message: "Test email sent to " + to + ".", id: r.id });
+  });
+  // Resend calls this when someone emails your receiving address (event "email.received").
+  // We check the signature, read the email, and forward it to INBOX_FORWARD_TO (a reply goes to the original sender).
+  app.post("/api/resend/webhook", async (req, res) => {
+    const secret = process.env.RESEND_WEBHOOK_SECRET;
+    if (!secret) return fail(res, 503, "RESEND_WEBHOOK_SECRET is not set.");
+    if (!mailer.verifyWebhook(req.rawBody, req.headers, secret)) return fail(res, 400, "Invalid signature.");
+    const event = req.body || {};
+    if (event.type !== "email.received") return ok(res, { ignored: event.type || true });
+    const forwardTo = String(process.env.INBOX_FORWARD_TO || "").trim();
+    const meta = event.data || {};
+    if (!forwardTo) { console.log("EMAIL RECEIVED from " + meta.from + " (set INBOX_FORWARD_TO to get it in your inbox)"); return ok(res, { stored: false }); }
+    const own = (mailer.mailFrom().match(/[^<\s]+@[^>\s]+/) || [""])[0].toLowerCase();
+    if (own && String(meta.from || "").toLowerCase() === own) return ok(res, { skipped: "own address" }); // never forward in a loop
+    const got = await mailer.resend.emails.receiving.get(meta.email_id);
+    if (got.error) { console.error("RESEND RECEIVE ERROR:", got.error.message); return fail(res, 502, "Could not read the email yet."); } // Resend will retry
+    const m = got.data || {}, e = mailer.esc;
+    const from = (m.headers && m.headers.from) || m.from || meta.from || "unknown sender";
+    const head = '<div style="font-family:Arial,sans-serif;font-size:13px;color:#555;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:12px">' +
+      "<b>From:</b> " + e(from) + "<br><b>To:</b> " + e((m.to || meta.to || []).join(", ")) + "<br><b>Subject:</b> " + e(m.subject || meta.subject || "") + "</div>";
+    const body = m.html || ('<pre style="font-family:inherit;white-space:pre-wrap">' + e(m.text || "(no text)") + "</pre>");
+    const replyTo = (String(from).match(/[^<\s]+@[^>\s]+/) || [""])[0] || meta.from;
+    const sent = await mailer.sendMail({ to: forwardTo, subject: "[VicoPay inbox] " + (m.subject || meta.subject || "(no subject)"), html: head + body, replyTo });
+    if (sent.error) { console.error("RESEND FORWARD ERROR:", sent.error.message); return fail(res, 502, "Could not forward the email yet."); }
+    ok(res, { forwarded: true });
   });
   app.post("/api/auth/reset", authRateLimit, async (req, res) => {
     const token = String((req.body || {}).token || ""), password = String((req.body || {}).password || "");
