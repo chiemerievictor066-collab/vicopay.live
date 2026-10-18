@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0646b8">
+<title>VicoPay Live - My Gifts</title>
+<style>
+*{box-sizing:border-box}
+:root{--ice:#eef7ff;--ink:#082653;--mut:#66809a;--ln:#cfe6fb;--blue:#0646b8;--sky:#0787ed}
+body{margin:0;background:var(--ice);color:var(--ink);font-family:Inter,Arial,sans-serif;min-height:100dvh}
+.top{height:66px;display:flex;align-items:center;gap:14px;padding:0 18px;background:linear-gradient(90deg,#031c5d,#0646b8,#087fe8);color:#fff;position:sticky;top:0;z-index:5}
+.top h1{margin:0;font-size:19px}
+.back{border:0;width:40px;height:40px;border-radius:50%;background:#ffffff26;color:#fff;font-size:20px;cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stats div{background:#fff;border:1px solid var(--ln);border-radius:14px;padding:12px 6px;text-align:center}
+.stats b{display:block;font-size:22px;color:var(--blue)}.stats span{font-size:12px;color:var(--mut)}
+.list{background:#fff;border:1px solid var(--ln);border-radius:16px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #e1effc}
+.row:last-child{border:0}
+.ic{width:46px;height:46px;border-radius:12px;background:#eaf4ff;display:grid;place-items:center;font-size:26px;flex:none}
+.who{flex:1;min-width:0}.who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.who span{font-size:12px;color:var(--mut)}
+.qty{font-weight:900;color:var(--blue);white-space:nowrap}
+.empty{padding:40px 20px;text-align:center;color:var(--mut);line-height:1.5}
+.empty big{display:block;font-size:44px;margin-bottom:6px}
+</style>
+<script src="auth.js"></script>
+<script>VicoAuth.requireLogin();</script>
+</head>
+<body>
+<header class="top"><button class="back" onclick="goBack()" aria-label="Back">←</button><h1>🎁 My Gifts</h1></header>
+<main>
+  <div class="stats">
+    <div><b id="sTotal">0</b><span>Gifts received</span></div>
+    <div><b id="sCoins">0</b><span>Coins value</span></div>
+    <div><b id="sTop">-</b><span>Top sender</span></div>
+  </div>
+  <div class="list" id="list"></div>
+</main>
+<script>
+var API_BASE=window.location.origin, KEY="vicoHostGiftLog";
+function userId(){return localStorage.getItem("vicoPayEmail")||localStorage.getItem("vicoPayUser")||"";}
+function goBack(){ if(history.length>1)history.back(); else location.href="go-live.html"; }
+function esc(t){var d=document.createElement("div");d.textContent=t==null?"":t;return d.innerHTML;}
+
+function render(items){
+  var total=0,coins=0,by={};
+  items.forEach(function(g){total+=g.qty;coins+=g.coins||0;by[g.from]=(by[g.from]||0)+g.qty;});
+  var top=Object.keys(by).sort(function(a,b){return by[b]-by[a];})[0];
+  document.getElementById("sTotal").textContent=total.toLocaleString();
+  document.getElementById("sCoins").textContent=coins.toLocaleString();
+  document.getElementById("sTop").textContent=top||"-";
+  document.getElementById("list").innerHTML=items.length?items.map(function(g){
+    var when=g.ts?new Date(g.ts).toLocaleString([], {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+    return '<div class="row"><div class="ic">'+esc(g.icon)+'</div><div class="who"><b>'+esc(g.from)+'</b><span>'+esc(g.gift||"Gift")+(when?" · "+when:"")+'</span></div><div class="qty">x'+g.qty+(g.coins?" · 🪙 "+g.coins:"")+'</div></div>';
+  }).join(""):'<div class="empty"><big>🎁</big>No gifts yet. Gifts your viewers send during your live will show here.</div>';
+}
+
+function local(){
+  try{return JSON.parse(localStorage.getItem(KEY)||"[]").map(function(g){return {from:g.from,gift:g.gift,icon:g.icon,qty:g.qty||1,coins:0,ts:g.ts};});}catch(e){return [];}
+}
+function sortNew(a){return a.sort(function(x,y){return (y.ts||0)-(x.ts||0);});}
+
+render(sortNew(local()));
+var id=userId();
+if(id){
+  // server list of all gifts received by this host (change the URL here if your API uses another name)
+  fetch(API_BASE+"/api/gifts/received/"+encodeURIComponent(id)).then(function(r){return r.json();}).then(function(d){
+    if(!d||!d.success||!Array.isArray(d.gifts))return;
+    render(sortNew(d.gifts.map(function(g){return {
+      from:g.senderName||g.from||g.sender||"Viewer", gift:g.giftName||g.gift||g.name, icon:g.icon||g.emoji||"🎁",
+      qty:Number(g.quantity||g.qty||1), coins:Number(g.coins||g.value||0), ts:g.createdAt?new Date(g.createdAt).getTime():g.ts
+    };})));
+  }).catch(function(){});
+}
+</script>
+</body>
+</html>
