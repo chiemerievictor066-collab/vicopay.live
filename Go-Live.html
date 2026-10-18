@@ -1072,17 +1072,18 @@ async function endLive() {
       log.push({from:q(".gt b")||"Viewer",gift:q(".gt span"),icon:q("em")||"🎁",qty:parseInt(q(".cx").replace(/\D/g,""),10)||1,ts:Date.now()});
       log=log.slice(-500);
       try{localStorage.setItem(KEY,JSON.stringify(log));}catch(e){}
-      paint();
+      paint();pull();
     });});
   }).observe(document.body,{childList:true,subtree:true});
 
-  // total from the server (endpoint name: change here and in my-gifts.html if yours differs)
+  // real total from the server: /api/host/my-gifts (all gifts); falls back to recent-gifts
   function pull(){
-    var id=getUserId(); if(!id)return;
-    fetch(API_BASE+"/api/gifts/received/"+encodeURIComponent(id)).then(function(r){return r.json();}).then(function(d){
-      if(d&&d.success){serverN=d.totalGifts!=null?Number(d.totalGifts):(d.gifts||[]).reduce(function(a,g){return a+Number(g.quantity||g.qty||1);},0);paint();}
+    api("/api/host/my-gifts").then(function(d){
+      if(d&&d._ok&&d.total!=null){serverN=Number(d.total);paint();return;}
+      return api("/api/host/recent-gifts").then(function(r){if(r&&r._ok&&Array.isArray(r.gifts)){serverN=r.gifts.length;paint();}});
     }).catch(function(){});
   }
+  function api(path){return fetch(API_BASE+path).then(function(r){return r.json().catch(function(){return {};}).then(function(d){d._ok=r.ok&&d.success!==false;return d;});});}
   paint();pull();setInterval(pull,20000);
 })();
 </script>
