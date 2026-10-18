@@ -284,6 +284,31 @@ body{background:var(--ice)!important;color:var(--ink)!important}
 .gstack{left:12px!important;top:196px!important;bottom:auto!important;z-index:12!important;max-width:min(300px,78%)}
 .grow2.follow{background:linear-gradient(90deg,rgba(18,140,70,.92),rgba(18,140,70,.35));border-color:rgba(120,255,170,.5)}
 @media(max-width:650px){.gstack{top:170px!important}}
+
+/* ===== UPDATE: one-screen Go Live (no page scrolling) ===== */
+html,body{height:100%;overflow:hidden}
+.layout{grid-template-columns:78px minmax(0,1fr)!important;height:calc(100dvh - 66px);min-height:0!important;overflow:hidden}
+.main{height:100%;padding:14px 18px;overflow:hidden}
+.live-stage{height:100%!important;min-height:0!important;max-height:none!important}
+@media(max-width:650px){
+  .layout{grid-template-columns:1fr!important}
+  .main{padding:8px 8px 72px}
+}
+/* side panel (PK / Fans) is now a slide-over inside the screen, not a block below the page */
+#rightPanel{position:fixed;top:66px;right:0;bottom:0;width:min(380px,100%);margin:0!important;min-height:0!important;z-index:60;border-top:0!important;border-left:1px solid var(--ln)!important;transform:translateX(105%);visibility:hidden;transition:transform .28s,visibility .28s;box-shadow:-14px 0 40px rgba(0,40,110,.25)}
+#rightPanel.open{transform:none;visibility:visible}
+#rightPanel .tabs{padding-right:52px}
+.sheet-x{position:absolute;top:9px;right:10px;z-index:5;width:36px;height:36px;border:0;border-radius:50%;background:#e1effc;color:#0646b8;font-size:18px;font-weight:900}
+.tab[data-t="chat"],.tab[data-t="gifts"],.tab[data-t="people"],#pane-chat,#pane-people{display:none!important}
+/* PK / Fans / My Gifts sit beside the host comment box */
+.host-comment-wrap{flex-wrap:nowrap}
+.host-comment-wrap .host-label{display:none}
+.host-comment-wrap>button:not(.dk){flex:none;width:42px;padding:10px 0;font-size:16px}
+.dkset{display:flex;gap:6px;flex:none}
+.host-comment-wrap .dk{position:relative;flex:none;height:40px;min-width:40px;padding:0 11px;border:1px solid #ffffff30;border-radius:20px;background:#0a1d4acc!important;color:#fff!important;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;cursor:pointer}
+.host-comment-wrap .dk:hover{border-color:#57e5ff}
+.dk.gift b{position:absolute;top:-7px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#ffc83d;color:#3a2600;font-size:11px;display:grid;place-items:center}
+@media(max-width:650px){.host-comment-wrap .dk{padding:0;width:40px}.host-comment-wrap .dk span{display:none}.host-comment-wrap{gap:6px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
 <script src="auth.js"></script>
@@ -345,8 +370,6 @@ body{background:var(--ice)!important;color:var(--ink)!important}
         <button class="creator-tool" onclick="openLiveSetup()">📝 Live Info</button>
         <button class="creator-tool" onclick="openSettings()">⚙️ Controls</button>
         <button class="creator-tool" onclick="openEffects()">✨ Effects</button>
-        <button class="creator-tool" onclick="setTab('pk')">⚔️ PK</button>
-        <button class="creator-tool" onclick="setTab('fans')">💜 Fan Club</button>
       </div>
 
       <div class="stage-bottom">
@@ -363,7 +386,12 @@ body{background:var(--ice)!important;color:var(--ink)!important}
           <div class="host-comment-wrap">
             <span class="host-label">HOST</span>
             <input id="hostCommentInput" type="text" maxlength="300" placeholder="Comment as host..." onkeydown="if(event.key==='Enter')sendHostComment()">
-            <button type="button" onclick="sendHostComment()">Comment</button>
+            <button type="button" onclick="sendHostComment()" title="Send comment">➤</button>
+            <div class="dkset">
+              <button type="button" class="dk" onclick="setTab('pk')" title="PK battle">⚔️<span>PK</span></button>
+              <button type="button" class="dk" onclick="setTab('fans')" title="Fans">💜<span>Fans</span></button>
+              <a class="dk gift" href="my-gifts.html" title="My Gifts">🎁<span>Gifts</span><b id="giftCount">0</b></a>
+            </div>
           </div>
         </div>
       </div>
@@ -371,6 +399,7 @@ body{background:var(--ice)!important;color:var(--ink)!important}
   </main>
 
   <aside class="right" id="rightPanel">
+    <button class="sheet-x" type="button" onclick="closeSheet()" aria-label="Close">✕</button>
     <div class="tabs" id="gtabs" role="tablist">
       <button class="tab active" data-t="chat">💬 Chat</button>
       <button class="tab" data-t="pk">⚔️ PK<i class="dotb"></i></button>
@@ -1021,5 +1050,41 @@ async function endLive() {
 
 <script src="live-effects.js"></script>
 <script src="go-live-studio.js"></script>
+
+<script>
+// ===== UPDATE: slide-over panel + gift counter =====
+(function(){
+  var panel=document.getElementById("rightPanel"), orig=window.setTab;
+  window.setTab=function(t){ if(typeof orig==="function")orig(t); if(t==="pk"||t==="fans")panel.classList.add("open"); };
+  window.closeSheet=function(){panel.classList.remove("open");};
+
+  var KEY="vicoHostGiftLog", log=[], serverN=null;
+  try{log=JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){}
+  function paint(){
+    var n=serverN!==null?serverN:log.reduce(function(a,g){return a+(g.qty||1);},0);
+    document.getElementById("giftCount").textContent=n>99?"99+":n;
+  }
+  // count every gift row that appears on the host screen (works even if the server list is unavailable)
+  new MutationObserver(function(list){
+    list.forEach(function(m){m.addedNodes.forEach(function(n){
+      if(n.nodeType!==1||!n.classList||!n.classList.contains("grow2")||n.classList.contains("follow"))return;
+      var q=function(x){var e=n.querySelector(x);return e?e.textContent.trim():"";};
+      log.push({from:q(".gt b")||"Viewer",gift:q(".gt span"),icon:q("em")||"🎁",qty:parseInt(q(".cx").replace(/\D/g,""),10)||1,ts:Date.now()});
+      log=log.slice(-500);
+      try{localStorage.setItem(KEY,JSON.stringify(log));}catch(e){}
+      paint();
+    });});
+  }).observe(document.body,{childList:true,subtree:true});
+
+  // total from the server (endpoint name: change here and in my-gifts.html if yours differs)
+  function pull(){
+    var id=getUserId(); if(!id)return;
+    fetch(API_BASE+"/api/gifts/received/"+encodeURIComponent(id)).then(function(r){return r.json();}).then(function(d){
+      if(d&&d.success){serverN=d.totalGifts!=null?Number(d.totalGifts):(d.gifts||[]).reduce(function(a,g){return a+Number(g.quantity||g.qty||1);},0);paint();}
+    }).catch(function(){});
+  }
+  paint();pull();setInterval(pull,20000);
+})();
+</script>
 </body>
 </html>
