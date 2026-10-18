@@ -3136,6 +3136,11 @@ app.post("/api/paystack/webhook", async (req, res) => {
         if (r.credited) console.log(`Paystack webhook credited ${match.coins} coins to ${userId} (paid ${payCurrency === "USD" ? "$" : "₦"}${match.paid} = package ₦${match.price}, fee ${payCurrency === "USD" ? "$" : "₦"}${match.fee})`);
       }
     }
+    // Creator payout transfers: transfer.success / transfer.failed / transfer.reversed. If this throws, Paystack retries later.
+    if (typeof event?.event === "string" && event.event.startsWith("transfer.")) {
+      await payouts.handleTransferEvent(event);
+      return res.sendStatus(200);
+    }
     if (event?.event === "charge.dispute.create" || event?.event === "refund.processed") {
       const d = event.data || {};
       const ref = (d.transaction && d.transaction.reference) || d.transaction_reference || d.reference;
@@ -3176,6 +3181,13 @@ const forex = require("./forex")({ app, db, axios, getAuthEmail, requireAuth, re
 // Help Center: support tickets + replies
 require("./support")({ app, db, requireAuth, requireAdmin });
 
+// Monthly creator payouts (Paystack Transfers): eligibility, bank recipients, email approval, webhooks. See payouts.js.
+const payouts = require("./payouts")({
+  app, db, store, axios, crypto, requireAuth, requireAdmin,
+  rules: { minimumStars: CREATOR_RULES.minimumStars, dailyLiveHours: CREATOR_RULES.dailyLiveHours, usdPerBlock: 9 },
+  holdDays: PAYOUT_HOLD_DAYS
+});
+
 // ============================================================
 // START SERVER
 // ============================================================
@@ -3191,6 +3203,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 async function start() {
   await db.migrate();            // creates/updates tables (safe to run every time)
+  await payouts.migrate();       // payout tables (safe to run every time)
   await store.refreshBans();
   setInterval(() => store.refreshBans().catch(() => {}), 20000).unref();
   setInterval(() => store.pruneOld().catch(() => {}), 3600000).unref();
@@ -3201,6 +3214,7 @@ async function start() {
   setInterval(() => ledger.verifyCached(3600000).catch(() => {}), 3600000).unref();
   setInterval(() => store.flushLoves().catch(() => {}), 3000).unref();
   feat.start();                  // background jobs (PK timers, abandoned-live cleanup)
+  payouts.start();               // payout background checks (settles unconfirmed transfers, optional monthly auto-batch)
 
 const server = app.listen(PORT, "0.0.0.0", () => {
     console.log("============================================================");
