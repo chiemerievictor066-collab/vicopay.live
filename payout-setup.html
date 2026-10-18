@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VicoPay Live - Payout Account</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#061a3b,#0b3d70);color:#fff;min-height:100vh}
+header{background:#061a3b;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #f5b400}
+.logo{font-size:24px;font-weight:bold}.logo span{color:#f5b400}header a{color:#cbd5e1;text-decoration:none;font-size:14px}
+.container{width:92%;max-width:680px;margin:30px auto}h1{color:#f5b400;text-align:center;margin:0 0 6px}.sub{text-align:center;color:#cbd5e1;margin:0 0 22px}
+.card{background:linear-gradient(145deg,#0a2854,#0b3d70);border:2px solid #f5b400;border-radius:20px;padding:24px;margin-bottom:18px;box-shadow:0 10px 35px rgba(0,0,0,.25)}
+.card h3{margin:0 0 12px;color:#f5b400}label{display:block;margin:12px 0 6px;color:#cbd5e1;font-size:14px}
+select,input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #2c5a99;background:#061a3b;color:#fff;font-size:16px}
+button{margin-top:16px;width:100%;padding:14px;border:0;border-radius:12px;background:#f5b400;color:#1a1305;font-size:16px;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}
+.rules li{margin:7px 0;color:#e2e8f0}.msg{margin-top:12px;min-height:20px;font-size:14px}.err{color:#ffb4b0}.good{color:#9be3bd}
+.verified{background:#0f3d2a;border:1px solid #2f9e6b;border-radius:12px;padding:12px 14px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:9px 6px;text-align:left;border-bottom:1px solid #1d4a82}th{color:#cbd5e1;font-weight:600}
+.chip{padding:2px 9px;border-radius:12px;font-size:12px;font-weight:bold;background:#25324d}.chip.success{background:#14532d}.chip.failed,.chip.reversed{background:#7f1d1d}.chip.held,.chip.needs_review{background:#78350f}.chip.queued,.chip.sending,.chip.processing,.chip.ready{background:#1e3a8a}
+.note{font-size:12px;color:#cbd5e1;margin-top:10px}
+</style></head><body>
+<header><div class="logo">Vico<span>Pay</span> Live</div><a href="host-wallet.html">← Host wallet</a></header>
+<div class="container">
+  <h1>Payout account</h1><p class="sub">Where your monthly creator payout is sent.</p>
+  <div class="card"><h3>How monthly payouts work</h3>
+    <ul class="rules"><li>You need <b id="r-stars">3,000</b> Golden Stars earned in the month.</li><li>You must go live <b id="r-hours">3</b> hours <b>every day</b> of the month.</li>
+      <li><b>$9</b> for every full 3,000 stars: 3,000–5,999 stars = $9, 6,000–8,999 = $18, 9,000 = $27 and so on.</li>
+      <li>Payouts are checked after the month ends and sent to your bank account once approved.</li></ul></div>
+  <div class="card"><h3>Your bank account (Nigeria)</h3>
+    <div id="current"></div>
+    <label for="bank">Bank</label><select id="bank"><option value="">Loading banks…</option></select>
+    <label for="acct">Account number</label><input id="acct" inputmode="numeric" maxlength="10" placeholder="10-digit account number" autocomplete="off">
+    <button id="saveBtn" onclick="saveAccount()">Verify &amp; save account</button><div class="msg" id="msg"></div>
+    <p class="note">We verify the account with Paystack and show you the account holder's name. If you change your account later, payouts for you are paused for 72 hours as a security check.</p></div>
+  <div class="card"><h3>My payouts</h3><div id="hist"><span class="note">Loading…</span></div></div>
+</div>
+<script src="auth.js"></script>
+<script>
+const esc=t=>{const d=document.createElement("div");d.textContent=t==null?"":String(t);return d.innerHTML};
+async function api(p,body){const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});let d={};try{d=await r.json()}catch(e){}d._ok=r.ok&&d.success!==false;return d}
+async function load(){
+  const [b,r,h]=await Promise.all([api("/api/payouts/banks"),api("/api/payouts/recipient"),api("/api/payouts/history")]);
+  bank.innerHTML='<option value="">Choose your bank</option>'+((b.banks||[]).map(x=>'<option value="'+esc(x.code)+'">'+esc(x.name)+"</option>").join(""));
+  if(r._ok){document.getElementById("r-stars").textContent=Number(r.rules.minimumStars).toLocaleString();document.getElementById("r-hours").textContent=r.rules.dailyLiveHours;
+    current.innerHTML=r.recipient?'<div class="verified">✅ <b>'+esc(r.recipient.accountName)+"</b><br>"+esc(r.recipient.bankName)+" ····"+esc(r.recipient.accountLast4)+"</div>":'<p class="note" style="margin:0 0 6px">No payout account saved yet.</p>'}
+  const rows=h.payouts||[];hist.innerHTML=rows.length?"<table><tr><th>Month</th><th>Stars</th><th>Amount</th><th>Status</th></tr>"+rows.map(p=>"<tr><td>"+esc(p.month)+"</td><td>"+Number(p.stars).toLocaleString()+"</td><td>$"+Number(p.usd).toFixed(2)+'</td><td><span class="chip '+esc(p.status)+'">'+esc(p.status==="success"?"paid":p.status.replace("_"," "))+"</span>"+(p.reason?'<div class="note">'+esc(p.reason)+"</div>":"")+"</td></tr>").join("")+"</table>":'<span class="note">No payouts yet. They appear here after month-end checks.</span>'}
+async function saveAccount(){msg.className="msg";msg.textContent="";const bankCode=bank.value,accountNumber=acct.value.trim();if(!bankCode)return fail("Choose your bank.");if(!/^\d{10}$/.test(accountNumber))return fail("Enter your 10-digit account number.");
+  save_.disabled=true;msg.textContent="Verifying with Paystack…";const d=await api("/api/payouts/recipient",{bankCode,accountNumber});save_.disabled=false;
+  if(!d._ok)return fail(d.message||"Could not save.");acct.value="";msg.className="msg good";msg.textContent="Saved. Account holder: "+d.recipient.accountName+(d.recipient.cooldownHours?" · payouts paused for "+d.recipient.cooldownHours+"h (security check)":"");load()}
+const save_=document.getElementById("saveBtn");function fail(m){msg.className="msg err";msg.textContent=m}
+load();
+</script></body></html>
