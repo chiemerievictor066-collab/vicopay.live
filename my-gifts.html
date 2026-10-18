@@ -33,7 +33,7 @@ main{max-width:760px;margin:0 auto;padding:16px}
 <main>
   <div class="stats">
     <div><b id="sTotal">0</b><span>Gifts received</span></div>
-    <div><b id="sCoins">0</b><span>Coins value</span></div>
+    <div><b id="sCoins">0</b><span>Golden Stars earned</span></div>
     <div><b id="sTop">-</b><span>Top sender</span></div>
   </div>
   <div class="list" id="list"></div>
@@ -53,7 +53,7 @@ function render(items){
   document.getElementById("sTop").textContent=top||"-";
   document.getElementById("list").innerHTML=items.length?items.map(function(g){
     var when=g.ts?new Date(g.ts).toLocaleString([], {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
-    return '<div class="row"><div class="ic">'+esc(g.icon)+'</div><div class="who"><b>'+esc(g.from)+'</b><span>'+esc(g.gift||"Gift")+(when?" · "+when:"")+'</span></div><div class="qty">x'+g.qty+(g.coins?" · 🪙 "+g.coins:"")+'</div></div>';
+    return '<div class="row"><div class="ic">'+esc(g.icon)+'</div><div class="who"><b>'+esc(g.from)+'</b><span>'+esc(g.gift||"Gift")+(when?" · "+when:"")+'</span></div><div class="qty">x'+g.qty+(g.coins?" · +"+g.coins+" ⭐":"")+'</div></div>';
   }).join(""):'<div class="empty"><big>🎁</big>No gifts yet. Gifts your viewers send during your live will show here.</div>';
 }
 
@@ -63,17 +63,17 @@ function local(){
 function sortNew(a){return a.sort(function(x,y){return (y.ts||0)-(x.ts||0);});}
 
 render(sortNew(local()));
-var id=userId();
-if(id){
-  // server list of all gifts received by this host (change the URL here if your API uses another name)
-  fetch(API_BASE+"/api/gifts/received/"+encodeURIComponent(id)).then(function(r){return r.json();}).then(function(d){
-    if(!d||!d.success||!Array.isArray(d.gifts))return;
-    render(sortNew(d.gifts.map(function(g){return {
-      from:g.senderName||g.from||g.sender||"Viewer", gift:g.giftName||g.gift||g.name, icon:g.icon||g.emoji||"🎁",
-      qty:Number(g.quantity||g.qty||1), coins:Number(g.coins||g.value||0), ts:g.createdAt?new Date(g.createdAt).getTime():g.ts
-    };})));
-  }).catch(function(){});
+var ICON={Rose:"🌹",Fire:"🔥",Strawberry:"🍓",Star:"⭐",Trophy:"🏆",Car:"🏎️",Silver:"🥈",Diamond:"💎",Gold:"🥇",Eagle:"🦅",Lion:"🦁",Dragon:"🐉",Elephant:"🐘",Whale:"🐋"};
+function paint(d){
+  if(!d||d.success===false||!Array.isArray(d.gifts))return false;
+  render(sortNew(d.gifts.map(function(g){return {from:g.from||"Viewer",gift:g.gift,icon:ICON[g.gift]||"🎁",qty:1,coins:Number(g.coin||0),ts:g.ts};})));
+  if(d.total!=null)document.getElementById("sTotal").textContent=Number(d.total).toLocaleString();
+  return true;
 }
+fetch(API_BASE+"/api/host/my-gifts").then(function(r){return r.json();}).then(function(d){
+  if(paint(d))return;
+  return fetch(API_BASE+"/api/host/recent-gifts").then(function(r){return r.json();}).then(paint);
+}).catch(function(){});
 </script>
 </body>
 </html>
