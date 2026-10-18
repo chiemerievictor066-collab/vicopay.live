@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex">
+<title>Payouts - VicoPay Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050812;color:#e8eefc;font-family:Arial,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid #22304d;background:#0a1328}
+.logo{font-weight:800;font-size:20px}.logo span{color:#f5b400}header a,header button{margin-left:auto}
+a.lnk{color:#8fb7ff;text-decoration:none;font-size:13px}
+.wrap{width:min(1180px,96%);margin:20px auto}
+.card{background:#0a1328;border:1px solid #203352;border-radius:14px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 10px;font-size:16px}.muted{color:#8fa7c5;font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,select{padding:10px 14px;border-radius:10px;border:1px solid #2a4066;background:#050c1c;color:#fff;font:inherit}
+.b{border:0;border-radius:12px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;background:#1d4ed8;color:#fff}
+.b.gray{background:#25324d}.b.green{background:#16a34a}.b.red{background:#dc2626}.b.gold{background:#f5b400;color:#1a1305}.b:disabled{opacity:.45;cursor:not-allowed}.b.sm{padding:5px 10px;font-size:12px;border-radius:9px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #1b2b47;vertical-align:top}
+th{color:#8fa7c5;font-weight:600;font-size:12px}.tw{overflow-x:auto}
+.chip{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;background:#25324d}
+.chip.ready,.chip.queued,.chip.processing,.chip.sending{background:#1e3a8a}.chip.success,.chip.completed,.chip.approved{background:#14532d}
+.chip.failed,.chip.reversed,.chip.cancelled{background:#7f1d1d}.chip.held,.chip.needs_review,.chip.awaiting_approval{background:#78350f}.chip.ineligible{background:#2b3547;color:#9fb0c8}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}.step{flex:1;min-width:130px;padding:8px 10px;border-radius:10px;background:#0c1730;border:1px solid #203352;font-size:12px;color:#8fa7c5}
+.step.on{border-color:#f5b400;color:#fff}.step.done{border-color:#16a34a;color:#9be3bd}
+.gate{max-width:420px;margin:12vh auto;background:#0a1328;border:1px solid #203352;border-radius:16px;padding:26px}.gate input{width:100%;margin:12px 0}
+.err{color:#ff9fb5;font-size:13px;min-height:18px}.ok{color:#9be3bd;font-size:13px}.warn{background:#2a2115;border:1px solid #8d6330;color:#f0dcb6;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.big{font-size:26px;font-weight:800}.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}.kpi{background:#0c1730;border:1px solid #203352;border-radius:12px;padding:12px}.kpi span{display:block;color:#8fa7c5;font-size:12px}
+</style></head><body>
+<div id="gate" class="gate"><h2 style="margin:0">Admin sign in</h2><p class="muted">Enter your ADMIN_KEY. It is only kept in this browser tab.</p><input id="key" type="password" placeholder="ADMIN_KEY" onkeydown="if(event.key==='Enter')enter()"><button class="b" onclick="enter()">Open payouts</button><div class="err" id="gerr"></div></div>
+<div id="app" style="display:none">
+<header><div class="logo">VicoPay <span>Payouts</span></div><a class="lnk" href="admin.html">← Admin home</a><button class="b gray sm" onclick="sessionStorage.removeItem('vk');location.reload()">Lock</button></header>
+<div class="wrap">
+  <div id="status" class="card"></div>
+  <div class="card"><h3>1 · Calculate a month</h3>
+    <p class="muted">Rules: at least <b id="r-stars">3,000</b> stars in the month, <b id="r-hours">3</b> live hours on <b>every</b> day, <b>$9</b> for every full 3,000 stars (5,500 stars = $9, 6,000 = $18, 9,000 = $27). A month can be saved once it has ended and the safety hold has passed.</p>
+    <div class="row"><input id="month" type="month"><button class="b gray" onclick="preview()">Preview</button><button class="b" onclick="saveBatch()">Save batch</button><span id="mmsg" class="err"></span></div>
+  </div>
+  <div id="previewBox"></div>
+  <div class="card"><h3>Batches</h3><div class="tw" id="batches"></div></div>
+  <div id="detail"></div>
+</div></div>
+<script>
+const esc=t=>{const d=document.createElement("div");d.textContent=t==null?"":String(t);return d.innerHTML};
+const usd=n=>"$"+Number(n||0).toFixed(2), ngn=k=>"₦"+(Number(k||0)/100).toLocaleString("en-NG",{minimumFractionDigits:2,maximumFractionDigits:2}), num=n=>Number(n||0).toLocaleString();
+const when=t=>t?new Date(Number(t)).toLocaleString():"";
+let KEY=sessionStorage.getItem("vk")||"", OPEN=null, TIMER=null;
+async function api(p,body){const r=await fetch(p,{method:body!==undefined?"POST":"GET",headers:{"Content-Type":"application/json","x-admin-key":KEY},body:body!==undefined?JSON.stringify(body):undefined});let d={};try{d=await r.json()}catch(e){}d._ok=r.ok&&d.success!==false;d._status=r.status;return d}
+async function enter(){KEY=document.getElementById("key").value||KEY;const d=await api("/api/admin/payouts/status");if(!d._ok){gerr.textContent="Wrong key (or ADMIN_KEY is not set on the server).";return}sessionStorage.setItem("vk",KEY);gate.style.display="none";app.style.display="block";init(d)}
+function init(s){document.getElementById("month").value=s.month.payable;drawStatus(s);loadBatches()}
+async function refreshStatus(){const s=await api("/api/admin/payouts/status");if(s._ok)drawStatus(s)}
+function drawStatus(s){
+  document.getElementById("r-stars").textContent=num(s.rules.minimumStars);document.getElementById("r-hours").textContent=s.rules.dailyLiveHours;
+  const warns=[];if(!s.paystackKeySet)warns.push("PAYSTACK_SECRET_KEY is not set.");if(!s.emailReady)warns.push("Email is not set up (SMTP_* or RESEND_API_KEY). The approval code cannot be sent, so nothing can be paid.");
+  status.innerHTML=(warns.length?'<div class="warn">'+warns.map(esc).join("<br>")+"</div>":"")+
+  '<div class="kpis"><div class="kpi"><span>Approval email goes to</span><b>'+esc(s.approverEmail)+'</b></div><div class="kpi"><span>Exchange rate</span><b>₦'+num(s.ngnPerUsd)+' / $1</b></div><div class="kpi"><span>Safety hold</span><b>'+s.holdDays+' days</b></div><div class="kpi"><span>Next payable month</span><b>'+esc(s.month.payable)+'</b></div>'+
+  '<div class="kpi"><span>Paystack NGN balance</span><b id="bal">—</b> <button class="b gray sm" onclick="balance()">Check</button></div><div class="kpi"><span>Limits</span><b>'+usd(s.limits.perCreatorUsd)+' / creator<br>'+usd(s.limits.perBatchUsd)+' / batch</b></div>'+
+  '<div class="kpi"><span>Monthly auto-batch</span><b>'+(s.autoCalculate?"ON (still needs your code)":"OFF (manual)")+'</b></div></div>'}
+async function balance(){const d=await api("/api/admin/payouts/balance");document.getElementById("bal").textContent=d._ok&&d.ngnKobo!=null?ngn(d.ngnKobo):"unavailable"}
+async function preview(){mmsg.textContent="";const m=month.value;const d=await api("/api/admin/payouts/calculate",{month:m,preview:true});if(!d._ok){mmsg.textContent=d.message||"Failed";return}
+  const ready=d.items.filter(i=>i.status==="ready");previewBox.innerHTML='<div class="card"><h3>Preview · '+esc(m)+(d.mature?"":' <span class="chip held">not payable yet</span>')+'</h3><p class="muted">'+ready.length+" creators payable · "+usd(ready.reduce((s,i)=>s+i.usd,0))+(d.mature?"":" · can be saved from "+new Date(d.matureAt).toLocaleDateString())+'</p>'+itemsTable(d.items,false)+"</div>"}
+async function saveBatch(){mmsg.textContent="";const d=await api("/api/admin/payouts/calculate",{month:month.value});if(!d._ok){mmsg.textContent=d.message||"Failed";return}previewBox.innerHTML="";await loadBatches();openBatch(d.batch.id)}
+async function loadBatches(){const d=await api("/api/admin/payouts/batches");const rows=d.batches||[];
+  batches.innerHTML=rows.length?'<table><tr><th>Month</th><th>Status</th><th>Creators</th><th>Total</th><th>Created</th><th></th></tr>'+rows.map(b=>"<tr><td><b>"+esc(b.month)+'</b></td><td><span class="chip '+esc(b.status)+'">'+esc(b.status.replace("_"," "))+"</span></td><td>"+b.itemCount+"</td><td>"+usd(b.totalUsd)+" · "+ngn(b.totalKobo)+"</td><td>"+when(b.createdAt)+'</td><td><button class="b sm" onclick="openBatch('+b.id+')">Open</button></td></tr>').join("")+"</table>":'<p class="muted">No batches yet. Preview a month above, then save it.</p>'}
+function itemsTable(items,actions){return '<div class="tw"><table><tr><th>Creator</th><th>Stars</th><th>Live days</th><th>Pay</th><th>Bank</th><th>Status</th>'+(actions?"<th></th>":"")+"</tr>"+items.map(i=>"<tr><td>"+esc(i.creatorId)+"</td><td>"+num(i.stars)+"</td><td>"+i.liveDays+"/"+i.daysInMonth+"</td><td>"+usd(i.usd)+"<br><span class='muted'>"+ngn(i.amountKobo)+"</span></td><td>"+(i.bankName?esc(i.bankName)+" ****"+esc(i.accountLast4)+"<br><span class='muted'>"+esc(i.accountName||"")+"</span>":'<span class="muted">none</span>')+'</td><td><span class="chip '+esc(i.status)+'">'+esc(i.status.replace("_"," "))+"</span>"+(i.reason?'<br><span class="muted">'+esc(i.reason)+"</span>":"")+(i.attempt?'<br><span class="muted">attempt '+i.attempt+"</span>":"")+"</td>"+(actions?"<td>"+itemActions(i)+"</td>":"")+"</tr>").join("")+"</table></div>"}
+function itemActions(i){let h="";if(["sending","processing","needs_review"].includes(i.status))h+='<button class="b gray sm" onclick="checkItem('+i.id+')">Check</button> ';if(["failed","reversed","held"].includes(i.status)&&OPEN&&["approved","running","completed"].includes(OPEN.status))h+='<button class="b gold sm" onclick="retryItem('+i.id+')">Retry</button>';return h}
+async function openBatch(id){clearTimeout(TIMER);const d=await api("/api/admin/payouts/batches/"+id);if(!d._ok){detail.innerHTML='<div class="card err">'+esc(d.message||"Failed")+"</div>";return}
+  const b=d.batch;OPEN=b;const st=b.status,order=["draft","awaiting_approval","approved","running","completed"],idx=order.indexOf(st);
+  const labels=["1 Review","2 Code emailed","3 Approved","4 Sending","5 Done"];
+  const steps='<div class="steps">'+labels.map((l,k)=>'<div class="step '+(k<idx?"done":k===idx?"on":"")+'">'+esc(l)+"</div>").join("")+"</div>";
+  let actions="";
+  if(st==="draft")actions='<button class="b gold" onclick="reqApproval('+id+')">✉️ Email me the approval code</button> <button class="b gray" onclick="cancelBatch('+id+')">Cancel batch</button>';
+  if(st==="awaiting_approval")actions='<div class="row"><input id="code" placeholder="Code from your email" maxlength="9" style="text-transform:uppercase;letter-spacing:3px;width:230px"><button class="b green" onclick="confirmBatch('+id+')">✅ Approve &amp; send money</button><button class="b gray" onclick="reqApproval('+id+')">Send a new code</button><button class="b gray" onclick="cancelBatch('+id+')">Cancel</button></div><p class="muted">Code emailed '+when(b.approvalSentAt)+" · expires "+when(b.approvalExpiresAt)+" · "+b.approvalAttemptsLeft+" tries left</p>";
+  if(st==="approved"||st==="running")actions='<button class="b" onclick="runBatch('+id+')">▶ Run / resume sending</button> <span class="muted">Safe to press more than once: no creator is ever sent twice.</span>';
+  detail.innerHTML='<div class="card"><h3>'+esc(b.month)+' batch <span class="chip '+esc(st)+'">'+esc(st.replace("_"," "))+'</span></h3>'+steps+'<div class="kpis" style="margin-bottom:14px"><div class="kpi"><span>Creators to pay</span><div class="big">'+b.itemCount+'</div></div><div class="kpi"><span>Total (USD)</span><div class="big">'+usd(b.totalUsd)+'</div></div><div class="kpi"><span>Total (NGN @ ₦'+num(b.usdRate)+')</span><div class="big">'+ngn(b.totalKobo)+"</div></div></div>"+
+    '<div id="amsg" class="err"></div>'+actions+"</div>"+
+    '<div class="card"><h3>Creators</h3>'+itemsTable(d.items,true)+"</div>"+
+    '<div class="card"><h3>Activity log</h3><div class="tw"><table><tr><th>When</th><th>Who</th><th>What</th><th>Details</th></tr>'+d.audit.map(a=>"<tr><td>"+when(a.at)+"</td><td>"+esc(a.actor)+"</td><td>"+esc(a.action)+"</td><td class='muted'>"+esc(a.detail||"")+"</td></tr>").join("")+"</table></div></div>";
+  if(["running","approved"].includes(st)||d.items.some(i=>["sending","processing"].includes(i.status)))TIMER=setTimeout(()=>openBatch(id),6000);
+  detail.scrollIntoView({behavior:"smooth"})}
+const say=(m,good)=>{const e=document.getElementById("amsg");if(e){e.className=good?"ok":"err";e.textContent=m}};
+async function reqApproval(id){const d=await api("/api/admin/payouts/batches/"+id+"/request-approval",{});if(!d._ok)return say(d.message||"Failed");await openBatch(id);say("Code sent to "+d.sentTo+". Check your email.",true)}
+async function confirmBatch(id){const code=document.getElementById("code").value;if(!code.trim())return say("Type the code from your email.");if(!confirm("Release the payouts to creators now?"))return;const d=await api("/api/admin/payouts/batches/"+id+"/confirm",{code});if(!d._ok)return say(d.message||"Failed");await loadBatches();openBatch(id)}
+async function runBatch(id){const d=await api("/api/admin/payouts/batches/"+id+"/run",{});if(!d._ok)return say(d.message||"Failed");say("Started…",true);setTimeout(()=>openBatch(id),1500)}
+async function cancelBatch(id){if(!confirm("Cancel this batch? You can recalculate the month later."))return;const d=await api("/api/admin/payouts/batches/"+id+"/cancel",{});if(!d._ok)return say(d.message||"Failed");loadBatches();detail.innerHTML=""}
+async function checkItem(id){const d=await api("/api/admin/payouts/items/"+id+"/check",{});if(!d._ok)alert(d.message||"Failed");openBatch(OPEN.id)}
+async function retryItem(id){if(!confirm("Try this payout again? A new transfer will be sent."))return;const d=await api("/api/admin/payouts/items/"+id+"/retry",{});if(!d._ok)return alert(d.message||"Failed");setTimeout(()=>openBatch(OPEN.id),1500)}
+if(KEY)enter();
+</script></body></html>
