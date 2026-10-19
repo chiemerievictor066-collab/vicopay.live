@@ -211,6 +211,12 @@
             font-weight: bold;
         }
 
+        /* CURRENCY TOGGLE */
+        .currency-toggle { display:flex; align-items:center; gap:10px; margin:0 0 18px; }
+        .currency-label { color:#9cb8dc; font-size:14px; }
+        .currency-btn { border:1px solid #1a528a; background:#061d42; color:#fff; padding:9px 18px; border-radius:25px; font-weight:bold; cursor:pointer; }
+        .currency-btn.active { background:#00e5c3; color:#03243b; border-color:#00e5c3; }
+
         /* GIFT GRID */
 
         .gift-grid {
@@ -588,444 +594,16 @@
 
             <!-- GIFT GRID -->
 
-            <div class="gift-grid">
-
-
-                <!-- FREE LOVE -->
-
-                <div class="gift-card free">
-
-                    <div class="gift-icon">
-                        ❤️
-                    </div>
-
-                    <div class="gift-name">
-                        Like
-                    </div>
-
-                    <div class="coin-price">
-                        ❤️ FREE
-                    </div>
-
-                    <div class="naira-price">
-                        No coin required
-                    </div>
-
-                    <button class="send-button" onclick="sendLove()">
-
-                        ❤️ Send Love
-
-                    </button>
-
-                </div>
-
-
-                <!-- ROSE -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🌹
-                    </div>
-
-                    <div class="gift-name">
-                        Rose
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 10 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦100
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Rose',10)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- FIRE -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🔥
-                    </div>
-
-                    <div class="gift-name">
-                        Fire
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 50 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦500
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Fire',50)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- STRAWBERRY -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🍓
-                    </div>
-
-                    <div class="gift-name">
-                        Strawberry
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 100 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦1,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Strawberry',100)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- POWER BIKE (replaces Star) -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🏍️
-                    </div>
-
-                    <div class="gift-name">
-                        Power Bike
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 250 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦2,500
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Power Bike',250)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- TROPHY -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🏆
-                    </div>
-
-                    <div class="gift-name">
-                        Trophy
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 750 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦7,500
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Trophy',750)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- CAR -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🚗
-                    </div>
-
-                    <div class="gift-name">
-                        Car
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 1,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦10,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Car',1000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- SILVER -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🥈
-                    </div>
-
-                    <div class="gift-name">
-                        Silver
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 2,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦20,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Silver',2000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- DIAMOND -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        💎
-                    </div>
-
-                    <div class="gift-name">
-                        Diamond
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 5,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦50,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Diamond',5000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- GOLD -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🪙
-                    </div>
-
-                    <div class="gift-name">
-                        Gold
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 10,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦100,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Gold',10000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- EAGLE -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🦅
-                    </div>
-
-                    <div class="gift-name">
-                        Eagle
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 12,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦120,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Eagle',12000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- LION -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🦁
-                    </div>
-
-                    <div class="gift-name">
-                        Lion
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 15,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦150,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Lion',15000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- DRAGON -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🐉
-                    </div>
-
-                    <div class="gift-name">
-                        Dragon
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 20,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦200,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Dragon',20000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- ELEPHANT -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🐘
-                    </div>
-
-                    <div class="gift-name">
-                        Elephant
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 30,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦300,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Elephant',30000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
-
-                <!-- WHALE -->
-
-                <div class="gift-card">
-
-                    <div class="gift-icon">
-                        🐋
-                    </div>
-
-                    <div class="gift-name">
-                        Whale
-                    </div>
-
-                    <div class="coin-price">
-                        🪙 50,000 Coins
-                    </div>
-
-                    <div class="naira-price">
-                        ₦500,000
-                    </div>
-
-                    <button class="send-button" onclick="sendGift('Whale',50000)">
-
-                        Send
-
-                    </button>
-
-                </div>
-
+            <!-- CURRENCY TOGGLE -->
+            <div class="currency-toggle" role="group" aria-label="Choose price currency">
+                <span class="currency-label">Show price in:</span>
+                <button type="button" class="currency-btn active" id="btnNaira" onclick="setCurrency('NGN')">₦ Naira</button>
+                <button type="button" class="currency-btn" id="btnDollar" onclick="setCurrency('USD')">$ Dollar</button>
             </div>
+
+            <!-- GIFT GRID (built from the GIFTS list in the script below) -->
+            <div class="gift-grid" id="giftGrid"></div>
+
 
 
             <div id="message"></div>
@@ -1142,6 +720,57 @@
 
 
     <script>
+        // ===== GIFT LIST: cheapest to most expensive (coins), prices as requested =====
+        // The Dollar price = Naira price / NGN_PER_USD (same rate as NGN_PER_USD in .env).
+        const NGN_PER_USD = 1500;
+        const GIFTS = [
+            { name: "Strawberry", icon: "🍓", coins: 10, priceNGN: 100 },
+            { name: "Fire", icon: "🔥", coins: 50, priceNGN: 500 },
+            { name: "Rose", icon: "🌹", coins: 100, priceNGN: 1000 },
+            { name: "Trophy", icon: "🏆", coins: 250, priceNGN: 2500 },
+            { name: "Silver", icon: "🥈", coins: 700, priceNGN: 7000 },
+            { name: "Power Bike", icon: "🏍️", coins: 1000, priceNGN: 10000 },
+            { name: "Car", icon: "🏎️", coins: 1200, priceNGN: 12000 },
+            { name: "Gold", icon: "🥇", coins: 2000, priceNGN: 20000 },
+            { name: "Diamond", icon: "💎", coins: 5000, priceNGN: 50000 },
+            { name: "Eagle", icon: "🦅", coins: 10000, priceNGN: 100000 },
+            { name: "Lion", icon: "🦁", coins: 15000, priceNGN: 150000 },
+            { name: "Dragon", icon: "🐉", coins: 20000, priceNGN: 200000 },
+            { name: "Elephant", icon: "🐘", coins: 30000, priceNGN: 300000 },
+            { name: "Whale", icon: "🐋", coins: 50000, priceNGN: 500000 }
+        ];
+        let currency = localStorage.getItem("giftShopCurrency") === "USD" ? "USD" : "NGN";
+        function formatMoney(priceNGN) {
+            if (currency === "USD") {
+                return "$" + (priceNGN / NGN_PER_USD).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+            return "₦" + priceNGN.toLocaleString("en-NG");
+        }
+        function renderGifts() {
+            const grid = document.getElementById("giftGrid");
+            let html =
+                '<div class="gift-card free"><div class="gift-icon">❤️</div>' +
+                '<div class="gift-name">Like</div>' +
+                '<div class="coin-price">❤️ FREE</div>' +
+                '<div class="naira-price">Free</div>' +
+                '<button class="send-button" onclick="sendLove()">❤️ Send Love</button></div>';
+            GIFTS.forEach(function (g) {
+                html +=
+                    '<div class="gift-card"><div class="gift-icon">' + g.icon + '</div>' +
+                    '<div class="gift-name">' + g.name + '</div>' +
+                    '<div class="coin-price">🪙 ' + g.coins.toLocaleString() + ' Coins</div>' +
+                    '<div class="naira-price">' + formatMoney(g.priceNGN) + '</div>' +
+                    '<button class="send-button" onclick="sendGift(\'' + g.name + '\',' + g.coins + ')">Send</button></div>';
+            });
+            grid.innerHTML = html;
+            document.getElementById("btnNaira").classList.toggle("active", currency === "NGN");
+            document.getElementById("btnDollar").classList.toggle("active", currency === "USD");
+        }
+        function setCurrency(c) {
+            currency = c === "USD" ? "USD" : "NGN";
+            try { localStorage.setItem("giftShopCurrency", currency); } catch (e) {}
+            renderGifts();
+        }
         let coinBalance = 0;
         const API_BASE = window.location.origin;
 
@@ -1238,30 +867,6 @@
                         })
                     }
                 );
-                // Permanently record the gift transaction
-                liveGiftTransactions.push({
-                    id:
-                        "GIFT-" +
-                        Date.now() +
-                        "-" +
-                        Math.floor(
-                            Math.random() * 100000
-                        ),
-
-                    gift: gift,
-
-                    coins: price,
-
-                    senderId: senderId,
-
-                    hostId: hostId,
-
-                    createdAt:
-                        new Date().toISOString()
-                });
-
-                // Save gift transaction permanently
-                savePermanentData();
                 const data = await response.json();
                 console.log("Love response:", data);
 
@@ -1353,6 +958,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
+            renderGifts();
             loadWallet();
         });
     </script>
