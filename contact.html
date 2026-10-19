@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact - VicoPay Live</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,Segoe UI,sans-serif;color:#e8eefc;background:linear-gradient(135deg,#06142f,#0b2f68,#32105f);padding:24px}
+.bar{max-width:820px;margin:0 auto 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font-size:24px;font-weight:900;text-decoration:none;color:#fff}.logo span{color:#38bdf8}
+.bar .sp{flex:1}
+.bar a.nav{color:#cbd5e1;text-decoration:none;font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px;background:#ffffff14}
+.bar a.me{display:inline-flex;align-items:center;text-decoration:none;color:#fff;font-weight:700}
+.wrap{max-width:820px;margin:0 auto;background:#07152bf2;border:1px solid #ffffff25;border-radius:22px;padding:34px;box-shadow:0 25px 80px #0009;line-height:1.7}
+h1{margin:6px 0 6px}h2{margin-top:28px;color:#7dd3fc;font-size:19px}
+.small{color:#94a3b8;font-size:13px}
+a{color:#38bdf8}
+.btn{display:inline-block;margin-top:14px;padding:13px 22px;border-radius:12px;border:0;background:#0787ed;color:#fff;font-weight:700;text-decoration:none;cursor:pointer;font:inherit;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:16px}
+.card{background:#0b1f40;border:1px solid #ffffff1c;border-radius:16px;padding:18px}
+.card b{display:block;font-size:16px;margin-bottom:4px}
+input,select,textarea{width:100%;padding:13px;border-radius:12px;border:1px solid #294266;background:#091a34;color:#fff;font:inherit;margin-top:6px}
+label{display:block;margin-top:14px;font-weight:700;font-size:14px}
+.msg{margin-top:14px;padding:12px;border-radius:12px;display:none}.msg.ok{display:block;background:#052e1a;border:1px solid #16a34a}.msg.err{display:block;background:#3b0a14;border:1px solid #ff315a}
+footer{max-width:820px;margin:18px auto 0;text-align:center;font-size:13px;color:#94a3b8}
+footer a{margin:0 8px;text-decoration:none}
+</style>
+<script src="auth.js"></script>
+<script src="vico-ui.js"></script>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="home.html">Vico<span>Pay</span> Live</a>
+  <span class="sp"></span>
+  <a class="nav" href="home.html">Home</a>
+  <a class="nav" href="help-center.html">Help Center</a>
+  <a class="me" id="meBtn" href="profile.html" data-my-avatar data-size="38" data-my-name style="display:none"></a>
+</div>
+<div class="wrap">
+<h1>Contact Us</h1>
+<p class="small">We read every message.</p>
+<div class="grid" id="channels">
+<div class="card"><b>🎧 Help Center</b>Find answers fast or open a support ticket.<br><a href="help-center.html">Open Help Center</a></div>
+<div class="card" id="emailCard" style="display:none"><b>✉️ Email</b><a id="emailLink" href="#"></a></div>
+<div class="card" id="waCard" style="display:none"><b>💬 WhatsApp</b><a id="waLink" href="#" target="_blank" rel="noopener">Chat with support</a></div>
+</div>
+<p class="small" id="reply"></p>
+<h2>Send us a message</h2>
+<div id="needLogin" style="display:none"><p>Please sign in so we can reply to you inside your account.</p><a class="btn" href="join-now.html?next=contact.html">Sign in</a></div>
+<div id="formBox" style="display:none">
+<label>What is it about?<select id="cat"></select></label>
+<label>Title<input id="subject" maxlength="100" placeholder="Short title"></label>
+<label>Message<textarea id="body" rows="6" maxlength="2000" placeholder="Tell us what happened or what you need"></textarea></label>
+<button class="btn" id="send" type="button">Send message</button>
+<div class="msg" id="out"></div>
+</div>
+
+<p style="margin-top:30px"><a href="home.html">&larr; Back to Home</a></p>
+</div>
+<footer>
+  <a href="about.html">About Us</a><a href="help-center.html">Help Center</a><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="community-guidelines.html">Community Guidelines</a><a href="contact.html">Contact</a>
+  <div style="margin-top:8px">&copy; 2026 VicoPay Live. All rights reserved.</div>
+</footer>
+<script>
+(function(){ if(window.VicoAuth&&VicoAuth.isSignedIn()){var b=document.getElementById("meBtn");if(b){b.style.display="inline-flex";if(window.VicoUI)VicoUI.applyMe();}} })();
+</script>
+<script>
+(async function(){
+  var $=function(i){return document.getElementById(i);};
+  function api(p,o){return VicoUI.api(p,o);}
+  var cfg=await api("/api/support/config");
+  if(cfg._ok){
+    if(cfg.email){$("emailCard").style.display="block";$("emailLink").textContent=cfg.email;$("emailLink").href="mailto:"+cfg.email;}
+    if(cfg.whatsapp){$("waCard").style.display="block";$("waLink").href="https://wa.me/"+cfg.whatsapp;}
+    if(cfg.replyTime)$("reply").textContent="Typical reply time: "+cfg.replyTime;
+    var cats=cfg.categories&&cfg.categories.length?cfg.categories:["other"];
+    $("cat").innerHTML=cats.map(function(c){return '<option value="'+VicoUI.esc(c)+'">'+VicoUI.esc(c.charAt(0).toUpperCase()+c.slice(1))+"</option>";}).join("");
+  }
+  if(VicoAuth.isSignedIn())$("formBox").style.display="block";else $("needLogin").style.display="block";
+  $("send").onclick=async function(){
+    var out=$("out");out.className="msg";out.textContent="";
+    $("send").disabled=true;
+    var d=await api("/api/support/tickets",{method:"POST",body:{category:$("cat").value,subject:$("subject").value,message:$("body").value,page:"contact.html"}});
+    $("send").disabled=false;
+    out.className="msg "+(d._ok?"ok":"err");out.textContent=d.message||(d._ok?"Message sent.":"Could not send your message.");
+    if(d._ok){$("subject").value="";$("body").value="";}
+  };
+})();
+</script>
+</body>
+</html>
