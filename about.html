@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us - VicoPay Live</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,Segoe UI,sans-serif;color:#e8eefc;background:linear-gradient(135deg,#06142f,#0b2f68,#32105f);padding:24px}
+.bar{max-width:820px;margin:0 auto 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font-size:24px;font-weight:900;text-decoration:none;color:#fff}.logo span{color:#38bdf8}
+.bar .sp{flex:1}
+.bar a.nav{color:#cbd5e1;text-decoration:none;font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px;background:#ffffff14}
+.bar a.me{display:inline-flex;align-items:center;text-decoration:none;color:#fff;font-weight:700}
+.wrap{max-width:820px;margin:0 auto;background:#07152bf2;border:1px solid #ffffff25;border-radius:22px;padding:34px;box-shadow:0 25px 80px #0009;line-height:1.7}
+h1{margin:6px 0 6px}h2{margin-top:28px;color:#7dd3fc;font-size:19px}
+.small{color:#94a3b8;font-size:13px}
+a{color:#38bdf8}
+.btn{display:inline-block;margin-top:14px;padding:13px 22px;border-radius:12px;border:0;background:#0787ed;color:#fff;font-weight:700;text-decoration:none;cursor:pointer;font:inherit;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:16px}
+.card{background:#0b1f40;border:1px solid #ffffff1c;border-radius:16px;padding:18px}
+.card b{display:block;font-size:16px;margin-bottom:4px}
+input,select,textarea{width:100%;padding:13px;border-radius:12px;border:1px solid #294266;background:#091a34;color:#fff;font:inherit;margin-top:6px}
+label{display:block;margin-top:14px;font-weight:700;font-size:14px}
+.msg{margin-top:14px;padding:12px;border-radius:12px;display:none}.msg.ok{display:block;background:#052e1a;border:1px solid #16a34a}.msg.err{display:block;background:#3b0a14;border:1px solid #ff315a}
+footer{max-width:820px;margin:18px auto 0;text-align:center;font-size:13px;color:#94a3b8}
+footer a{margin:0 8px;text-decoration:none}
+</style>
+<script src="auth.js"></script>
+<script src="vico-ui.js"></script>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="home.html">Vico<span>Pay</span> Live</a>
+  <span class="sp"></span>
+  <a class="nav" href="home.html">Home</a>
+  <a class="nav" href="help-center.html">Help Center</a>
+  <a class="me" id="meBtn" href="profile.html" data-my-avatar data-size="38" data-my-name style="display:none"></a>
+</div>
+<div class="wrap">
+<h1>About VicoPay Live</h1>
+<p class="small">Live &bull; Chat &bull; Connect &bull; Earn</p>
+<p>VicoPay Live is a live-streaming community where creators go live, meet people from around the world, receive virtual gifts and earn from the support of their fans. It also brings together a global community of forex traders who learn and grow together.</p>
+<div class="grid">
+<div class="card"><b>🎥 Go Live</b>Start a live room in seconds, chat with your viewers and build your audience.</div>
+<div class="card"><b>🎁 Virtual Gifts</b>Viewers send gifts to show support. Hosts earn stars that can become real payouts.</div>
+<div class="card"><b>⚔️ PK Battles</b>Compete head-to-head with other hosts in friendly live battles.</div>
+<div class="card"><b>📈 Forex Community</b>Learn, share and grow with traders from around the world.</div>
+</div>
+<h2>Our mission</h2>
+<p>To give every creator a safe, fair and rewarding place to share their talent, and to give every viewer a friendly place to enjoy it.</p>
+<h2>What we stand for</h2>
+<p><strong>Safety first</strong> &ndash; we keep the community respectful (see our <a href="community-guidelines.html">Community Guidelines</a>).<br>
+<strong>Fair earnings</strong> &ndash; coins, gifts and payouts are recorded on a transparent ledger.<br>
+<strong>Real support</strong> &ndash; our team replies to every ticket from the <a href="help-center.html">Help Center</a>.</p>
+<h2>Get in touch</h2>
+<p>Questions, partnership ideas or feedback? Visit our <a href="contact.html">Contact page</a>.</p>
+<a class="btn" href="join-now.html" id="joinCta">Join VicoPay Live</a>
+<script>if(window.VicoAuth&&VicoAuth.isSignedIn()){var j=document.getElementById("joinCta");j.textContent="Go to Live Room";j.href="live-room.html";}</script>
+
+<p style="margin-top:30px"><a href="home.html">&larr; Back to Home</a></p>
+</div>
+<footer>
+  <a href="about.html">About Us</a><a href="help-center.html">Help Center</a><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="community-guidelines.html">Community Guidelines</a><a href="contact.html">Contact</a>
+  <div style="margin-top:8px">&copy; 2026 VicoPay Live. All rights reserved.</div>
+</footer>
+<script>
+(function(){ if(window.VicoAuth&&VicoAuth.isSignedIn()){var b=document.getElementById("meBtn");if(b){b.style.display="inline-flex";if(window.VicoUI)VicoUI.applyMe();}} })();
+</script>
+
+</body>
+</html>
