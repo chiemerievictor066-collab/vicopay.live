@@ -74,7 +74,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 60px;
             border: 4px solid #19d98b;
         }
 
@@ -227,6 +226,7 @@
     </style>
 <script src="auth.js"></script>
 <script>VicoAuth.requireLogin();</script>
+<script src="vico-ui.js"></script>
 </head>
 
 <body>
@@ -260,9 +260,7 @@
 
         <div class="profile-card">
 
-            <div class="profile-picture" id="profilePicture">
-                👤
-            </div>
+            <div class="profile-picture" id="profilePicture" data-my-avatar data-size="112"></div>
             <label style="display:inline-block;margin:10px 0;cursor:pointer;color:#19d98b;font-weight:bold;">
                 Change profile picture
                 <input id="profilePictureInput" type="file" accept="image/*" style="display:none" onchange="saveProfilePicture(event)">
@@ -467,7 +465,7 @@
                 </span>
 
                 <span class="value">
-                    3,000 ⭐
+                    4,000 ⭐
                 </span>
 
             </div>
@@ -558,52 +556,33 @@
 
 
         function editProfile() {
-            window.location.href = "edit-profile.html";
-        }
-
-        // Show the saved name, bio and picture from the server (what Edit Profile saves)
-        async function loadMe() {
-            try {
-                const res = await fetch(API_BASE + "/api/me");
-                const d = await res.json();
-                if (!d || !d.success) return;
-                const nm = d.displayName || d.email;
-                localStorage.setItem("vicoPayDisplayName", nm);
-                ["profileName", "infoName"].forEach(function (id) { const el = document.getElementById(id); if (el) el.textContent = nm; });
-                ["profileUsername", "infoUsername"].forEach(function (id) { const el = document.getElementById(id); if (el && d.handle) el.textContent = "@" + d.handle; });
-                const bio = document.getElementById("profileBio");
-                if (bio && d.bio) bio.textContent = d.bio;
-                const box = document.getElementById("profilePicture");
-                if (box && d.avatar) {
-                    localStorage.removeItem("vicoPayProfileImage");
-                    box.textContent = "";
-                    box.style.backgroundImage = 'url("' + d.avatar + '")';
-                    box.style.backgroundSize = "cover";
-                    box.style.backgroundPosition = "center";
-                }
-            } catch (e) { console.error("Profile load error:", e); }
+            // opens the Edit Profile window (name, bio and photo) on the profile page
+            window.location.href = "profile.html?edit=1";
         }
 
 
 
-        function saveProfilePicture(event) {
+        async function saveProfilePicture(event) {
             const file = event.target.files && event.target.files[0];
+            event.target.value = "";
             if (!file) return;
-            if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
-            if (file.size > 3 * 1024 * 1024) { alert('Please choose an image smaller than 3 MB.'); return; }
-            const reader = new FileReader();
-            reader.onload = function() { localStorage.setItem('vicoPayProfileImage', reader.result); applyProfilePicture(); };
-            reader.readAsDataURL(file);
+            try {
+                await VicoUI.uploadAvatar(file);   // resized + saved on your account
+                VicoUI.applyMe();
+            } catch (e) { alert(e.message || "Could not save the picture."); }
         }
-        function applyProfilePicture() {
-            const src = localStorage.getItem('vicoPayProfileImage');
-            const box = document.getElementById('profilePicture');
-            if (src && box) { box.textContent = ''; box.style.backgroundImage = `url("${src}")`; box.style.backgroundSize='cover'; box.style.backgroundPosition='center'; }
-        }
-        applyProfilePicture();
+
+        // show the owner's real name, handle, bio and picture from their account
+        VicoUI.refreshMe().then(function (me) {
+            if (!me) return;
+            const set = (id, v) => { const e = document.getElementById(id); if (e && v) e.textContent = v; };
+            set("profileName", me.displayName); set("infoName", me.displayName);
+            set("profileUsername", "@" + me.handle); set("infoUsername", "@" + me.handle);
+            if (me.bio) set("profileBio", me.bio);
+        });
+        VicoUI.applyMe();
 
         loadProfile();
-        loadMe();
 
     </script>
 
