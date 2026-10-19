@@ -229,6 +229,7 @@
     var icon = GIFT_ICON[ev.gift] || "🎁", big = Number(ev.price) >= 1000;
     stackRow("g|" + ev.from + "|" + ev.gift, ev,
       avatar(ev.from, ev.avatar, 34) + '<div class="gt"><b>' + esc(ev.from) + '</b><span>sent ' + esc(ev.gift) + '</span></div><em>' + icon + '</em>' + (ev.combo > 1 ? '<i class="cx">x' + ev.combo + '</i>' : ""), 4500);
+    if (window.VicoGifts) { VicoGifts.play(ev.gift, { container: $(".live-stage"), from: ev.from, combo: ev.combo }); return; }
     var f = document.createElement("div"); f.className = "gpop" + (big ? " big" : "");
     f.innerHTML = icon + (big ? "<small>" + esc(ev.from) + " sent " + esc(ev.gift) + "!</small>" : "");
     $(".live-stage").appendChild(f); setTimeout(function () { f.remove(); }, big ? 4200 : 3300);
