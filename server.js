@@ -59,7 +59,7 @@ app.use((req, res, next) => {
   next();
 });
 const SITE_DIR = __dirname;
-const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "live-effects.js", "go-live-studio.js", "forex-lab.js"]);
+const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js"]);
 const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || BROWSER_SCRIPTS.has(f)));
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
