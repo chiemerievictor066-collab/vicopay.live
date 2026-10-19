@@ -313,6 +313,7 @@ html,body{height:100%;overflow:hidden}
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
 <script src="auth.js"></script>
 <script>VicoAuth.requireLogin();</script>
+<script src="vico-ui.js"></script>
 </head>
 <body>
 
@@ -321,7 +322,7 @@ html,body{height:100%;overflow:hidden}
   <a class="top-link" href="live-room.html">📺 Live Room</a><a class="top-link" href="pk-battles.html">⚔️ PK</a>
   <div class="top-actions">
     <div class="coin">🪙 <span id="coinBalance">0</span></div>
-    <a class="icon-btn" href="profile.html" title="My profile">👤</a>
+    <a class="icon-btn" href="profile.html" title="My profile" data-my-avatar data-size="32">👤</a>
     <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
   </div>
 </header>
@@ -334,7 +335,7 @@ html,body{height:100%;overflow:hidden}
     <button class="side-item" onclick="setTab('fans')" title="Fan Club">💜<small>Fans</small></button>
     <a class="side-item" href="hosts.html" title="Hosts">🎤<small>Hosts</small></a>
     <a class="side-item" href="buy-coin.html" title="Buy Coins">🪙<small>Coins</small></a>
-    <a class="side-item" href="profile.html" title="Profile">👤<small>Me</small></a>
+    <a class="side-item" href="profile.html" title="Profile"><span data-my-avatar data-size="28">👤</span><small>Me</small></a>
   </nav>
 
   <main class="main">
