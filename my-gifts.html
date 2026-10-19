@@ -63,7 +63,7 @@ function local(){
 function sortNew(a){return a.sort(function(x,y){return (y.ts||0)-(x.ts||0);});}
 
 render(sortNew(local()));
-var ICON={Rose:"🌹",Fire:"🔥",Strawberry:"🍓",Star:"⭐",Trophy:"🏆",Car:"🏎️",Silver:"🥈",Diamond:"💎",Gold:"🥇",Eagle:"🦅",Lion:"🦁",Dragon:"🐉",Elephant:"🐘",Whale:"🐋"};
+var ICON={Rose:"🌹",Fire:"🔥",Strawberry:"🍓",Star:"⭐","Power Bike":"🏍️",Trophy:"🏆",Car:"🏎️",Silver:"🥈",Diamond:"💎",Gold:"🥇",Eagle:"🦅",Lion:"🦁",Dragon:"🐉",Elephant:"🐘",Whale:"🐋"};
 function paint(d){
   if(!d||d.success===false||!Array.isArray(d.gifts))return false;
   render(sortNew(d.gifts.map(function(g){return {from:g.from||"Viewer",gift:g.gift,icon:ICON[g.gift]||"🎁",qty:1,coins:Number(g.coin||0),ts:g.ts};})));
