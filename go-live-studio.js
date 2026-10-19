@@ -15,7 +15,7 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var enc = encodeURIComponent;
   var COLORS = ["#0787ed", "#7c3aed", "#db2777", "#ea580c", "#059669", "#0891b2", "#b45309", "#4f46e5"];
-  var GIFT_ICON = { Rose: "🌹", Fire: "🔥", Strawberry: "🍓", Star: "⭐", Trophy: "🏆", Car: "🏎️", Silver: "🥈", Diamond: "💎", Gold: "🥇", Eagle: "🦅", Lion: "🦁", Dragon: "🐉", Elephant: "🐘", Whale: "🐋" };
+  var GIFT_ICON = { Rose: "🌹", Fire: "🔥", Strawberry: "🍓", Star: "⭐", "Power Bike": "🏍️", Trophy: "🏆", Car: "🏎️", Silver: "🥈", Diamond: "💎", Gold: "🥇", Eagle: "🦅", Lion: "🦁", Dragon: "🐉", Elephant: "🐘", Whale: "🐋" };
 
   function esc(t) { var d = document.createElement("div"); d.textContent = t == null ? "" : String(t); return d.innerHTML; }
   function num(n) { return Number(n || 0).toLocaleString(); }
