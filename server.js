@@ -97,40 +97,40 @@ async function getMonthlyLiveStatus(hostId) { return store.monthlyLiveStatus(hos
 // =====================================================
 
 const CREATOR_RULES = {
-    minimumStars: 3000,
-    dailyLiveHours: 3
+  minimumStars: 3000,
+  dailyLiveHours: 3
 };
 
 // $9 per every complete 3,000 Golden Stars (matches the payout
 // table shown on host-wallet.html: 3,000 -> $9, 6,000 -> $18,
 // 9,000 -> $27 ...)
 function calculateCreatorPayout(stars) {
-    if (stars < CREATOR_RULES.minimumStars) return 0;
-    return Math.floor(stars / CREATOR_RULES.minimumStars) * 9;
+  if (stars < CREATOR_RULES.minimumStars) return 0;
+  return Math.floor(stars / CREATOR_RULES.minimumStars) * 9;
 }
 
 async function getCreatorEligibility(creatorId) {
-    const wallet = await getWallet(creatorId);
-    const breakdown = await getStarBreakdown(creatorId);
-    const stars = breakdown.withdrawable;
-    const live = await getMonthlyLiveStatus(creatorId);
+  const wallet = await getWallet(creatorId);
+  const breakdown = await getStarBreakdown(creatorId);
+  const stars = breakdown.withdrawable;
+  const live = await getMonthlyLiveStatus(creatorId);
 
-    const starsComplete = stars >= CREATOR_RULES.minimumStars;
-    const liveRequirementComplete = live.monthlyRequirementComplete;
-    const eligible = starsComplete && liveRequirementComplete;
-    const payout = eligible ? calculateCreatorPayout(stars) : 0;
+  const starsComplete = stars >= CREATOR_RULES.minimumStars;
+  const liveRequirementComplete = live.monthlyRequirementComplete;
+  const eligible = starsComplete && liveRequirementComplete;
+  const payout = eligible ? calculateCreatorPayout(stars) : 0;
 
-    return {
-        stars,
-        breakdown,
-        minimumStars: CREATOR_RULES.minimumStars,
-        starsComplete,
-        liveRequirementComplete,
-        eligible,
-        payout,
-        currency: "USD",
-        live
-    };
+  return {
+    stars,
+    breakdown,
+    minimumStars: CREATOR_RULES.minimumStars,
+    starsComplete,
+    liveRequirementComplete,
+    eligible,
+    payout,
+    currency: "USD",
+    live
+  };
 }
 
 const WEBSITE_NAME = "VicoPay";
@@ -149,288 +149,288 @@ const resolveHandle = (h) => users.resolveHandle(h);
 
 let AUTH_SECRET = process.env.AUTH_SECRET;
 if (!AUTH_SECRET || AUTH_SECRET.length < 24) {
-    AUTH_SECRET = crypto.randomBytes(48).toString("hex");
-    console.warn(
-        "⚠️  AUTH_SECRET is missing or too short (min 24 chars). A temporary one was generated, " +
-        "so everyone will be signed out every time the server restarts. Set AUTH_SECRET in your .env file."
-    );
+  AUTH_SECRET = crypto.randomBytes(48).toString("hex");
+  console.warn(
+    "⚠️  AUTH_SECRET is missing or too short (min 24 chars). A temporary one was generated, " +
+    "so everyone will be signed out every time the server restarts. Set AUTH_SECRET in your .env file."
+  );
 }
 
 const ADMIN_KEY = process.env.ADMIN_KEY || "";
 if (!ADMIN_KEY) {
-    console.warn("⚠️  ADMIN_KEY is not set, so the /api/admin/* routes are disabled.");
+  console.warn("⚠️  ADMIN_KEY is not set, so the /api/admin/* routes are disabled.");
 }
 
 const TOKEN_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 const scryptAsync = (pw, salt) => new Promise((ok, bad) => crypto.scrypt(String(pw), salt, 64, (e, k) => (e ? bad(e) : ok(k))));
 async function hashPassword(password, saltHex) {
-    const salt = saltHex ? Buffer.from(saltHex, "hex") : crypto.randomBytes(16);
-    const hash = await scryptAsync(password, salt);
-    return { salt: salt.toString("hex"), hash: hash.toString("hex") };
+  const salt = saltHex ? Buffer.from(saltHex, "hex") : crypto.randomBytes(16);
+  const hash = await scryptAsync(password, salt);
+  return { salt: salt.toString("hex"), hash: hash.toString("hex") };
 }
 async function verifyPassword(password, user) {
-    const candidate = await scryptAsync(password, Buffer.from(user.salt, "hex"));
-    const stored = Buffer.from(user.hash, "hex");
-    return candidate.length === stored.length && crypto.timingSafeEqual(candidate, stored);
+  const candidate = await scryptAsync(password, Buffer.from(user.salt, "hex"));
+  const stored = Buffer.from(user.hash, "hex");
+  return candidate.length === stored.length && crypto.timingSafeEqual(candidate, stored);
 }
 function signToken(email) {
-    const payload = Buffer.from(JSON.stringify({
-        sub: email,
-        exp: Date.now() + TOKEN_LIFETIME_MS
-    })).toString("base64url");
-    const sig = crypto.createHmac("sha256", AUTH_SECRET).update(payload).digest("base64url");
-    return payload + "." + sig;
+  const payload = Buffer.from(JSON.stringify({
+    sub: email,
+    exp: Date.now() + TOKEN_LIFETIME_MS
+  })).toString("base64url");
+  const sig = crypto.createHmac("sha256", AUTH_SECRET).update(payload).digest("base64url");
+  return payload + "." + sig;
 }
 
 function verifyToken(token) {
-    if (!token || typeof token !== "string" || token.indexOf(".") === -1) return null;
-    const [payload, sig] = token.split(".");
-    const expected = crypto.createHmac("sha256", AUTH_SECRET).update(payload).digest("base64url");
-    const a = Buffer.from(sig || "");
-    const b = Buffer.from(expected);
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
-    try {
-        const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-        if (!data.sub || !data.exp || data.exp < Date.now()) return null;
-        return data.sub;
-    } catch (e) {
-        return null;
-    }
+  if (!token || typeof token !== "string" || token.indexOf(".") === -1) return null;
+  const [payload, sig] = token.split(".");
+  const expected = crypto.createHmac("sha256", AUTH_SECRET).update(payload).digest("base64url");
+  const a = Buffer.from(sig || "");
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  try {
+    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    if (!data.sub || !data.exp || data.exp < Date.now()) return null;
+    return data.sub;
+  } catch (e) {
+    return null;
+  }
 }
 
 // Returns the signed-in email, or null (does not block the request)
 function getAuthEmail(req) {
-    const header = req.headers.authorization || "";
-    const token = header.startsWith("Bearer ") ? header.slice(7) : "";
-    const email = verifyToken(token);
-    return email && !bannedUsers.has(email) ? email : null;
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+  const email = verifyToken(token);
+  return email && !bannedUsers.has(email) ? email : null;
 }
 
 // Blocks the request unless the user is signed in
 async function requireAuth(req, res, next) {
-    let email = getAuthEmail(req);
-    // the token is valid, but the account must still exist (it may have been deleted)
-    if (email && !(await users.exists(email))) email = null;
-    if (!email) {
-        return res.status(401).json({
-            success: false,
-            status: false,
-            message: "Please sign in to continue."
-        });
-    }
-    req.userEmail = email;
-    next();
+  let email = getAuthEmail(req);
+  // the token is valid, but the account must still exist (it may have been deleted)
+  if (email && !(await users.exists(email))) email = null;
+  if (!email) {
+    return res.status(401).json({
+      success: false,
+      status: false,
+      message: "Please sign in to continue."
+    });
+  }
+  req.userEmail = email;
+  next();
 }
 
 // Signed-in users can only act on THEIR OWN account: any email /
 // creatorId / senderId / hostId they send is replaced by their real one.
 function asSelf(...fields) {
-    return async (req, res, next) => {
-        await requireAuth(req, res, () => {
-            for (const f of fields) {
-                if (f.startsWith("query.")) {
-                    const k = f.slice(6);
-                    const given = req.query[k];
-                    if (given && String(given).toLowerCase() !== req.userEmail) {
-                        return res.status(403).json({ success: false, message: "You can only access your own account." });
-                    }
-                    req.query[k] = req.userEmail;
-                } else if (f.startsWith("body.")) {
-                    req.body = req.body || {};
-                    req.body[f.slice(5)] = req.userEmail;
-                } else if (f.startsWith("param.")) {
-                    const k = f.slice(6);
-                    // "me" means the signed-in account, so a page never has to guess the right email
-                    if (String(req.params[k]).toLowerCase() === "me") req.params[k] = req.userEmail;
-                    if (String(req.params[k]).toLowerCase() !== req.userEmail) {
-                        return res.status(403).json({ success: false, message: "You can only access your own account." });
-                    }
-                }
-            }
-            next();
-        });
-    };
+  return async (req, res, next) => {
+    await requireAuth(req, res, () => {
+      for (const f of fields) {
+        if (f.startsWith("query.")) {
+          const k = f.slice(6);
+          const given = req.query[k];
+          if (given && String(given).toLowerCase() !== req.userEmail) {
+            return res.status(403).json({ success: false, message: "You can only access your own account." });
+          }
+          req.query[k] = req.userEmail;
+        } else if (f.startsWith("body.")) {
+          req.body = req.body || {};
+          req.body[f.slice(5)] = req.userEmail;
+        } else if (f.startsWith("param.")) {
+          const k = f.slice(6);
+          // "me" means the signed-in account, so a page never has to guess the right email
+          if (String(req.params[k]).toLowerCase() === "me") req.params[k] = req.userEmail;
+          if (String(req.params[k]).toLowerCase() !== req.userEmail) {
+            return res.status(403).json({ success: false, message: "You can only access your own account." });
+          }
+        }
+      }
+      next();
+    });
+  };
 }
 
 // Admin routes need the secret ADMIN_KEY in an "x-admin-key" header
 function requireAdmin(req, res, next) {
-    const given = String(req.headers["x-admin-key"] || "");
-    if (
-        !ADMIN_KEY ||
-        given.length !== ADMIN_KEY.length ||
-        !crypto.timingSafeEqual(Buffer.from(given), Buffer.from(ADMIN_KEY))
-    ) {
-        return res.status(403).json({ success: false, message: "Admin access denied." });
-    }
-    next();
+  const given = String(req.headers["x-admin-key"] || "");
+  if (
+    !ADMIN_KEY ||
+    given.length !== ADMIN_KEY.length ||
+    !crypto.timingSafeEqual(Buffer.from(given), Buffer.from(ADMIN_KEY))
+  ) {
+    return res.status(403).json({ success: false, message: "Admin access denied." });
+  }
+  next();
 }
 
 // Hides most of an email/ID in public leaderboards
 function maskId(id) {
-    const s = String(id || "");
-    const [name, domain] = s.split("@");
-    if (!domain) return s.slice(0, 2) + "***";
-    return name.slice(0, 2) + "***@" + domain;
+  const s = String(id || "");
+  const [name, domain] = s.split("@");
+  if (!domain) return s.slice(0, 2) + "***";
+  return name.slice(0, 2) + "***@" + domain;
 }
 
 function maskRanking(req, res, next) {
-    const original = res.json.bind(res);
-    res.json = (body) => {
-        if (!(body && Array.isArray(body.ranking))) return original(body);
-        (async () => {
-            const emails = body.ranking.map(r => String(r.hostId !== undefined ? r.hostId : (r.senderId || "")).toLowerCase());
-            await users.warm(emails);
-            const uniq = [...new Set(emails)], counts = new Map();
-            if (uniq.length) {
-                const rows = await db.all('SELECT host_id AS "hostId", COUNT(*) AS c FROM follows WHERE host_id IN (' + uniq.map(() => "?").join(",") + ") GROUP BY host_id", uniq);
-                rows.forEach(r => counts.set(r.hostId, Number(r.c)));
-            }
-            const liveByHost = new Map();
-            for (const room of liveRooms.values()) liveByHost.set(String(room.hostId).toLowerCase(), room);
-            body.ranking = body.ranking.map((r, i) => {
-                const raw = emails[i], live = liveByHost.get(raw) || null;
-                return {
-                    ...r,
-                    hostId: r.hostId !== undefined ? maskId(r.hostId) : undefined,
-                    senderId: r.senderId !== undefined ? maskId(r.senderId) : undefined,
-                    handle: publicHandle(raw),
-                    displayName: displayNameOf(raw),
-                    avatar: avatarUrl(raw),
-                    isLive: !!live,
-                    roomId: live ? live.roomId : null,
-                    liveTitle: live ? live.title : null,
-                    viewers: live ? (live.viewers || 0) : 0,
-                    followers: counts.get(raw) || 0
-                };
-            });
-            original(body);
-        })().catch(e => { console.error("RANKING ERROR:", e); res.status(500).json({ success: false, message: "Could not load the ranking." }); });
-        return res;
-    };
-    next();
+  const original = res.json.bind(res);
+  res.json = (body) => {
+    if (!(body && Array.isArray(body.ranking))) return original(body);
+    (async () => {
+      const emails = body.ranking.map(r => String(r.hostId !== undefined ? r.hostId : (r.senderId || "")).toLowerCase());
+      await users.warm(emails);
+      const uniq = [...new Set(emails)], counts = new Map();
+      if (uniq.length) {
+        const rows = await db.all('SELECT host_id AS "hostId", COUNT(*) AS c FROM follows WHERE host_id IN (' + uniq.map(() => "?").join(",") + ") GROUP BY host_id", uniq);
+        rows.forEach(r => counts.set(r.hostId, Number(r.c)));
+      }
+      const liveByHost = new Map();
+      for (const room of liveRooms.values()) liveByHost.set(String(room.hostId).toLowerCase(), room);
+      body.ranking = body.ranking.map((r, i) => {
+        const raw = emails[i], live = liveByHost.get(raw) || null;
+        return {
+          ...r,
+          hostId: r.hostId !== undefined ? maskId(r.hostId) : undefined,
+          senderId: r.senderId !== undefined ? maskId(r.senderId) : undefined,
+          handle: publicHandle(raw),
+          displayName: displayNameOf(raw),
+          avatar: avatarUrl(raw),
+          isLive: !!live,
+          roomId: live ? live.roomId : null,
+          liveTitle: live ? live.title : null,
+          viewers: live ? (live.viewers || 0) : 0,
+          followers: counts.get(raw) || 0
+        };
+      });
+      original(body);
+    })().catch(e => { console.error("RANKING ERROR:", e); res.status(500).json({ success: false, message: "Could not load the ranking." }); });
+    return res;
+  };
+  next();
 }
 
 // Simple brute-force protection for sign-in / sign-up
 const authAttempts = new Map();
 function authRateLimit(req, res, next) {
-    const key = (req.ip || "") + "|" + String((req.body && (req.body.login || req.body.email)) || "").toLowerCase();
-    const now = Date.now();
-    const windowMs = 15 * 60 * 1000;
-    const entry = (authAttempts.get(key) || []).filter(t => now - t < windowMs);
-    if (entry.length >= 10) {
-        return res.status(429).json({
-            success: false,
-            message: "Too many attempts. Please wait 15 minutes and try again."
-        });
-    }
-    entry.push(now);
-    authAttempts.set(key, entry);
-    next();
+  const key = (req.ip || "") + "|" + String((req.body && (req.body.login || req.body.email)) || "").toLowerCase();
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000;
+  const entry = (authAttempts.get(key) || []).filter(t => now - t < windowMs);
+  if (entry.length >= 10) {
+    return res.status(429).json({
+      success: false,
+      message: "Too many attempts. Please wait 15 minutes and try again."
+    });
+  }
+  entry.push(now);
+  authAttempts.set(key, entry);
+  next();
 }
 
 function publicUser(email, u) {
-    u = u || users.peek(email) || {};
-    return { email, username: u.username || "", displayName: u.displayName || email.split("@")[0] };
+  u = u || users.peek(email) || {};
+  return { email, username: u.username || "", displayName: u.displayName || email.split("@")[0] };
 }
 app.post("/api/auth/register", authRateLimit, async (req, res) => {
-    try {
-        const email = String((req.body && req.body.email) || "").trim().toLowerCase();
-        const password = String((req.body && req.body.password) || "");
-        const username = String((req.body && req.body.username) || "").trim().toLowerCase();
-        const displayName = String((req.body && req.body.displayName) || "").trim().slice(0, 40);
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-            return res.status(400).json({ success: false, message: "Please enter a valid email address." });
-        }
-        if (password.length < 8) {
-            return res.status(400).json({ success: false, message: "Password must be at least 8 characters." });
-        }
-        if (username && !/^[a-z0-9_]{3,20}$/.test(username)) {
-            return res.status(400).json({ success: false, message: "Username must be 3-20 letters, numbers or underscores." });
-        }
-        if (await users.get(email)) {
-            return res.status(409).json({ success: false, message: "An account with this email already exists." });
-        }
-        if (username && await users.usernameTaken(username)) {
-            return res.status(409).json({ success: false, message: "That username is already taken." });
-        }
-        const { salt, hash } = await hashPassword(password);
-        const created = await users.create(email, {
-            salt, hash, username,
-            displayName: displayName || username || email.split("@")[0],
-            createdAt: new Date().toISOString()
-        }, req.ip);
-        // lost a race with someone registering the same email/username at the same instant
-        if (!created) return res.status(409).json({ success: false, message: "That email or username is already taken." });
-        return res.json({ success: true, token: signToken(email), user: publicUser(email, created) });
-    } catch (error) {
-        console.error("REGISTER ERROR:", error);
-        return res.status(500).json({ success: false, message: "Unable to create account." });
+  try {
+    const email = String((req.body && req.body.email) || "").trim().toLowerCase();
+    const password = String((req.body && req.body.password) || "");
+    const username = String((req.body && req.body.username) || "").trim().toLowerCase();
+    const displayName = String((req.body && req.body.displayName) || "").trim().slice(0, 40);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email address." });
     }
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters." });
+    }
+    if (username && !/^[a-z0-9_]{3,20}$/.test(username)) {
+      return res.status(400).json({ success: false, message: "Username must be 3-20 letters, numbers or underscores." });
+    }
+    if (await users.get(email)) {
+      return res.status(409).json({ success: false, message: "An account with this email already exists." });
+    }
+    if (username && await users.usernameTaken(username)) {
+      return res.status(409).json({ success: false, message: "That username is already taken." });
+    }
+    const { salt, hash } = await hashPassword(password);
+    const created = await users.create(email, {
+      salt, hash, username,
+      displayName: displayName || username || email.split("@")[0],
+      createdAt: new Date().toISOString()
+    }, req.ip);
+    // lost a race with someone registering the same email/username at the same instant
+    if (!created) return res.status(409).json({ success: false, message: "That email or username is already taken." });
+    return res.json({ success: true, token: signToken(email), user: publicUser(email, created) });
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to create account." });
+  }
 });
 app.post("/api/auth/login", authRateLimit, async (req, res) => {
-    try {
-        const login = String((req.body && req.body.login) || "").trim().toLowerCase();
-        const password = String((req.body && req.body.password) || "");
-        if (!login || !password) {
-            return res.status(400).json({ success: false, message: "Please enter your email/username and password." });
-        }
-        const user = await users.byLogin(login);
-        // Same message for "no such user" and "wrong password" on purpose
-        if (!user || !(await verifyPassword(password, user))) {
-            return res.status(401).json({ success: false, message: "Incorrect email/username or password." });
-        }
-        users.touchIp(user.email, req.ip).catch(() => {});
-        if (bannedUsers.has(user.email)) {
-            return res.status(403).json({ success: false, message: "This account has been suspended. Contact support." });
-        }
-        return res.json({ success: true, token: signToken(user.email), user: publicUser(user.email, user) });
-    } catch (error) {
-        console.error("LOGIN ERROR:", error);
-        return res.status(500).json({ success: false, message: "Unable to sign in." });
+  try {
+    const login = String((req.body && req.body.login) || "").trim().toLowerCase();
+    const password = String((req.body && req.body.password) || "");
+    if (!login || !password) {
+      return res.status(400).json({ success: false, message: "Please enter your email/username and password." });
     }
+    const user = await users.byLogin(login);
+    // Same message for "no such user" and "wrong password" on purpose
+    if (!user || !(await verifyPassword(password, user))) {
+      return res.status(401).json({ success: false, message: "Incorrect email/username or password." });
+    }
+    users.touchIp(user.email, req.ip).catch(() => { });
+    if (bannedUsers.has(user.email)) {
+      return res.status(403).json({ success: false, message: "This account has been suspended. Contact support." });
+    }
+    return res.json({ success: true, token: signToken(user.email), user: publicUser(user.email, user) });
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to sign in." });
+  }
 });
 app.get("/api/auth/me", requireAuth, async (req, res) => {
-    await users.warm([req.userEmail]);
-    res.json({ success: true, user: publicUser(req.userEmail) });
+  await users.warm([req.userEmail]);
+  res.json({ success: true, user: publicUser(req.userEmail) });
 });
 app.post("/api/auth/change-password", authRateLimit, requireAuth, async (req, res) => {
-    try {
-        const currentPassword = String((req.body && req.body.currentPassword) || "");
-        const newPassword = String((req.body && req.body.newPassword) || "");
-        const user = await users.get(req.userEmail);
-        if (!user || !(await verifyPassword(currentPassword, user))) {
-            return res.status(401).json({ success: false, message: "Your current password is incorrect." });
-        }
-        if (newPassword.length < 8) {
-            return res.status(400).json({ success: false, message: "New password must be at least 8 characters." });
-        }
-        if (newPassword === currentPassword) {
-            return res.status(400).json({ success: false, message: "New password must be different from your current password." });
-        }
-        const { salt, hash } = await hashPassword(newPassword);
-        await users.setPassword(req.userEmail, salt, hash);
-        return res.json({ success: true, message: "Password changed successfully." });
-    } catch (error) {
-        console.error("CHANGE PASSWORD ERROR:", error);
-        return res.status(500).json({ success: false, message: "Unable to change password." });
+  try {
+    const currentPassword = String((req.body && req.body.currentPassword) || "");
+    const newPassword = String((req.body && req.body.newPassword) || "");
+    const user = await users.get(req.userEmail);
+    if (!user || !(await verifyPassword(currentPassword, user))) {
+      return res.status(401).json({ success: false, message: "Your current password is incorrect." });
     }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: "New password must be at least 8 characters." });
+    }
+    if (newPassword === currentPassword) {
+      return res.status(400).json({ success: false, message: "New password must be different from your current password." });
+    }
+    const { salt, hash } = await hashPassword(newPassword);
+    await users.setPassword(req.userEmail, salt, hash);
+    return res.json({ success: true, message: "Password changed successfully." });
+  } catch (error) {
+    console.error("CHANGE PASSWORD ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to change password." });
+  }
 });
 app.post("/api/auth/delete-account", authRateLimit, requireAuth, async (req, res) => {
-    try {
-        const password = String((req.body && req.body.password) || "");
-        const user = await users.get(req.userEmail);
-        if (!user || !(await verifyPassword(password, user))) {
-            return res.status(401).json({ success: false, message: "Your password is incorrect." });
-        }
-        // Sign-in access is removed immediately. Coin balances, the ledger, gift history and withdrawal records stay in
-        // the database under this email: financial records should not simply vanish, and many countries require keeping them.
-        await users.remove(req.userEmail);
-        return res.json({ success: true, message: "Your account has been deleted. You have been signed out." });
-    } catch (error) {
-        console.error("DELETE ACCOUNT ERROR:", error);
-        return res.status(500).json({ success: false, message: "Unable to delete account." });
+  try {
+    const password = String((req.body && req.body.password) || "");
+    const user = await users.get(req.userEmail);
+    if (!user || !(await verifyPassword(password, user))) {
+      return res.status(401).json({ success: false, message: "Your password is incorrect." });
     }
+    // Sign-in access is removed immediately. Coin balances, the ledger, gift history and withdrawal records stay in
+    // the database under this email: financial records should not simply vanish, and many countries require keeping them.
+    await users.remove(req.userEmail);
+    return res.json({ success: true, message: "Your account has been deleted. You have been signed out." });
+  } catch (error) {
+    console.error("DELETE ACCOUNT ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to delete account." });
+  }
 });
 
 
@@ -555,28 +555,28 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
     const amountInKobo = Math.round(chargeAmount * 100);
 
     const response = await axios.post(
-    "https://api.paystack.co/transaction/initialize",
-    {
+      "https://api.paystack.co/transaction/initialize",
+      {
         email: email,
         amount: amountInKobo,
         currency: currency,
 
         metadata: {
-            website: "Victopay",
-            packagePrice: selectedAmount,
-            coinPackage: coinPackages[selectedAmount] || 0,
-            currency: currency
+          website: "Victopay",
+          packagePrice: selectedAmount,
+          coinPackage: coinPackages[selectedAmount] || 0,
+          currency: currency
         },
 
         callback_url: `${siteUrlOf(req)}/payment-success.html`
-    },
-    {
+      },
+      {
         headers: {
-            Authorization: `Bearer ${paystackSecretKey}`,
-            "Content-Type": "application/json"
+          Authorization: `Bearer ${paystackSecretKey}`,
+          "Content-Type": "application/json"
         }
-    }
-);
+      }
+    );
 
     if (!response.data.status) {
       return res.status(400).json({
@@ -612,131 +612,131 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
 
 // Verify Paystack payment
 app.get("/api/paystack/verify", async (req, res) => {
-    try {
-        const reference = req.query.reference;
+  try {
+    const reference = req.query.reference;
 
-        if (!reference) {
-            return res.status(400).json({
-                success: false,
-                message: "Payment reference is missing."
-            });
-        }
-
-        const paystackSecretKey =
-            process.env.PAYSTACK_SECRET_KEY;
-
-        if (!paystackSecretKey) {
-            return res.status(500).json({
-                success: false,
-                message:
-                    "PAYSTACK_SECRET_KEY is not configured on the server."
-            });
-        }
-
-        // Ask Paystack to verify the transaction
-        const response = await axios.get(
-            `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${paystackSecretKey}`
-                }
-            }
-        );
-
-        const payment = response.data.data;
-
-        // Payment must actually be successful
-        if (
-            !response.data.status ||
-            payment.status !== "success"
-        ) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Payment was not successful."
-            });
-        }
-
-        // A Forex Academy membership payment is handled by the forex module, never as coins.
-        if (forex.isForexPayment(payment)) {
-            const f = await forex.activateFromPayment(payment);
-            if (!f.ok) return res.status(400).json({ success: false, message: f.message });
-            return res.json({ success: true, forex: true, message: "Your Forex Academy membership is active. Open forex.html to start learning.", reference: reference, coins: 0, balance: 0 });
-        }
-
-        // Paystack reports what the customer really paid: the package price PLUS Paystack's fee. Find the package.
-        const payCurrency = String(payment.currency || "NGN").toUpperCase();
-        if (payCurrency !== "NGN" && payCurrency !== "USD") {
-            return res.status(400).json({ success: false, message: "Only naira (NGN) and dollar (USD) payments are accepted." });
-        }
-        const match = payCurrency === "USD" ? packageForUsdPayment(coinPackages, coinUsdTable(), payment) : packageForPayment(coinPackages, payment);
-        if (!match) {
-            await logUnmatchedPayment(reference, payment, "verify page");
-            return res.status(400).json({ success: false, message: "We received your payment, but its amount does not match a coin package. Please contact support and quote this reference: " + reference });
-        }
-        const amountInNaira = match.price, coin = match.coins;
-        // Use the customer's actual Paystack email
-        const userId = String(payment.customer?.email || "").toLowerCase();
-        if (!userId) {
-            return res.status(400).json({ success: false, message: "Customer email was not returned by Paystack." });
-        }
-        // ONE database transaction: payment record + balance + ledger lines. A Paystack reference can only ever be
-        // credited once, no matter how many times this page or the webhook fires.
-        const credited = await ledger.creditPurchase({ email: userId, coins: coin, reference, amountNgn: amountInNaira });
-        if (!credited.credited) {
-            return res.json({
-                success: true, alreadyProcessed: true, message: "This payment has already been processed.",
-                reference: reference, coins: 0, balance: credited.balance
-            });
-        }
-        const newBalance = credited.balance;
-        console.log(
-            `Payment verified: ${reference} | ` +
-            `Email: ${userId} | ` +
-            (payCurrency === "USD" ? `$${match.usd} (package ₦${amountInNaira}) | ` : `₦${amountInNaira} | `) +
-            `${coin} coins | ` +
-            `Balance: ${newBalance}`
-        );
-
-        return res.json({
-            success: true,
-            message:
-                "Payment verified successfully.",
-
-            reference:
-                reference,
-
-            email:
-                userId,
-
-            amount:
-                amountInNaira,
-            currency: payCurrency,
-            chargedAmount: match.paid,
-            feePaid: match.fee,
-
-            coins:
-                coin,
-
-            balance:
-                newBalance
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Paystack verification error:",
-            error.response?.data ||
-            error.message
-        );
-
-        return res.status(500).json({
-            success: false,
-            message:
-                "Unable to verify payment."
-        });
+    if (!reference) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment reference is missing."
+      });
     }
+
+    const paystackSecretKey =
+      process.env.PAYSTACK_SECRET_KEY;
+
+    if (!paystackSecretKey) {
+      return res.status(500).json({
+        success: false,
+        message:
+          "PAYSTACK_SECRET_KEY is not configured on the server."
+      });
+    }
+
+    // Ask Paystack to verify the transaction
+    const response = await axios.get(
+      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${paystackSecretKey}`
+        }
+      }
+    );
+
+    const payment = response.data.data;
+
+    // Payment must actually be successful
+    if (
+      !response.data.status ||
+      payment.status !== "success"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Payment was not successful."
+      });
+    }
+
+    // A Forex Academy membership payment is handled by the forex module, never as coins.
+    if (forex.isForexPayment(payment)) {
+      const f = await forex.activateFromPayment(payment);
+      if (!f.ok) return res.status(400).json({ success: false, message: f.message });
+      return res.json({ success: true, forex: true, message: "Your Forex Academy membership is active. Open forex.html to start learning.", reference: reference, coins: 0, balance: 0 });
+    }
+
+    // Paystack reports what the customer really paid: the package price PLUS Paystack's fee. Find the package.
+    const payCurrency = String(payment.currency || "NGN").toUpperCase();
+    if (payCurrency !== "NGN" && payCurrency !== "USD") {
+      return res.status(400).json({ success: false, message: "Only naira (NGN) and dollar (USD) payments are accepted." });
+    }
+    const match = payCurrency === "USD" ? packageForUsdPayment(coinPackages, coinUsdTable(), payment) : packageForPayment(coinPackages, payment);
+    if (!match) {
+      await logUnmatchedPayment(reference, payment, "verify page");
+      return res.status(400).json({ success: false, message: "We received your payment, but its amount does not match a coin package. Please contact support and quote this reference: " + reference });
+    }
+    const amountInNaira = match.price, coin = match.coins;
+    // Use the customer's actual Paystack email
+    const userId = String(payment.customer?.email || "").toLowerCase();
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "Customer email was not returned by Paystack." });
+    }
+    // ONE database transaction: payment record + balance + ledger lines. A Paystack reference can only ever be
+    // credited once, no matter how many times this page or the webhook fires.
+    const credited = await ledger.creditPurchase({ email: userId, coins: coin, reference, amountNgn: amountInNaira });
+    if (!credited.credited) {
+      return res.json({
+        success: true, alreadyProcessed: true, message: "This payment has already been processed.",
+        reference: reference, coins: 0, balance: credited.balance
+      });
+    }
+    const newBalance = credited.balance;
+    console.log(
+      `Payment verified: ${reference} | ` +
+      `Email: ${userId} | ` +
+      (payCurrency === "USD" ? `$${match.usd} (package ₦${amountInNaira}) | ` : `₦${amountInNaira} | `) +
+      `${coin} coins | ` +
+      `Balance: ${newBalance}`
+    );
+
+    return res.json({
+      success: true,
+      message:
+        "Payment verified successfully.",
+
+      reference:
+        reference,
+
+      email:
+        userId,
+
+      amount:
+        amountInNaira,
+      currency: payCurrency,
+      chargedAmount: match.paid,
+      feePaid: match.fee,
+
+      coins:
+        coin,
+
+      balance:
+        newBalance
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Paystack verification error:",
+      error.response?.data ||
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to verify payment."
+    });
+  }
 });
 
 
@@ -753,7 +753,7 @@ app.post(
     app._router.handle(
       req,
       res,
-      () => {}
+      () => { }
     );
 
   }
@@ -2834,49 +2834,20 @@ app.get(
 // Gift prices
 
 const giftPrices = {
-
-  "Rose":
-    10,
-
-  "Fire":
-    50,
-
-  "Strawberry":
-    100,
-
-  "Power Bike":
-    250,
-
-  "Trophy":
-    750,
-
-  "Car":
-    1000,
-
-  "Silver":
-    2000,
-
-  "Diamond":
-    5000,
-
-  "Gold":
-    10000,
-
-  "Eagle":
-    12000,
-
-  "Lion":
-    15000,
-
-  "Dragon":
-    20000,
-
-  "Elephant":
-    30000,
-
-  "Whale":
-    50000
-
+  "Strawberry": 10,
+  "Fire": 50,
+  "Rose": 100,
+  "Trophy": 250,
+  "Silver": 700,
+  "Power Bike": 1000,
+  "Car": 1200,
+  "Gold": 2000,
+  "Diamond": 5000,
+  "Eagle": 10000,
+  "Lion": 15000,
+  "Dragon": 20000,
+  "Elephant": 30000,
+  "Whale": 50000
 };
 
 
@@ -3046,47 +3017,47 @@ app.post(
 
 
     await users.warm([senderId, hostId]);
-// ONE database transaction: take the coins (only if the balance covers it), pay the host's stars, write the gift
-// record and both ledger lines. Two gifts sent at the same instant can never spend the same coins twice.
-const giftId = "GIFT-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
-const sent = await ledger.sendGift({
-  sender: senderId, host: hostId, gift, price, giftId,
-  senderName: displayNameOf(senderId), hostName: displayNameOf(hostId)
-});
-if (!sent.ok) {
-  return res.status(400).json({ success: false, message: "Insufficient coin. Please buy more coin." });
-}
-const newBalance = sent.balance;
-console.log(`🎁 GIFT: ${gift} | Sender: ${senderId} | Host: ${hostId} | Coins: ${price}`);
-const pkInfo = await feat.onGift({ senderId, hostId, gift, price });
+    // ONE database transaction: take the coins (only if the balance covers it), pay the host's stars, write the gift
+    // record and both ledger lines. Two gifts sent at the same instant can never spend the same coins twice.
+    const giftId = "GIFT-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
+    const sent = await ledger.sendGift({
+      sender: senderId, host: hostId, gift, price, giftId,
+      senderName: displayNameOf(senderId), hostName: displayNameOf(hostId)
+    });
+    if (!sent.ok) {
+      return res.status(400).json({ success: false, message: "Insufficient coin. Please buy more coin." });
+    }
+    const newBalance = sent.balance;
+    console.log(`🎁 GIFT: ${gift} | Sender: ${senderId} | Host: ${hostId} | Coins: ${price}`);
+    const pkInfo = await feat.onGift({ senderId, hostId, gift, price });
 
 
-// Return the new balance
+    // Return the new balance
 
-return res.json({
+    return res.json({
 
-  success: true,
+      success: true,
 
-  gift:
-    gift,
+      gift:
+        gift,
 
-  price:
-    price,
+      price:
+        price,
 
-  senderId:
-    senderId,
+      senderId:
+        senderId,
 
-  hostId:
-    hostId,
+      hostId:
+        hostId,
 
-  coins:
-    newBalance,
+      coins:
+        newBalance,
 
-  balance:
-    newBalance,
-  battle:
-    pkInfo || null
-});
+      balance:
+        newBalance,
+      battle:
+        pkInfo || null
+    });
   }
 );
 
@@ -3213,33 +3184,33 @@ async function start() {
   await db.migrate();            // creates/updates tables (safe to run every time)
   await payouts.migrate();       // payout tables (safe to run every time)
   await store.refreshBans();
-  setInterval(() => store.refreshBans().catch(() => {}), 20000).unref();
-  setInterval(() => store.pruneOld().catch(() => {}), 3600000).unref();
+  setInterval(() => store.refreshBans().catch(() => { }), 20000).unref();
+  setInterval(() => store.pruneOld().catch(() => { }), 3600000).unref();
   // The full ledger audit reads every ledger row, so it runs in the background (it must never delay start-up).
   ledger.verifyCached(0).then((audit) => {
     console.log(audit.ok ? `Ledger check OK: ${audit.accounts} coin accounts, ${audit.totalCoins} coins in total.` : "⚠️ LEDGER MISMATCH (see /api/admin/ledger/verify): " + JSON.stringify(audit.mismatches.slice(0, 5)));
   }).catch((e) => console.error("Ledger check failed:", e.message));
-  setInterval(() => ledger.verifyCached(3600000).catch(() => {}), 3600000).unref();
-  setInterval(() => store.flushLoves().catch(() => {}), 3000).unref();
+  setInterval(() => ledger.verifyCached(3600000).catch(() => { }), 3600000).unref();
+  setInterval(() => store.flushLoves().catch(() => { }), 3000).unref();
   feat.start();                  // background jobs (PK timers, abandoned-live cleanup)
   payouts.start();               // payout background checks (settles unconfirmed transfers, optional monthly auto-batch)
 
-const server = app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log("============================================================");
     console.log("Victopay server is running");
     console.log(`Local URL: http://localhost:${PORT}`);
     console.log("============================================================");
-});
+  });
 
-server.on("error", (error) => {
+  server.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
-        console.error(`Port ${PORT} is already in use.`);
-        console.error("Another server may already be running.");
-        console.error(`Close the existing server and then run: node server.js`);
+      console.error(`Port ${PORT} is already in use.`);
+      console.error("Another server may already be running.");
+      console.error(`Close the existing server and then run: node server.js`);
     } else {
-        console.error("Server error:", error);
+      console.error("Server error:", error);
     }
-});
-  process.on("SIGTERM", () => { console.log("Shutting down..."); server.close(() => store.flushLoves().catch(() => {}).then(() => db.close()).then(() => process.exit(0), () => process.exit(0))); });
+  });
+  process.on("SIGTERM", () => { console.log("Shutting down..."); server.close(() => store.flushLoves().catch(() => { }).then(() => db.close()).then(() => process.exit(0), () => process.exit(0))); });
 }
 start().catch((e) => { console.error("STARTUP FAILED:", e.message); process.exit(1); });
