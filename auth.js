@@ -9,7 +9,7 @@
 (function () {
   var TOKEN_KEY = "vicoPayToken";
   var LOGIN_PAGE = "join-now.html";
-  var PUBLIC_PAGES = ["join-now.html", "signup.html", "forgot-password.html", "reset-password.html", "terms.html", "privacy.html", "motivational-page.html", "welcome-page.html", "forex.html", "vicopay-global-livestream.html", "help-center.html"];
+  var PUBLIC_PAGES = ["join-now.html", "signup.html", "forgot-password.html", "reset-password.html", "terms.html", "privacy.html", "motivational-page.html", "welcome-page.html", "forex.html", "vicopay-global-livestream.html", "help-center.html", "about.html", "contact.html", "community-guidelines.html"];
 
   function page() {
     return (location.pathname.split("/").pop() || "").toLowerCase();
@@ -28,7 +28,7 @@
     },
 
     clear: function () {
-      ["vicoPayToken", "vicoPayEmail", "vicoPayUser", "vicoPayDisplayName", "vicoPayRemember"].forEach(function (k) {
+      ["vicoPayToken", "vicoPayEmail", "vicoPayUser", "vicoPayDisplayName", "vicoPayRemember", "vicoPayMe", "vicoPayProfileImage"].forEach(function (k) {
         localStorage.removeItem(k);
       });
     },
