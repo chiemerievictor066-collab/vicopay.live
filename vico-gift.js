@@ -11,7 +11,7 @@
 
   /* ------------------------------ catalogue ------------------------------ */
   var G = {
-    Like: { d: 2.8 }, Rose: { d: 4.2, t: "ROSE OF LOVE" }, Fire: { d: 3.4 }, Strawberry: { d: 3.6 }, Star: { d: 3.8 },
+    Like: { d: 2.8 }, "Power Bike": { d: 3.8, t: "POWER BIKE" }, Rose: { d: 4.2, t: "ROSE OF LOVE" }, Fire: { d: 3.4 }, Strawberry: { d: 3.6 }, Star: { d: 3.8 },
     Trophy: { d: 4.4, t: "CHAMPION" }, Car: { d: 4.2, t: "SUPERCAR" }, Silver: { d: 3.8, t: "SILVER MEDAL" },
     Diamond: { d: 4.4, t: "DIAMOND EXPLOSION" }, Gold: { d: 4.2, t: "GOLD RAIN" }, Eagle: { d: 4.6, t: "GOLDEN EAGLE" },
     Lion: { d: 5, t: "MEGA LION" }, Dragon: { d: 5.4, t: "MEGA DRAGON" }, Elephant: { d: 5.4, t: "MIGHTY ELEPHANT" }, Whale: { d: 5.8, t: "GIANT WHALE" }
@@ -324,20 +324,43 @@
       ".vgx-ban{position:absolute;left:50%;top:15%;z-index:10;pointer-events:none;text-align:center;transform:translate(-50%,0);font:900 clamp(22px,7vw,46px)/1.05 system-ui,Arial,sans-serif;letter-spacing:.04em;color:#fff;text-shadow:0 0 14px #5aa8ff,0 0 32px #2f6bff,0 3px 0 #0a2a80;animation:vgxb 2.9s ease both;white-space:nowrap}" +
       ".vgx-ban small{display:block;margin-top:6px;font:700 clamp(12px,3.2vw,17px)/1.2 system-ui,Arial,sans-serif;letter-spacing:.02em;text-shadow:0 2px 6px #000}" +
       "@keyframes vgxb{0%{opacity:0;transform:translate(-50%,-20px) scale(.4)}12%{opacity:1;transform:translate(-50%,0) scale(1.18)}22%{transform:translate(-50%,0) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-10px) scale(1.05)}}" +
+      ".vgx-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:9;pointer-events:none;background:#000;opacity:0;animation:vgxi .35s forwards}.vgx-vid.fx{position:fixed;z-index:99999}.vgx-vid.sm{inset:auto;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80%,360px);height:auto;max-height:82%;aspect-ratio:9/16;border-radius:22px;box-shadow:0 0 70px #000c}.vgx-vid.out{opacity:0!important;transition:opacity .35s;animation:none}@keyframes vgxi{to{opacity:1}}" +
       "@media(prefers-reduced-motion:reduce){.vgx-ban{animation-duration:.01s}}";
     document.head.appendChild(s);
   }
+  var VID = { Like: "like", Rose: "rose", Fire: "fire", Strawberry: "strawberry", "Power Bike": "power-bike", Star: "power-bike", Trophy: "trophy", Car: "car", Silver: "silver", Diamond: "diamond", Gold: "gold", Eagle: "eagle", Lion: "lion", Dragon: "dragon", Elephant: "elephant", Whale: "whale" };
+  var SMALL = { Like: 1, Rose: 1, Fire: 1, Strawberry: 1 };
+  function videoUrl(name) { return VID[name] ? "gifts/" + VID[name] + ".mp4" : null; }
   var active = new Map(), waiting = [];
+  function banner(name, o, host) {
+    var cfg = G[name] || G.Like; if (!cfg.t) return null;
+    var b = document.createElement("div"); b.className = "vgx-ban"; b.innerHTML = cfg.t + "!<small>" + (o.from ? esc(o.from) + " sent " + name + (o.combo > 1 ? " x" + o.combo : "") : "") + "</small>"; host.appendChild(b); return b;
+  }
+  /* real video gift: plays gifts/<name>.mp4 (with its own sound). returns false -> caller falls back to the code animation */
+  function startVideo(name, o, host, fixed, finish, fail) {
+    var v = document.createElement("video"), over = false;
+    v.className = "vgx-vid" + (SMALL[name] ? " sm" : "") + (fixed ? " fx" : ""); v.src = videoUrl(name); v.playsInline = true; v.setAttribute("playsinline", ""); v.preload = "auto"; v.volume = .9;
+    var ban = banner(name, o, host);
+    function end(bad) { if (over) return; over = true; clearTimeout(tm); if (ban) ban.remove(); if (bad) { v.remove(); fail(); return; } v.classList.add("out"); setTimeout(function () { v.remove(); finish(); }, 380); }
+    var tm = setTimeout(function () { end(false); }, 9000);
+    v.onended = function () { end(false); }; v.onerror = function () { end(true); };
+    host.appendChild(v);
+    var p = v.play(); if (p && p.catch) p.catch(function () { v.muted = true; var q = v.play(); if (q && q.catch) q.catch(function () { end(true); }); });
+  }
   function play(name, o) {
     o = o || {}; css(); var host = o.container || document.body, fixed = host === document.body;
     if ((active.get(host) || 0) >= 2) { if (waiting.length < 6) waiting.push([name, o]); return; }
     active.set(host, (active.get(host) || 0) + 1);
-    var cv = document.createElement("canvas"); cv.className = "vgx-cv" + (fixed ? " fx" : ""); host.appendChild(cv);
     if (!fixed && getComputedStyle(host).position === "static") host.style.position = "relative";
+    function finish() { active.set(host, active.get(host) - 1); var n = waiting.shift(); if (n) play(n[0], n[1]); }
+    if (videoUrl(name) && !o.silent) return startVideo(name, o, host, fixed, finish, function () { runFx(name, o, host, fixed, finish); });
+    runFx(name, o, host, fixed, finish);
+  }
+  function runFx(name, o, host, fixed, finish) {
+    var cv = document.createElement("canvas"); cv.className = "vgx-cv" + (fixed ? " fx" : ""); host.appendChild(cv);
     var dpr = M.min(2, window.devicePixelRatio || 1), W = fixed ? innerWidth : host.clientWidth, H = fixed ? innerHeight : host.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr; var ctx = cv.getContext("2d"); ctx.scale(dpr, dpr);
-    var S = mk(name, ctx, W, H, o.silent), cfg = G[name] || G.Like, last = performance.now(), ban = null, shaker = fixed ? document.body : host;
-    if (cfg.t) { ban = document.createElement("div"); ban.className = "vgx-ban"; ban.innerHTML = cfg.t + "!<small>" + (o.from ? esc(o.from) + " sent " + name + (o.combo > 1 ? " x" + o.combo : "") : "") + "</small>"; host.appendChild(ban); }
+    var S = mk(name, ctx, W, H, o.silent), cfg = G[name] || G.Like, last = performance.now(), ban = banner(name, o, host), shaker = fixed ? document.body : host;
     (function frame(now) {
       S.dt = M.min(.05, (now - last) / 1000); last = now; S.t += S.dt;
       ctx.clearRect(0, 0, W, H); ctx.globalCompositeOperation = "source-over";
@@ -345,8 +368,17 @@
       if (S.flash > 0) { ctx.fillStyle = rgba(S.fcol, M.min(.8, S.flash)); ctx.fillRect(0, 0, W, H); S.flash -= S.dt * 2.2; }
       if (S.shake > 0 && !reduce) { var a = S.shake * 7; shaker.style.transform = "translate(" + rnd(-a, a).toFixed(1) + "px," + rnd(-a, a).toFixed(1) + "px)"; S.shake -= S.dt * 1.6; } else if (shaker.style.transform) shaker.style.transform = "";
       if (S.t < cfg.d + .4) requestAnimationFrame(frame);
-      else { cv.remove(); if (ban) ban.remove(); shaker.style.transform = ""; active.set(host, active.get(host) - 1); var n = waiting.shift(); if (n) play(n[0], n[1]); }
+      else { cv.remove(); if (ban) ban.remove(); shaker.style.transform = ""; finish(); }
     })(last);
+  }
+  /* gift-shop card preview: real video (muted loop, plays only while visible); falls back to the code animation */
+  var vio = window.IntersectionObserver ? new IntersectionObserver(function (es) { es.forEach(function (e) { var v = e.target; if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () { }); } else v.pause(); }); }, { threshold: .5 }) : null;
+  function preview(box, name) {
+    var url = videoUrl(name); box.innerHTML = "";
+    if (!url) { var cv = document.createElement("canvas"); cv.className = "gift-cv"; box.appendChild(cv); mini(cv, name); return; }
+    var v = document.createElement("video"); v.className = "gift-cv"; v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute("playsinline", ""); v.preload = "metadata"; v.src = url + "#t=0.6";
+    v.onerror = function () { box.innerHTML = ""; var cv = document.createElement("canvas"); cv.className = "gift-cv"; box.appendChild(cv); mini(cv, name); };
+    box.appendChild(v); if (vio) vio.observe(v);
   }
   function esc(t) { var d = document.createElement("div"); d.textContent = t == null ? "" : t; return d.innerHTML; }
 
@@ -367,5 +399,6 @@
       if (S.t > d + .3) { m.S = mk(m.name, m.ctx, m.W, m.H, true); m.age = -.4; }
     });
   }
-  window.VicoGifts = { play: play, mini: mini, names: Object.keys(G), _FX: FX, _mk: mk, _drawParts: drawParts };
+  FX["Power Bike"] = FX.Star;
+  window.VicoGifts = { play: play, mini: mini, preview: preview, videoUrl: videoUrl, names: Object.keys(G), _FX: FX, _mk: mk, _drawParts: drawParts };
 })();
