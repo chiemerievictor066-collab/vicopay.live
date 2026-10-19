@@ -59,13 +59,25 @@ app.use((req, res, next) => {
   next();
 });
 const SITE_DIR = __dirname;
-const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js"]);
+const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js"]);
 const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || BROWSER_SCRIPTS.has(f)));
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
   let name;
   try { name = decodeURIComponent(req.path).replace(/^\/+/, ""); } catch (e) { return next(); }
   if (!name || !SITE_FILES.has(name)) return next();
+  // every HTML page gets the "next page" arrow (vico-next.js) added automatically
+  if (/\.html$/i.test(name)) {
+    return fs.readFile(path.join(SITE_DIR, name), "utf8", (err, html) => {
+      if (err) return next();
+      if (html.indexOf("vico-next.js") === -1) {
+        const tag = (html.indexOf("auth.js") === -1 ? '<script src="auth.js"></script>' : "") + '<script src="vico-next.js"></script>';
+        const i = html.lastIndexOf("</body>");
+        html = i === -1 ? html + tag : html.slice(0, i) + tag + html.slice(i);
+      }
+      res.type("html").send(html);
+    });
+  }
   res.sendFile(path.join(SITE_DIR, name), (err) => { if (err && !res.headersSent) next(); });
 });
 // gift videos (gifts/<name>.mp4): only this one folder and only .mp4 files; sendFile supports Range so phones can stream them
