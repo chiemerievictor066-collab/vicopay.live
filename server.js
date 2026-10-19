@@ -279,6 +279,26 @@ function maskRanking(req, res, next) {
   res.json = (body) => {
     if (!(body && Array.isArray(body.ranking))) return original(body);
     (async () => {
+      if (req.isHostRanking) {
+        // Only REAL registered accounts may appear (no placeholder/unknown "User" rows),
+        // hosts who are live right now are added and shown first, then everyone by Golden Stars.
+        const liveHostIds = [...liveRooms.values()].map(r => String(r.hostId || "").toLowerCase()).filter(Boolean);
+        const candidates = [...new Set([...body.ranking.map(r => String(r.hostId || "").toLowerCase()), ...liveHostIds])].filter(Boolean);
+        const real = new Set();
+        if (candidates.length) {
+          const rows = await db.all("SELECT LOWER(email) AS email FROM users WHERE LOWER(email) IN (" + candidates.map(() => "?").join(",") + ")", candidates);
+          rows.forEach(r => real.add(r.email));
+        }
+        body.ranking = body.ranking.filter(r => real.has(String(r.hostId || "").toLowerCase()));
+        const have = new Set(body.ranking.map(r => String(r.hostId).toLowerCase()));
+        liveHostIds.forEach(h => {
+          if (real.has(h) && !have.has(h)) { have.add(h); body.ranking.push({ hostId: h, goldenStars: 0, gifts: 0, loves: 0, viewers: 0 }); }
+        });
+        const liveSet = new Set(liveHostIds);
+        body.ranking.sort((a, b) =>
+          (liveSet.has(String(b.hostId).toLowerCase()) ? 1 : 0) - (liveSet.has(String(a.hostId).toLowerCase()) ? 1 : 0) ||
+          Number(b.goldenStars || 0) - Number(a.goldenStars || 0));
+      }
       const emails = body.ranking.map(r => String(r.hostId !== undefined ? r.hostId : (r.senderId || "")).toLowerCase());
       await users.warm(emails);
       const uniq = [...new Set(emails)], counts = new Map();
@@ -2082,7 +2102,7 @@ app.get(
 // HOST RANKING
 // =====================================================
 
-app.get("/api/ranking/hosts", maskRanking, async (req, res) => {
+app.get("/api/ranking/hosts", (req, res, next) => { req.isHostRanking = true; next(); }, maskRanking, async (req, res) => {
   const ranking = await store.hostRanking(null, 100);
   res.json({ success: true, ranking });
 });
@@ -2732,7 +2752,7 @@ app.get("/api/ranking/gifters/:period", maskRanking, async (req, res) => {
 // HOST PERIOD RANKING
 // =====================================================
 
-app.get("/api/ranking/hosts/:period", maskRanking, async (req, res) => {
+app.get("/api/ranking/hosts/:period", (req, res, next) => { req.isHostRanking = true; next(); }, maskRanking, async (req, res) => {
   const period = req.params.period;
   if (!["daily", "weekly", "monthly"].includes(period)) {
     return res.status(400).json({ success: false, message: "Period must be daily, weekly or monthly." });
