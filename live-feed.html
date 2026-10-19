@@ -154,6 +154,7 @@ function addMsg(st, m){
   box.appendChild(d); while (box.children.length > 40) box.firstChild.remove(); box.scrollTop = box.scrollHeight;
 }
 function fly(st, ev){
+  if (window.VicoGifts) { VicoGifts.play(ev.gift, { container: st.el, from: ev.from, combo: ev.combo }); return; }
   const f = document.createElement("div"), big = ev.price >= 1000;
   f.className = "fly" + (big ? " big" : "");
   f.innerHTML = "<span class='e'>" + (GIFT_ICON[ev.gift] || "🎁") + "</span><small>" + U.esc(ev.from) + " sent " + U.esc(ev.gift) + (ev.combo > 1 ? " x" + ev.combo : "") + (ev.toHost ? " to " + U.esc(ev.toHost) : "") + "</small>";
@@ -544,5 +545,6 @@ async function boot(){
 window.addEventListener("beforeunload", () => { if (cur) try { cur.lk && cur.lk.disconnect(); } catch (e) {} });
 boot();
 </script>
+<script src="vico-gifts.js"></script>
 </body>
 </html>
