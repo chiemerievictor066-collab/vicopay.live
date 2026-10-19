@@ -48,7 +48,7 @@ app.use(cors(process.env.APP_URL && /^https:/.test(process.env.APP_URL) ? { orig
 app.use(express.json({ limit: "400kb", verify: (req, res, buf) => { req.rawBody = Buffer.from(buf); } }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve your Victopay website files straight from this folder (there is no folder called public any more).
+// Serve your vicopay website files straight from this folder (there is no folder called public any more).
 // SECURITY: only an allow-list is ever sent to browsers: the .html pages, vico.css and the browser scripts below.
 // server.js, db.js, features.js, .env, package.json and every other server file are NEVER exposed.
 app.disable("x-powered-by");
@@ -533,7 +533,7 @@ app.get("/", async (req, res) => {
 app.get("/api/health", async (req, res) => {
   try {
     await db.get("SELECT 1 AS ok");
-    res.json({ success: true, message: "Victopay server is running", database: "ok", time: new Date().toISOString() });
+    res.json({ success: true, message: "Vicopay server is running", database: "ok", time: new Date().toISOString() });
   } catch (e) {
     res.status(503).json({ success: false, message: "Database unavailable", database: "down" });
   }
@@ -594,7 +594,7 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
         currency: currency,
 
         metadata: {
-          website: "Victopay",
+          website: "Vicopay",
           packagePrice: selectedAmount,
           coinPackage: coinPackages[selectedAmount] || 0,
           currency: currency
@@ -2304,7 +2304,7 @@ app.get(
 
 
 // =====================================================
-// VICTOPAY LIVE PLATFORM
+// VICOPAY LIVE PLATFORM
 // =====================================================
 
 // =====================================================
@@ -2540,7 +2540,7 @@ app.post(
         title:
 
           title ||
-          "Victopay Live",
+          "Vicopay Live",
 
         category:
 
@@ -2860,7 +2860,7 @@ app.get(
 
 
 // =====================================================
-// VICTOPAY LIVE - GIFT SHOP
+// VICOPAY LIVE - GIFT SHOP
 // =====================================================
 
 // Gift prices
@@ -3229,7 +3229,7 @@ async function start() {
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log("============================================================");
-    console.log("Victopay server is running");
+    console.log("Vicopay server is running");
     console.log(`Local URL: http://localhost:${PORT}`);
     console.log("============================================================");
   });
