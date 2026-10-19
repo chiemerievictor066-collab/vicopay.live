@@ -68,6 +68,14 @@ app.use((req, res, next) => {
   if (!name || !SITE_FILES.has(name)) return next();
   res.sendFile(path.join(SITE_DIR, name), (err) => { if (err && !res.headersSent) next(); });
 });
+// gift videos (gifts/<name>.mp4): only this one folder and only .mp4 files; sendFile supports Range so phones can stream them
+app.use("/gifts", (req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") return next();
+  const m = /^\/([a-z0-9-]+)\.mp4$/.exec(req.path);
+  if (!m) return next();
+  res.setHeader("Cache-Control", "public, max-age=604800");
+  res.sendFile(path.join(SITE_DIR, "gifts", m[1] + ".mp4"), (err) => { if (err && !res.headersSent) next(); });
+});
 
 // =====================================================
 // PERMANENT STORAGE: PostgreSQL (set DATABASE_URL). See db.js (tables), ledger.js (coins) and store.js (everything else).
@@ -2836,7 +2844,7 @@ const giftPrices = {
   "Strawberry":
     100,
 
-  "Star":
+  "Power Bike":
     250,
 
   "Trophy":
