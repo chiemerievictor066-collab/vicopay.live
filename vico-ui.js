@@ -32,8 +32,8 @@
     bottomNav:function(active){
       var items=[["home.html","🏠","Home","home"],["live-room.html","📺","Live","live"],["Go-Live.html","🎥","Go Live","go"],["followers.html","👥","Following","fol"],["profile.html","👤","Me","me"]];
       var n=document.createElement("nav");n.className="v-bottom";
-      n.innerHTML=items.map(function(i){return '<a href="'+i[0]+'" class="'+(i[3]==="go"?"go ":"")+(i[3]===active?"on":"")+'"><span>'+i[1]+'</span>'+i[2]+'</a>';}).join("");
-      document.body.appendChild(n);},
+      n.innerHTML=items.map(function(i){return '<a href="'+i[0]+'" class="'+(i[3]==="go"?"go ":"")+(i[3]===active?"on":"")+'"><span'+(i[3]==="me"?' data-my-avatar data-size="26"':'')+'>'+i[1]+'</span>'+i[2]+'</a>';}).join("");
+      document.body.appendChild(n);if(V.applyMe)V.applyMe(n);},
     num:function(n){return Number(n||0).toLocaleString();},
     // drop a 🔔 into any element; shows unread count, opens a list, links to live / followers pages
     bell:function(el){
@@ -45,5 +45,68 @@
       b.onclick=function(){var open=p.style.display==="block";p.style.display=open?"none":"block";if(!open)V.api("/api/notifications/read",{method:"POST",body:{}}).then(function(){b.querySelector("b").style.display="none";});};
       load();setInterval(load,30000);}
   };
+
+  // ===== Signed-in person's REAL profile picture, everywhere =====
+  // Any element with  data-my-avatar  (optionally data-size="34" and data-my-name) is filled with the
+  // owner's own photo (or their initial if they have not uploaded one yet). Updated after every change.
+  var ME_KEY="vicoPayMe";
+  V.me=function(){try{return JSON.parse(localStorage.getItem(ME_KEY)||"null");}catch(e){return null;}};
+  V.applyMe=function(root){
+    var me=V.me();if(!me||!(window.VicoAuth&&VicoAuth.isSignedIn()))return;
+    var name=me.displayName||me.handle||"?";
+    Array.prototype.forEach.call((root||document).querySelectorAll("[data-my-avatar]"),function(el){
+      var size=Number(el.getAttribute("data-size"))||34;
+      el.innerHTML=V.avatar(name,false,null,size,me.avatar)+(el.hasAttribute("data-my-name")?'<span class="vme-name" style="margin-left:8px;font-weight:700">'+V.esc(name)+"</span>":"");
+      if(el.style.display==="none")el.style.display="inline-flex";
+      if(el.hasAttribute("data-my-name")){el.style.alignItems="center";}
+      if(el.tagName==="A"&&!el.getAttribute("href"))el.setAttribute("href","profile.html");
+      el.title="My profile";
+    });
+  };
+  V.setMe=function(patch){
+    var me=Object.assign({},V.me()||{},patch||{});
+    try{localStorage.setItem(ME_KEY,JSON.stringify(me));if(me.displayName)localStorage.setItem("vicoPayDisplayName",me.displayName);}catch(e){}
+    V.applyMe();return me;
+  };
+  V.refreshMe=function(){
+    if(!(window.VicoAuth&&VicoAuth.isSignedIn()))return Promise.resolve(null);
+    return V.api("/api/me").then(function(d){
+      if(!d._ok)return null;
+      return V.setMe({handle:d.handle,displayName:d.displayName,avatar:d.avatar,bio:d.bio,email:d.email});
+    });
+  };
+  // shrink a chosen photo to a small square JPEG (the server accepts up to 250 KB) and save it as the owner's picture
+  V.uploadAvatar=function(file){
+    return new Promise(function(resolve,reject){
+      if(!file||!/^image\//.test(file.type))return reject(new Error("Please choose a picture (JPG, PNG or WebP)."));
+      var fr=new FileReader();
+      fr.onerror=function(){reject(new Error("Could not read that picture."));};
+      fr.onload=function(){
+        var img=new Image();
+        img.onerror=function(){reject(new Error("That file is not a valid picture."));};
+        img.onload=function(){
+          var S=320,c=document.createElement("canvas");c.width=c.height=S;var x=c.getContext("2d");
+          var m=Math.min(img.width,img.height),sx=(img.width-m)/2,sy=(img.height-m)/2;
+          x.fillStyle="#fff";x.fillRect(0,0,S,S);x.drawImage(img,sx,sy,m,m,0,0,S,S);
+          var q=0.85,data=c.toDataURL("image/jpeg",q);
+          while(data.length>300000&&q>0.3){q-=0.1;data=c.toDataURL("image/jpeg",q);}
+          V.api("/api/profile/avatar",{method:"POST",body:{image:data}}).then(function(d){
+            if(!d._ok)return reject(new Error(d.message||"Could not save the picture."));
+            V.setMe({avatar:d.avatar});resolve(d.avatar);
+          });
+        };
+        img.src=fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  };
+  function bootMe(){
+    if(!(window.VicoAuth&&VicoAuth.isSignedIn()))return;
+    V.applyMe();            // instantly from cache
+    V.refreshMe();          // then from the server
+    // pick up elements added later (bottom nav, menus)
+    setTimeout(function(){V.applyMe();},600);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bootMe);else bootMe();
   window.VicoUI=V;
 })();
