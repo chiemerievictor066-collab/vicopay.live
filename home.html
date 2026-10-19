@@ -826,6 +826,7 @@
         }
     </style>
     <script src="auth.js"></script>
+    <script src="vico-ui.js"></script>
 </head>
 
 <body>
@@ -852,6 +853,9 @@
 
         <div class="nav-actions">
             <input class="search" type="search" placeholder="Search creators, tags, or users...">
+            <a href="join-now.html" class="nav-btn" id="navLogin">Login</a>
+            <a href="join-now.html" class="nav-btn primary" id="navJoin">Join Now</a>
+            <a href="profile.html" id="navMe" data-my-avatar data-size="40" data-my-name style="display:none;color:#fff;text-decoration:none;align-items:center" title="My profile"></a>
         </div>
     </header>
 
@@ -1051,12 +1055,12 @@
                 </div>
 
                 <div class="footer-links">
-                    <a href="home.html">About Us</a>
-                    <a href="#">Help Center</a>
-                    <a href="#">Terms of Service</a>
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Community Guidelines</a>
-                    <a href="#">Contact</a>
+                    <a href="about.html">About Us</a>
+                    <a href="help-center.html">Help Center</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="community-guidelines.html">Community Guidelines</a>
+                    <a href="contact.html">Contact</a>
                 </div>
             </div>
 
@@ -1067,6 +1071,16 @@
         </footer>
 
 
+        <script>
+            // signed in: replace Login / Join Now with the owner's real profile picture
+            (function () {
+                if (!(window.VicoAuth && VicoAuth.isSignedIn())) return;
+                document.getElementById("navLogin").style.display = "none";
+                document.getElementById("navJoin").style.display = "none";
+                document.getElementById("navMe").style.display = "inline-flex";
+                VicoUI.applyMe();
+            })();
+        </script>
         <script>
             (async function () {
                 const grid = document.getElementById("homeLiveGrid");
