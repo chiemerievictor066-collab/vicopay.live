@@ -152,7 +152,7 @@
   function elephant(c, x, y, sc, t, trunk, step) {
     var s, g = lg(c, 0, y - sc * 30, 0, y + sc * 20, ["#9aa3b5", "#5a6378"]);
     var lift = M.abs(M.sin(step)) * sc * 2;
-    c.fillStyle = "#4f5870"; [-24, -12, 14, 26].forEach(function (lx, i) { var u = (i % 2 ? 1 : 0) * lift; c.fillRect(x + sc * lx - sc * 5, y + sc * 4 - u, sc * 10, sc * 22); });
+    c.fillStyle = "#4f5870";[-24, -12, 14, 26].forEach(function (lx, i) { var u = (i % 2 ? 1 : 0) * lift; c.fillRect(x + sc * lx - sc * 5, y + sc * 4 - u, sc * 10, sc * 22); });
     c.fillStyle = g; ell(c, x, y - sc * 4, sc * 34, sc * 22); c.fill();
     ell(c, x + sc * 32, y - sc * 16, sc * 15, sc * 15); c.fill();
     c.fillStyle = "#7c8599"; ell(c, x + sc * 22, y - sc * 14, sc * 12, sc * 17, .2); c.fill();
@@ -196,7 +196,7 @@
   function bigstar(c, x, y, R, rot) { glow(c, x, y, R * 2, "255,220,90", .45); c.fillStyle = lg(c, x, y - R, x, y + R, ["#fff6b0", "#ffb300"]); starP(c, x, y, R, R * .46, 5, rot); c.fill(); c.strokeStyle = "#fff"; c.lineWidth = R * .04; c.stroke(); }
   function trophy(c, x, y, sc) {
     var g = lg(c, x - sc * 20, y, x + sc * 20, y, ["#ffe27a", "#ffbf1a", "#b87700"]); glow(c, x, y - sc * 10, sc * 50, "255,215,80", .35);
-    c.strokeStyle = "#e0a000"; c.lineWidth = sc * 3.5; [-1, 1].forEach(function (s) { c.beginPath(); c.moveTo(x + s * sc * 18, y - sc * 22); c.bezierCurveTo(x + s * sc * 36, y - sc * 22, x + s * sc * 32, y - sc * 2, x + s * sc * 14, y - sc * 4); c.stroke(); });
+    c.strokeStyle = "#e0a000"; c.lineWidth = sc * 3.5;[-1, 1].forEach(function (s) { c.beginPath(); c.moveTo(x + s * sc * 18, y - sc * 22); c.bezierCurveTo(x + s * sc * 36, y - sc * 22, x + s * sc * 32, y - sc * 2, x + s * sc * 14, y - sc * 4); c.stroke(); });
     c.fillStyle = g; c.beginPath(); c.moveTo(x - sc * 20, y - sc * 28); c.lineTo(x + sc * 20, y - sc * 28); c.bezierCurveTo(x + sc * 20, y + sc * 2, x + sc * 6, y + sc * 4, x + sc * 4, y + sc * 12); c.lineTo(x - sc * 4, y + sc * 12); c.bezierCurveTo(x - sc * 6, y + sc * 4, x - sc * 20, y + sc * 2, x - sc * 20, y - sc * 28); c.fill();
     c.fillRect(x - sc * 5, y + sc * 12, sc * 10, sc * 8); c.fillStyle = "#8a5a00"; c.fillRect(x - sc * 16, y + sc * 20, sc * 32, sc * 8); c.fillStyle = "#fff6c0"; ell(c, x - sc * 9, y - sc * 16, sc * 2.5, sc * 10, .1); c.fill();
   }
@@ -245,7 +245,7 @@
     },
     Trophy: function (S) {
       var W = S.W, H = S.H, u = S.u, t = S.t, y = H * .95 - (H * .42) * outCubic(t / 1.2), c = S.c;
-      c.globalCompositeOperation = "lighter"; [[.1, 1], [.9, -1]].forEach(function (s) { var gr = lg(c, W * s[0], 0, W / 2, H * .6, ["rgba(255,240,180,.55)", "rgba(255,240,180,0)"]); c.fillStyle = gr; c.beginPath(); c.moveTo(W * s[0] - 6, 0); c.lineTo(W * s[0] + 6, 0); c.lineTo(W / 2 + s[1] * -u * 18 + u * 18, H * .62); c.lineTo(W / 2 - u * 18, H * .62); c.fill(); }); c.globalCompositeOperation = "source-over";
+      c.globalCompositeOperation = "lighter";[[.1, 1], [.9, -1]].forEach(function (s) { var gr = lg(c, W * s[0], 0, W / 2, H * .6, ["rgba(255,240,180,.55)", "rgba(255,240,180,0)"]); c.fillStyle = gr; c.beginPath(); c.moveTo(W * s[0] - 6, 0); c.lineTo(W * s[0] + 6, 0); c.lineTo(W / 2 + s[1] * -u * 18 + u * 18, H * .62); c.lineTo(W / 2 - u * 18, H * .62); c.fill(); }); c.globalCompositeOperation = "source-over";
       trophy(c, W / 2, y, u * 1.1);
       once(S, "f", 1.1, function () { S.flash = .5; S.fcol = "255,225,120"; snd(S, SFX.fanfare); });
       if (t > 1.1 && t < 3.6) rate(S, "c", 80, function () { var cols = ["255,200,50", "255,90,120", "90,180,255", "120,255,170", "255,255,255"]; add(S, { k: "cf", x: rnd(0, W), y: -10, vx: rnd(-30, 30), vy: rnd(80, 200), g: 40, col: cols[M.floor(rnd(0, 5))], life: rnd(2, 3.2), sz: rnd(3, 7), rot: rnd(0, 6), vr: rnd(-8, 8) }); });
@@ -324,12 +324,14 @@
       ".vgx-ban{position:absolute;left:50%;top:7%;z-index:10;pointer-events:none;text-align:center;transform:translate(-50%,0);font:900 clamp(18px,5vw,30px)/1.05 system-ui,Arial,sans-serif;letter-spacing:.04em;color:#fff;text-shadow:0 0 14px #5aa8ff,0 0 32px #2f6bff,0 3px 0 #0a2a80;animation:vgxb 2.9s ease both;white-space:nowrap}" +
       ".vgx-ban small{display:block;margin-top:6px;font:700 clamp(12px,3.2vw,17px)/1.2 system-ui,Arial,sans-serif;letter-spacing:.02em;text-shadow:0 2px 6px #000}" +
       "@keyframes vgxb{0%{opacity:0;transform:translate(-50%,-20px) scale(.4)}12%{opacity:1;transform:translate(-50%,0) scale(1.18)}22%{transform:translate(-50%,0) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-10px) scale(1.05)}}" +
-      ".vgx-vid{position:absolute;left:50%;top:50%;width:min(56%,320px);height:auto;max-height:72%;aspect-ratio:9/16;object-fit:cover;z-index:9;pointer-events:none;background:#000;border-radius:20px;box-shadow:0 10px 40px #000a;transform:translate(-50%,-50%);opacity:0}" +
-      ".vgx-vid.sm{width:min(44%,230px)}.vgx-vid.fx{position:fixed;z-index:99999}" +
-      ".vgx-vid.in{animation:vgxin .55s cubic-bezier(.2,.9,.25,1) forwards}" +
-      ".vgx-vid.out{animation:vgxout .5s cubic-bezier(.55,0,.8,.3) forwards}" +
-      "@keyframes vgxin{from{opacity:0;transform:translate(calc(-50% + 75vw),-50%)}to{opacity:1;transform:translate(-50%,-50%)}}" +
-      "@keyframes vgxout{from{opacity:1;transform:translate(-50%,-50%)}to{opacity:0;transform:translate(calc(-50% - 75vw),-50%)}}" +
+      ".vgx-vid{position:absolute;left:50%;top:50%;width:min(46%,250px);height:auto;max-height:58%;aspect-ratio:9/16;object-fit:cover;z-index:9;pointer-events:none;background:transparent;border-radius:0;box-shadow:none;mix-blend-mode:screen;" +
+      "-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 58%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 58%,transparent 100%);" +
+      "filter:saturate(1.12) contrast(1.08) drop-shadow(0 0 18px rgba(255,200,90,.28));transform:translate(-50%,-50%) scale(.4);opacity:0;will-change:transform,opacity}" +
+      ".vgx-vid.sm{width:min(34%,170px)}.vgx-vid.fx{position:fixed;z-index:99999}" +
+      ".vgx-vid.in{animation:vgxin .7s cubic-bezier(.2,.9,.25,1) forwards}" +
+      ".vgx-vid.out{animation:vgxout .5s ease-in forwards}" +
+      "@keyframes vgxin{from{opacity:0;transform:translate(-50%,-50%) scale(.4)}to{opacity:.95;transform:translate(-50%,-50%) scale(1)}}" +
+      "@keyframes vgxout{from{opacity:.95;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-50%) scale(1.12)}}" +
       "@media(prefers-reduced-motion:reduce){.vgx-ban{animation-duration:.01s}}";
     document.head.appendChild(s);
   }
