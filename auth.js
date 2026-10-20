@@ -9,7 +9,7 @@
 (function () {
   var TOKEN_KEY = "vicoPayToken";
   var LOGIN_PAGE = "join-now.html";
-  var PUBLIC_PAGES = ["join-now.html", "signup.html", "forgot-password.html", "reset-password.html", "terms.html", "privacy.html", "motivational-page.html", "welcome-page.html", "forex.html", "vicopay-global-livestream.html", "help-center.html", "about.html", "contact.html", "community-guidelines.html"];
+  var PUBLIC_PAGES = ["join-now.html", "signup.html", "forgot-password.html", "reset-password.html", "terms.html", "privacy.html", "motivational-page.html", "welcome-page.html", "forex.html", "vicopay-global-livestream.html", "help-center.html", "support-chat.html", "about.html", "contact.html", "community-guidelines.html"];
 
   function page() {
     return (location.pathname.split("/").pop() || "").toLowerCase();
