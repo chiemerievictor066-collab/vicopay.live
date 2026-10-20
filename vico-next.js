@@ -1,7 +1,8 @@
 /* =====================================================
    VicoPay Live — "Next page" arrow
-   Adds a round arrow button (right side of the screen) that leads to the next page of the app,
-   in this order:  Home -> Live Room -> Go Live -> Profile -> ... -> back to Home.
+   Adds two round arrow buttons: one on the RIGHT that leads to the next page of the app and one on
+   the LEFT that goes back to the previous page, in this order:
+   Home -> Live Room -> Go Live -> Profile -> ... -> back to Home.
    The server adds this script to every page automatically (see server.js), so new pages only need
    to be added to the ORDER list below.
    ===================================================== */
@@ -40,17 +41,19 @@
   for (var i = 0; i < ORDER.length; i++) if (ORDER[i][0].toLowerCase() === here) { idx = i; break; }
   if (idx < 0 || document.getElementById("vicoNextBtn")) return;
 
-  var next = ORDER[(idx + 1) % ORDER.length];   // last page leads back to Home
-  var signedIn = !!(window.VicoAuth && VicoAuth.isSignedIn && VicoAuth.isSignedIn());
-  // signed-out visitors only follow the public pages
-  if (!signedIn) {
-    var PUBLIC = ["home.html", "help-center.html", "about.html", "community-guidelines.html", "contact.html", "terms.html", "privacy.html", "forex.html"];
+  var signedIn = false;
+  try { signedIn = !!(window.VicoAuth && VicoAuth.isSignedIn && VicoAuth.isSignedIn()) || !!localStorage.getItem("vicoPayToken"); } catch (e) {}
+  // signed-out visitors only follow the public pages (so they are never sent to a login screen)
+  var PUBLIC = ["home.html", "help-center.html", "about.html", "community-guidelines.html", "contact.html", "terms.html", "privacy.html", "forex.html"];
+  function neighbour(step) {          // step = +1 (next) or -1 (previous); the list loops around
     var n = idx;
     for (var k = 0; k < ORDER.length; k++) {
-      n = (n + 1) % ORDER.length;
-      if (PUBLIC.indexOf(ORDER[n][0]) !== -1) { next = ORDER[n]; break; }
+      n = (n + step + ORDER.length) % ORDER.length;
+      if (signedIn || PUBLIC.indexOf(ORDER[n][0]) !== -1) return ORDER[n];
     }
+    return ORDER[(idx + step + ORDER.length) % ORDER.length];
   }
+  var next = neighbour(1), prev = neighbour(-1);
 
   var css = document.createElement("style");
   css.textContent =
@@ -64,19 +67,34 @@
     "#vicoNextBtn .lbl{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .2s}" +
     "#vicoNextBtn:hover .lbl,#vicoNextBtn:focus-visible .lbl{max-width:170px}" +
     "@media(max-width:700px){#vicoNextBtn{top:auto;bottom:calc(86px + env(safe-area-inset-bottom));transform:none;height:44px;min-width:44px}#vicoNextBtn .arr{width:44px;height:44px}}" +
-    "@media print{#vicoNextBtn{display:none}}";
+    "#vicoPrevBtn{position:fixed;left:max(12px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);z-index:9000;" +
+    "display:flex;align-items:center;flex-direction:row;gap:0;height:48px;min-width:48px;padding:0;border:0;border-radius:24px;" +
+    "background:linear-gradient(135deg,#10bfff,#0646b8);color:#fff;text-decoration:none;font:700 13px system-ui,Arial,sans-serif;" +
+    "box-shadow:0 6px 18px rgba(3,28,93,.35);opacity:.92;cursor:pointer;overflow:hidden;transition:all .2s}" +
+    "#vicoPrevBtn:hover,#vicoPrevBtn:focus-visible{opacity:1;padding-right:14px;gap:8px}" +
+    "#vicoPrevBtn .arr{width:48px;height:48px;display:grid;place-items:center;flex:none}" +
+    "#vicoPrevBtn .arr svg{width:22px;height:22px}" +
+    "#vicoPrevBtn .lbl{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .2s}" +
+    "#vicoPrevBtn:hover .lbl,#vicoPrevBtn:focus-visible .lbl{max-width:170px}" +
+    "@media(max-width:700px){#vicoPrevBtn{top:auto;bottom:calc(86px + env(safe-area-inset-bottom));transform:none;height:44px;min-width:44px}#vicoPrevBtn .arr{width:44px;height:44px}}" +
+    "@media print{#vicoNextBtn,#vicoPrevBtn{display:none}}";
   document.head.appendChild(css);
 
-  function build() {
-    if (document.getElementById("vicoNextBtn")) return;
+  function make(id, target, dir) {
+    if (document.getElementById(id)) return;
     var a = document.createElement("a");
-    a.id = "vicoNextBtn";
-    a.href = next[0];
-    a.title = "Next: " + next[1];
-    a.setAttribute("aria-label", "Next page: " + next[1]);
-    a.innerHTML = '<span class="arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span><span class="lbl"></span>';
-    a.querySelector(".lbl").textContent = next[1];
+    a.id = id;
+    a.href = target[0];
+    a.title = (dir > 0 ? "Next: " : "Previous: ") + target[1];
+    a.setAttribute("aria-label", (dir > 0 ? "Next page: " : "Previous page: ") + target[1]);
+    var arrow = '<span class="arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="' + (dir > 0 ? "M9 5l7 7-7 7" : "M15 5l-7 7 7 7") + '"/></svg></span>';
+    a.innerHTML = dir > 0 ? arrow + '<span class="lbl"></span>' : arrow + '<span class="lbl"></span>';
+    a.querySelector(".lbl").textContent = target[1];
     document.body.appendChild(a);
+  }
+  function build() {
+    make("vicoPrevBtn", prev, -1);
+    make("vicoNextBtn", next, 1);
   }
   if (document.body) build(); else document.addEventListener("DOMContentLoaded", build);
 })();

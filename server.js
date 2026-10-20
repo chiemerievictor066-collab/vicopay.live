@@ -48,7 +48,7 @@ app.use(cors(process.env.APP_URL && /^https:/.test(process.env.APP_URL) ? { orig
 app.use(express.json({ limit: "400kb", verify: (req, res, buf) => { req.rawBody = Buffer.from(buf); } }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve your vicopay website files straight from this folder (there is no folder called public any more).
+// Serve your Victopay website files straight from this folder (there is no folder called public any more).
 // SECURITY: only an allow-list is ever sent to browsers: the .html pages, vico.css and the browser scripts below.
 // server.js, db.js, features.js, .env, package.json and every other server file are NEVER exposed.
 app.disable("x-powered-by");
@@ -60,13 +60,15 @@ app.use((req, res, next) => {
 });
 const SITE_DIR = __dirname;
 const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js"]);
-const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || BROWSER_SCRIPTS.has(f)));
+// gift videos are ordinary files next to the HTML pages: gift-rose.mp4, gift-lion.mp4 ... (there is NO gifts folder)
+const GIFT_VIDEO = /^gift-[a-z0-9-]+\.mp4$/;
+const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || BROWSER_SCRIPTS.has(f) || GIFT_VIDEO.test(f)));
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
   let name;
   try { name = decodeURIComponent(req.path).replace(/^\/+/, ""); } catch (e) { return next(); }
   if (!name || !SITE_FILES.has(name)) return next();
-  // every HTML page gets the "next page" arrow (vico-next.js) added automatically
+  // every HTML page gets the left/right "previous / next page" arrows (vico-next.js) added automatically
   if (/\.html$/i.test(name)) {
     return fs.readFile(path.join(SITE_DIR, name), "utf8", (err, html) => {
       if (err) return next();
@@ -78,17 +80,10 @@ app.use((req, res, next) => {
       res.type("html").send(html);
     });
   }
+  // gift videos: cached, and sendFile supports Range requests so phones can stream them
+  if (GIFT_VIDEO.test(name)) res.setHeader("Cache-Control", "public, max-age=604800");
   res.sendFile(path.join(SITE_DIR, name), (err) => { if (err && !res.headersSent) next(); });
 });
-// gift videos (gifts/<name>.mp4): only this one folder and only .mp4 files; sendFile supports Range so phones can stream them
-app.use("/gifts", (req, res, next) => {
-  if (req.method !== "GET" && req.method !== "HEAD") return next();
-  const m = /^\/([a-z0-9-]+)\.mp4$/.exec(req.path);
-  if (!m) return next();
-  res.setHeader("Cache-Control", "public, max-age=604800");
-  res.sendFile(path.join(SITE_DIR, "gifts", m[1] + ".mp4"), (err) => { if (err && !res.headersSent) next(); });
-});
-
 // =====================================================
 // PERMANENT STORAGE: PostgreSQL (set DATABASE_URL). See db.js (tables), ledger.js (coins) and store.js (everything else).
 // Nothing important is kept in this process's memory, so restarts and redeploys can never lose accounts or coins.
@@ -533,7 +528,7 @@ app.get("/", async (req, res) => {
 app.get("/api/health", async (req, res) => {
   try {
     await db.get("SELECT 1 AS ok");
-    res.json({ success: true, message: "Vicopay server is running", database: "ok", time: new Date().toISOString() });
+    res.json({ success: true, message: "Victopay server is running", database: "ok", time: new Date().toISOString() });
   } catch (e) {
     res.status(503).json({ success: false, message: "Database unavailable", database: "down" });
   }
@@ -594,7 +589,7 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
         currency: currency,
 
         metadata: {
-          website: "Vicopay",
+          website: "Victopay",
           packagePrice: selectedAmount,
           coinPackage: coinPackages[selectedAmount] || 0,
           currency: currency
@@ -2304,7 +2299,7 @@ app.get(
 
 
 // =====================================================
-// VICOPAY LIVE PLATFORM
+// VICTOPAY LIVE PLATFORM
 // =====================================================
 
 // =====================================================
@@ -2540,7 +2535,7 @@ app.post(
         title:
 
           title ||
-          "Vicopay Live",
+          "Victopay Live",
 
         category:
 
@@ -2860,7 +2855,7 @@ app.get(
 
 
 // =====================================================
-// VICOPAY LIVE - GIFT SHOP
+// VICTOPAY LIVE - GIFT SHOP
 // =====================================================
 
 // Gift prices
@@ -3229,7 +3224,7 @@ async function start() {
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log("============================================================");
-    console.log("Vicopay server is running");
+    console.log("Victopay server is running");
     console.log(`Local URL: http://localhost:${PORT}`);
     console.log("============================================================");
   });
