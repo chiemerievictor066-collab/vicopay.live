@@ -432,7 +432,6 @@
         /* animated gift previews */
         .gift-icon{height:170px;font-size:0;position:relative;cursor:pointer;margin-bottom:10px}
         .gift-cv{width:100%;height:100%;border-radius:14px;display:block;object-fit:cover;object-position:50% 45%;background:#050818}
-        .gift-play{position:absolute;right:8px;bottom:8px;font:700 11px Arial;color:#fff;background:#0009;border-radius:10px;padding:3px 8px}
     </style>
     <script src="auth.js"></script>
     <script>VicoAuth.requireLogin();</script>
@@ -720,7 +719,6 @@
     </div>
 
 
-    <script src="vico-gifts.js"></script>
     <script>
         // ===== GIFT LIST: cheapest to most expensive (coins), prices as requested =====
         // The Dollar price = Naira price / NGN_PER_USD (same rate as NGN_PER_USD in .env).
@@ -748,21 +746,6 @@
             }
             return "₦" + priceNGN.toLocaleString("en-NG");
         }
-        // show each gift's real video (gifts/<name>.mp4) inside its card; tap = full-screen with sound
-        function attachGiftVideos() {
-            if (!window.VicoGifts) return;
-            document.querySelectorAll("#giftGrid .gift-card").forEach(function (card) {
-                const n = card.querySelector(".gift-name"), ic = card.querySelector(".gift-icon");
-                if (!n || !ic) return;
-                const name = n.textContent.trim();
-                if (VicoGifts.names.indexOf(name) < 0) return;
-                VicoGifts.preview(ic, name);                      // muted looping video in the card
-                const tag = document.createElement("span");
-                tag.className = "gift-play"; tag.textContent = "▶ Tap to play";
-                ic.appendChild(tag);
-                ic.onclick = function () { VicoGifts.play(name, { container: document.body }); };
-            });
-        }
         function renderGifts() {
             const grid = document.getElementById("giftGrid");
             let html =
@@ -780,7 +763,6 @@
                     '<button class="send-button" onclick="sendGift(\'' + g.name + '\',' + g.coins + ')">Send</button></div>';
             });
             grid.innerHTML = html;
-            attachGiftVideos();
             document.getElementById("btnNaira").classList.toggle("active", currency === "NGN");
             document.getElementById("btnDollar").classList.toggle("active", currency === "USD");
         }
@@ -981,6 +963,15 @@
         });
     </script>
 
+<script src="vico-gifts.js"></script>
+<script>
+document.querySelectorAll(".gift-card").forEach(function (card) {
+  var n = card.querySelector(".gift-name"), ic = card.querySelector(".gift-icon");
+  if (!n || !ic || !window.VicoGifts) return;
+  var name = n.textContent.trim(); if (VicoGifts.names.indexOf(name) < 0) return;
+  VicoGifts.preview(ic, name);
+});
+</script>
 </body>
 
 </html>
