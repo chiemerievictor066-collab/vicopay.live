@@ -720,6 +720,7 @@
     </div>
 
 
+    <script src="vico-gifts.js"></script>
     <script>
         // ===== GIFT LIST: cheapest to most expensive (coins), prices as requested =====
         // The Dollar price = Naira price / NGN_PER_USD (same rate as NGN_PER_USD in .env).
@@ -747,6 +748,21 @@
             }
             return "₦" + priceNGN.toLocaleString("en-NG");
         }
+        // show each gift's real video (gifts/<name>.mp4) inside its card; tap = full-screen with sound
+        function attachGiftVideos() {
+            if (!window.VicoGifts) return;
+            document.querySelectorAll("#giftGrid .gift-card").forEach(function (card) {
+                const n = card.querySelector(".gift-name"), ic = card.querySelector(".gift-icon");
+                if (!n || !ic) return;
+                const name = n.textContent.trim();
+                if (VicoGifts.names.indexOf(name) < 0) return;
+                VicoGifts.preview(ic, name);                      // muted looping video in the card
+                const tag = document.createElement("span");
+                tag.className = "gift-play"; tag.textContent = "▶ Tap to play";
+                ic.appendChild(tag);
+                ic.onclick = function () { VicoGifts.play(name, { container: document.body }); };
+            });
+        }
         function renderGifts() {
             const grid = document.getElementById("giftGrid");
             let html =
@@ -764,6 +780,7 @@
                     '<button class="send-button" onclick="sendGift(\'' + g.name + '\',' + g.coins + ')">Send</button></div>';
             });
             grid.innerHTML = html;
+            attachGiftVideos();
             document.getElementById("btnNaira").classList.toggle("active", currency === "NGN");
             document.getElementById("btnDollar").classList.toggle("active", currency === "USD");
         }
@@ -964,17 +981,6 @@
         });
     </script>
 
-<script src="vico-gifts.js"></script>
-<script>
-document.querySelectorAll(".gift-card").forEach(function (card) {
-  var n = card.querySelector(".gift-name"), ic = card.querySelector(".gift-icon");
-  if (!n || !ic || !window.VicoGifts) return;
-  var name = n.textContent.trim(); if (VicoGifts.names.indexOf(name) < 0) return;
-  VicoGifts.preview(ic, name);
-  var tag = document.createElement("span"); tag.className = "gift-play"; tag.textContent = "▶ Tap to play"; ic.appendChild(tag);
-  ic.addEventListener("click", function () { VicoGifts.play(name, { container: document.body }); });
-});
-</script>
 </body>
 
 </html>
