@@ -1,94 +1,298 @@
-/* =====================================================
-   VicoPay Live — shared sign-in helper
-   Include on every page that talks to the server:
-     <script src="auth.js"></script>
-   It (1) stores the session, (2) automatically attaches the
-   signed-in user's token to every /api/ request, and (3) sends
-   people to the sign-in page when their session is missing/expired.
-   ===================================================== */
-(function () {
-  var TOKEN_KEY = "vicoPayToken";
-  var LOGIN_PAGE = "join-now.html";
-  var PUBLIC_PAGES = ["join-now.html", "signup.html", "forgot-password.html", "reset-password.html", "terms.html", "privacy.html", "motivational-page.html", "welcome-page.html", "forex.html", "vicopay-global-livestream.html", "help-center.html", "support-chat.html", "about.html", "contact.html", "community-guidelines.html"];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VicoPay Live — Chat with Support</title>
+<style>
+  :root{--bg:#070b18;--card:#0d1428;--card2:#111b35;--line:#ffffff14;--txt:#fff;--mut:#94a3b8;--acc:#38bdf8;--grad:linear-gradient(135deg,#38bdf8,#2563eb 55%,#7c3aed)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+  button,input,select,textarea{font:inherit}button{cursor:pointer}
+  a{color:var(--acc)}
+  .top{height:66px;display:flex;align-items:center;gap:14px;padding:0 22px;background:#0b1228;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .logo{font-size:22px;font-weight:900;color:#fff;text-decoration:none}.logo span{color:var(--acc)}
+  .top .sp{flex:1}
+  .top a.nav{color:#cbd5e1;text-decoration:none;font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px}
+  .top a.nav:hover{background:#ffffff12}
+  .hero{text-align:center;padding:44px 18px 26px;background:radial-gradient(900px 280px at 50% -50%,#2b4fb866,transparent 70%)}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7dd3fc;background:#0f2447;border:1px solid #38bdf833;border-radius:20px;padding:6px 13px}
+  .hero h1{margin:14px 0 8px;font-size:36px;line-height:1.15}
+  .hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{margin:0 auto;color:var(--mut);max-width:560px}
+  .mailchip{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;background:var(--card);border:1px solid #ffffff1c;border-radius:14px;padding:9px 12px 9px 16px}
+  .mailchip b{font-size:15px;word-break:break-all}
+  .mini{border:0;background:#1a2748;color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700}
+  .mini:hover{background:#24356a}
+  .wrap{max-width:1120px;margin:0 auto;padding:6px 16px 60px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+  .ch{display:flex;align-items:center;gap:12px;padding:14px 18px;background:#0b1430;border-bottom:1px solid var(--line)}
+  .av{width:42px;height:42px;border-radius:50%;background:var(--grad);display:grid;place-items:center;font-weight:900;font-size:18px;flex:none}
+  .ch .t{flex:1;min-width:0}.ch .t b{display:block}.ch .t small{color:var(--mut);font-size:12px}
+  .ch select{max-width:150px;background:#111b35;color:#fff;border:1px solid #ffffff1c;border-radius:9px;padding:7px 8px;font-size:12px}
+  .pill{font-size:11px;font-weight:800;border-radius:12px;padding:3px 9px;white-space:nowrap}
+  .pill.open{background:#3b2a05;color:#fbbf24}.pill.answered{background:#0f2a1d;color:#6ee7a1}.pill.resolved{background:#12274a;color:#7cc4ff}.pill.closed{background:#1f2937;color:#9ca3af}
+  .thread{height:430px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,#0a1126,#0c142b)}
+  .b{max-width:82%;padding:10px 14px;border-radius:16px;font-size:14px;white-space:pre-wrap;word-break:break-word;animation:pop .18s ease}
+  .b.user{align-self:flex-end;background:#1d4ed8;border-bottom-right-radius:5px}
+  .b.support{align-self:flex-start;background:#17254a;border:1px solid #38bdf833;border-bottom-left-radius:5px}
+  .b small{display:block;opacity:.65;font-size:11px;margin-top:4px}
+  .day{align-self:center;font-size:11px;color:var(--mut);background:#ffffff0d;border-radius:12px;padding:3px 10px}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .topics{display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 12px;background:#0c142b}
+  .chip{border:1px solid #ffffff1c;background:#111b35;color:#cbd5e1;border-radius:20px;padding:7px 13px;font-size:13px;font-weight:700}
+  .chip:hover,.chip.on{border-color:var(--acc);color:#fff;background:#17254a}
+  .composer{display:flex;gap:10px;align-items:flex-end;padding:12px 14px;border-top:1px solid var(--line);background:#0b1430}
+  .composer textarea{flex:1;resize:none;max-height:130px;min-height:46px;background:#111b35;border:1px solid #ffffff1c;border-radius:14px;color:#fff;padding:12px 14px;font-size:14px}
+  .composer textarea:focus,.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--acc)}
+  .send{width:46px;height:46px;border:0;border-radius:50%;background:var(--grad);color:#fff;font-size:19px;flex:none}
+  .send:disabled{opacity:.5;cursor:wait}
+  .foot{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;padding:0 16px 14px;background:#0b1430;font-size:12px;color:var(--mut)}
+  .foot button{background:none;border:0;color:var(--acc);font-size:12px;font-weight:700;padding:0}
+  .hint{min-height:18px;padding:0 16px 6px;background:#0b1430;font-size:12px;color:#fca5a5}
+  .gate{padding:26px 18px;text-align:center;background:#0b1430;border-top:1px solid var(--line)}
+  .btn{display:inline-block;border:1px solid #ffffff18;background:var(--card2);color:#fff;border-radius:12px;padding:11px 18px;font-weight:800;text-decoration:none;font-size:14px}
+  .btn:hover{border-color:var(--acc)}
+  .btn.primary{border:0;background:var(--grad)}
+  .side{display:flex;flex-direction:column;gap:18px}
+  .pad{padding:20px}
+  .pad h2{margin:0 0 4px;font-size:20px}.pad .sub{margin:0 0 16px;color:var(--mut);font-size:13px}
+  .f{display:block;font-size:12px;color:var(--mut);margin-bottom:12px}
+  .f input,.f select,.f textarea{display:block;width:100%;margin-top:5px;background:var(--card2);border:1px solid #ffffff1c;border-radius:11px;color:#fff;padding:11px 12px;font-size:14px}
+  .f textarea{min-height:110px;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap}.row .btn{flex:1;text-align:center;cursor:pointer}
+  .msg{display:none;margin-top:12px;border-radius:10px;padding:10px 12px;font-size:13px;background:#0f2a1d;border:1px solid #1f6b43;color:#b6f0cf}
+  .info{display:grid;gap:12px}
+  .info div{display:flex;gap:12px;align-items:flex-start;font-size:14px}.info i{font-style:normal;font-size:22px;line-height:1.2}
+  .info small{display:block;color:var(--mut);font-size:12px}
+  .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  footer{border-top:1px solid var(--line);padding:22px;text-align:center;color:#64748b;font-size:13px}
+  footer a{margin:0 8px;text-decoration:none}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}.hero h1{font-size:28px}.thread{height:380px}}
+  @media(max-width:420px){.top{padding:0 12px}.b{max-width:90%}.ch select{display:none}}
+</style>
+<script src="auth.js"></script>
+</head>
+<body>
 
-  function page() {
-    return (location.pathname.split("/").pop() || "").toLowerCase();
+<header class="top">
+  <a class="logo" href="home.html">VicoPay <span>Live</span></a>
+  <div class="sp"></div>
+  <a class="nav" href="help-center.html">Help Center</a>
+  <a class="nav" href="home.html">Home</a>
+</header>
+
+<section class="hero">
+  <span class="badge">🎧 VicoPay Support</span>
+  <h1>We are here to <em>help you</em></h1>
+  <p>Chat with the VicoPay team or send us an email. Tell us your question and we will reply as soon as we can.</p>
+  <div class="mailchip">
+    <span>✉️</span><b id="mailText"></b>
+    <button class="mini" id="copyBtn" type="button">Copy</button>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- ================= CHAT ================= -->
+  <section class="card" aria-label="Chat with support">
+    <div class="ch">
+      <div class="av">V</div>
+      <div class="t"><b>VicoPay Support Team</b><small id="status">We reply here and send you a notification</small></div>
+      <span class="pill open" id="pill" style="display:none"></span>
+      <select id="past" aria-label="Previous chats" style="display:none"></select>
+    </div>
+    <div class="thread" id="thread" aria-live="polite"></div>
+    <div class="topics" id="topics"></div>
+    <div id="composerBox"></div>
+  </section>
+
+  <!-- ================= EMAIL + INFO ================= -->
+  <div class="side">
+    <section class="card pad">
+      <h2>✉️ Send us an email</h2>
+      <p class="sub">Write your message here. It opens in your email app (or Gmail) ready to send to our team.</p>
+      <label class="f">Your name<input id="e-name" type="text" maxlength="60" placeholder="Your name"></label>
+      <label class="f">What is it about?<select id="e-topic"></select></label>
+      <label class="f">Your message<textarea id="e-body" maxlength="1500" placeholder="Tell us what happened. Add your payment reference or live ID if you have one. Never send your password."></textarea></label>
+      <div class="row">
+        <a class="btn primary" id="e-mailto" href="#">Open in email app</a>
+        <a class="btn" id="e-gmail" href="#" target="_blank" rel="noopener">Open in Gmail</a>
+      </div>
+      <div class="msg" id="e-msg"></div>
+    </section>
+
+    <section class="card pad">
+      <h2>Good to know</h2>
+      <p class="sub">So we can help you faster.</p>
+      <div class="info">
+        <div><i>⏱️</i><span>Reply time<small id="replyTime">We usually reply within 24 hours.</small></span></div>
+        <div><i>🧾</i><span>Payment problem?<small>Include your Paystack reference. Do not pay twice.</small></span></div>
+        <div><i>🔒</i><span>Stay safe<small>VicoPay staff never ask for your password.</small></span></div>
+      </div>
+      <div class="links">
+        <a class="btn" href="help-center.html">📚 Help Center</a>
+        <a class="btn" href="help-center.html#pay">💳 Check a payment</a>
+      </div>
+    </section>
+  </div>
+</div>
+
+<footer>
+  <a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="help-center.html">Help Center</a><a href="contact.html">Contact</a><a href="home.html">Home</a>
+  <div style="margin-top:8px">&copy; 2026 VicoPay Live. All rights reserved.</div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var SUPPORT_EMAIL = "support066vicopay.live@gmail.com";
+  var $ = function (s) { return document.querySelector(s); };
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+  async function api(path, opts) {
+    opts = opts || {}; var o = { method: opts.method || "GET", headers: { "Content-Type": "application/json" } };
+    if (opts.body !== undefined) o.body = JSON.stringify(opts.body);
+    try { var r = await fetch(path, o); var d = await r.json(); d._ok = r.ok && d.success !== false; d._status = r.status; return d; }
+    catch (e) { return { success: false, _ok: false, _status: 0, message: "Could not reach the server. Check your internet connection." }; }
+  }
+  function signedIn() { return !!(window.VicoAuth && VicoAuth.isSignedIn()); }
+  function tm(ms) { return new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+  function dayOf(ms) { return new Date(ms).toLocaleDateString([], { weekday: "long", day: "numeric", month: "short" }); }
+
+  var TOPICS = [["payments", "💳 Payment"], ["coins", "🪙 Coins"], ["live", "🎥 Going live"], ["withdrawals", "💰 Withdrawal"], ["forex", "📈 Forex Academy"], ["account", "👤 Account"], ["other", "💬 Something else"]];
+  var EMAIL_TOPICS = [["Payment problem", ""], ["Coins or wallet", ""], ["Going live", ""], ["Withdrawal", ""], ["Forex Academy", ""], ["My account", ""], ["Report a safety problem", ""], ["Something else", ""]];
+
+  var cfg = { replyTime: "" }, tickets = [], cur = 0, topic = "other", msgs = [], busy = false;
+
+  /* ---------- email address + copy ---------- */
+  $("#mailText").textContent = SUPPORT_EMAIL;
+  $("#copyBtn").onclick = function () {
+    var b = this, ok = function () { b.textContent = "Copied ✓"; setTimeout(function () { b.textContent = "Copy"; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(SUPPORT_EMAIL).then(ok, function () { prompt("Copy this email:", SUPPORT_EMAIL); });
+    else prompt("Copy this email:", SUPPORT_EMAIL);
+  };
+
+  /* ---------- email form ---------- */
+  $("#e-topic").innerHTML = EMAIL_TOPICS.map(function (t) { return "<option>" + t[0] + "</option>"; }).join("");
+  function mailParts() {
+    var name = $("#e-name").value.trim(), body = $("#e-body").value.trim(), t = $("#e-topic").value;
+    return { subject: "VicoPay Live support: " + t, body: (body ? body + "\n\n" : "") + "— " + (name || "VicoPay user") };
+  }
+  function refreshMail() {
+    var p = mailParts(), q = "subject=" + encodeURIComponent(p.subject) + "&body=" + encodeURIComponent(p.body);
+    $("#e-mailto").href = "mailto:" + SUPPORT_EMAIL + "?" + q;
+    $("#e-gmail").href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(SUPPORT_EMAIL) + "&su=" + encodeURIComponent(p.subject) + "&body=" + encodeURIComponent(p.body);
+  }
+  ["#e-name", "#e-topic", "#e-body"].forEach(function (s) { $(s).addEventListener("input", refreshMail); $(s).addEventListener("change", refreshMail); });
+  [$("#e-mailto"), $("#e-gmail")].forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      if ($("#e-body").value.trim().length < 5) { e.preventDefault(); var m = $("#e-msg"); m.textContent = "Please write your message first."; m.style.display = "block"; m.style.background = "#2a1218"; m.style.borderColor = "#7a2a3a"; m.style.color = "#ffb4c0"; return; }
+      var m2 = $("#e-msg"); m2.textContent = "Your email is ready. Press Send in your email app to deliver it to our team."; m2.style.cssText = "display:block"; 
+    });
+  });
+  refreshMail();
+
+  /* ---------- chat drawing ---------- */
+  function welcome() {
+    var b = el("div", "b support"); b.textContent = "Hi 👋 Welcome to VicoPay Support.\nChoose a topic below, then type your question. Our team will answer you right here.";
+    return b;
+  }
+  function drawThread() {
+    var th = $("#thread"); th.innerHTML = ""; th.appendChild(welcome());
+    var last = "";
+    msgs.forEach(function (m) {
+      var d = dayOf(m.at); if (d !== last) { th.appendChild(el("div", "day", d)); last = d; }
+      var b = el("div", "b " + m.from); b.appendChild(document.createTextNode(m.body));
+      b.appendChild(el("small", "", (m.from === "support" ? "Support team" : "You") + " · " + tm(m.at))); th.appendChild(b);
+    });
+    th.scrollTop = th.scrollHeight;
+  }
+  function drawTopics() {
+    var box = $("#topics"); box.innerHTML = "";
+    if (cur) { box.style.display = "none"; return; }
+    box.style.display = "flex";
+    TOPICS.forEach(function (t) { var b = el("button", "chip" + (topic === t[0] ? " on" : ""), t[1]); b.type = "button"; b.onclick = function () { topic = t[0]; drawTopics(); }; box.appendChild(b); });
+  }
+  function drawStatus(t) {
+    var pill = $("#pill"), st = $("#status");
+    if (!t) { pill.style.display = "none"; st.textContent = cfg.replyTime || "We reply here and send you a notification"; return; }
+    var txt = { open: "Waiting for reply", answered: "Support replied", resolved: "Resolved", closed: "Closed" }[t.status] || t.status;
+    pill.className = "pill " + t.status; pill.textContent = txt; pill.style.display = "inline-block";
+    st.textContent = t.status === "answered" ? "Support has replied — you can answer below" : (cfg.replyTime || "We will reply here and send you a notification");
+  }
+  function drawPast() {
+    var s = $("#past"); if (tickets.length < 1) { s.style.display = "none"; return; }
+    s.style.display = "block"; s.innerHTML = "";
+    var n = el("option", "", cur ? "Previous chats" : "New chat"); n.value = ""; s.appendChild(n);
+    tickets.forEach(function (t) { var o = el("option", "", "#" + t.id + " · " + t.subject.slice(0, 22)); o.value = t.id; if (t.id === cur) o.selected = true; s.appendChild(o); });
+    s.onchange = function () { var v = Number(s.value); if (!v) newChat(); else openTicket(v); };
+  }
+  function drawComposer() {
+    var box = $("#composerBox"); box.innerHTML = "";
+    if (!signedIn()) {
+      var g = el("div", "gate"); g.appendChild(el("p", "", "Please sign in so our team knows who to reply to."));
+      g.firstChild.style.cssText = "margin:0 0 12px;color:#cbd5e1;font-size:14px";
+      var a = el("a", "btn primary", "Sign in to start chatting"); a.href = "join-now.html?next=support-chat.html"; g.appendChild(a);
+      var p = el("p", "", "No account? You can still email us on the right."); p.style.cssText = "margin:12px 0 0;color:#94a3b8;font-size:12px"; g.appendChild(p);
+      box.appendChild(g); return;
+    }
+    var hint = el("div", "hint"); hint.id = "hint"; box.appendChild(hint);
+    var c = el("div", "composer");
+    var ta = el("textarea"); ta.id = "msgIn"; ta.rows = 1; ta.maxLength = 2000; ta.placeholder = cur ? "Write a message…" : "Type your question…"; ta.setAttribute("aria-label", "Your message");
+    var s = el("button", "send", "➤"); s.type = "button"; s.id = "sendBtn"; s.setAttribute("aria-label", "Send");
+    ta.addEventListener("input", function () { ta.style.height = "auto"; ta.style.height = Math.min(130, ta.scrollHeight) + "px"; });
+    ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+    s.onclick = send; c.appendChild(ta); c.appendChild(s); box.appendChild(c);
+    var f = el("div", "foot"); f.appendChild(el("span", "", "Enter to send · Shift+Enter for a new line"));
+    if (cur) { var nb = el("button", "", "+ Start a new chat"); nb.type = "button"; nb.onclick = newChat; f.appendChild(nb); }
+    box.appendChild(f);
+  }
+  function hint(t) { var h = $("#hint"); if (h) h.textContent = t || ""; }
+
+  /* ---------- chat actions ---------- */
+  async function send() {
+    if (busy) return; var ta = $("#msgIn"), text = ta.value.trim(); if (!text) return;
+    busy = true; $("#sendBtn").disabled = true; hint("");
+    var d;
+    if (!cur) {
+      if (text.length < 10) { hint("Please write a little more (at least 10 characters) so we can help."); busy = false; $("#sendBtn").disabled = false; return; }
+      d = await api("/api/support/tickets", { method: "POST", body: { category: topic, subject: text.replace(/\s+/g, " ").slice(0, 70), message: text, page: "support-chat" } });
+      if (d._ok && d.ticketId) { cur = d.ticketId; }
+    } else {
+      d = await api("/api/support/tickets/" + cur + "/reply", { method: "POST", body: { message: text } });
+    }
+    busy = false; $("#sendBtn").disabled = false;
+    if (d._status === 401) { location.href = "join-now.html?next=support-chat.html"; return; }
+    if (!d._ok) { hint(d.message || "Could not send. Please try again."); return; }
+    ta.value = ""; ta.style.height = "auto";
+    await loadList(); await openTicket(cur);
+  }
+  function newChat() { cur = 0; msgs = []; drawStatus(null); drawThread(); drawTopics(); drawPast(); drawComposer(); }
+  async function openTicket(id, silent) {
+    var d = await api("/api/support/tickets/" + id);
+    if (!d._ok) { if (!silent) newChat(); return; }
+    var changed = !silent || cur !== id || d.messages.length !== msgs.length;
+    cur = id; msgs = d.messages;
+    if (changed) { drawThread(); drawTopics(); drawPast(); if (!silent || !$("#msgIn")) drawComposer(); }
+    drawStatus(d.ticket);
+  }
+  async function loadList() {
+    var d = await api("/api/support/tickets"); if (d._ok) tickets = d.tickets || [];
   }
 
-  var Auth = {
-    getToken: function () { return localStorage.getItem(TOKEN_KEY) || ""; },
-    isSignedIn: function () { return !!Auth.getToken(); },
-
-    setSession: function (token, user, remember) {
-      localStorage.setItem(TOKEN_KEY, token);
-      localStorage.setItem("vicoPayEmail", user.email);
-      localStorage.setItem("vicoPayUser", user.email);
-      localStorage.setItem("vicoPayDisplayName", user.displayName || user.email);
-      localStorage.setItem("vicoPayRemember", remember ? "true" : "false");
-    },
-
-    clear: function () {
-      ["vicoPayToken", "vicoPayEmail", "vicoPayUser", "vicoPayDisplayName", "vicoPayRemember", "vicoPayMe", "vicoPayProfileImage"].forEach(function (k) {
-        localStorage.removeItem(k);
-      });
-    },
-
-    signOut: function () {
-      Auth.clear();
-      location.href = LOGIN_PAGE;
-    },
-
-    // where to go after signing in (?next=page.html), otherwise the fallback
-    nextUrl: function (fallback) {
-      var next = new URLSearchParams(location.search).get("next") || "";
-      // only allow local pages, never another website
-      return /^[a-zA-Z0-9_\-]+\.html(\?[^\s]*)?$/.test(next) ? next : fallback;
-    },
-
-    // send visitors who are not signed in to the sign-in page
-    requireLogin: function () {
-      if (!Auth.isSignedIn() && PUBLIC_PAGES.indexOf(page()) === -1) {
-        location.href = LOGIN_PAGE + "?next=" + encodeURIComponent(page() + location.search);
-      }
-    }
-  };
-  window.VicoAuth = Auth;
-
-  // If a page asks for data and the server answers with a web page (Render is waking up, or the page was opened
-  // from Live Server / a file instead of your VicoPay address), say so clearly instead of "Unexpected token '<'".
-  (function () {
-    var realJson = Response.prototype.json;
-    Response.prototype.json = function () {
-      var res = this;
-      return res.clone().text().then(function (t) {
-        try { return JSON.parse(t); } catch (e) {
-          throw new Error(location.protocol === "file:"
-            ? "Open this page through your VicoPay server (for example http://localhost:3000), not by double-clicking the file."
-            : "The server sent back a web page instead of data. It may be starting up (wait 30 seconds and refresh), or this page was not opened from your VicoPay server address.");
-        }
-      });
-    };
-  })();
-
-  var realFetch = window.fetch.bind(window);
-  window.fetch = function (input, init) {
-    var url = typeof input === "string" ? input : (input && input.url) || "";
-    var isApi = url.indexOf("/api/") !== -1 && (url.charAt(0) === "/" || url.indexOf(location.origin) === 0);
-    var isAuthCall = url.indexOf("/api/auth/login") !== -1 || url.indexOf("/api/auth/register") !== -1;
-
-    if (isApi && !isAuthCall && Auth.getToken()) {
-      init = init || {};
-      var headers = new Headers(init.headers || {});
-      if (!headers.has("Authorization")) headers.set("Authorization", "Bearer " + Auth.getToken());
-      init.headers = headers;
-    }
-
-    return realFetch(input, init).then(function (response) {
-      if (response.status === 401 && isApi && !isAuthCall && PUBLIC_PAGES.indexOf(page()) === -1) {
-        Auth.clear();
-        location.href = LOGIN_PAGE + "?next=" + encodeURIComponent(page() + location.search);
-      }
-      return response;
-    });
-  };
+  /* ---------- start ---------- */
+  async function start() {
+    drawThread(); drawTopics(); drawStatus(null); drawComposer();
+    var c = await api("/api/support/config"); if (c._ok) { cfg = c; if (c.replyTime) $("#replyTime").textContent = c.replyTime; drawStatus(null); }
+    if (!signedIn()) return;
+    var nm = $("#e-name"); await loadList(); drawPast();
+    var open = tickets.filter(function (t) { return t.status !== "closed" && t.status !== "resolved"; })[0];
+    var hash = location.hash.match(/^#ticket-(\d+)$/);
+    if (hash) await openTicket(Number(hash[1]));
+    else if (open) await openTicket(open.id);
+    setInterval(function () { if (cur && document.visibilityState === "visible") openTicket(cur, true); }, 8000);
+  }
+  start();
 })();
+</script>
+</body>
+</html>
