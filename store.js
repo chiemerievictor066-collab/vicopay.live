@@ -109,7 +109,7 @@ module.exports = function makeStore(db) {
   async function setBan(email, banned, reason) {
     email = lc(email);
     await db.run(
-      "INSERT INTO user_flags (email, banned, reason, banned_at) VALUES (?,?,?,?) ON CONFLICT (email) DO UPDATE SET banned = EXCLUDED.banned, reason = EXCLUDED.reason, banned_at = EXCLUDED.banned_at",
+      "INSERT INTO user_flags (email, banned, reason, banned_at) VALUES (?,?,?,?) ON CONFLICT (email) DO UPDATE SET banned = EXCLUDED.banned, reason = EXCLUDED.reason, banned_at = CASE WHEN user_flags.banned = 1 AND EXCLUDED.banned = 1 THEN user_flags.banned_at ELSE EXCLUDED.banned_at END",
       [email, banned ? 1 : 0, String(reason || "").slice(0, 200), new Date().toISOString()]);
     if (banned) bannedUsers.add(email); else bannedUsers.delete(email);
   }

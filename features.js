@@ -525,6 +525,27 @@ module.exports = function (ctx) {
     if (ban) { const r = roomOfHost(email); if (r) killRoom(r); }
     ok(res, { email, banned: ban });
   });
+  // blocked accounts with the reason and the date, for admin-blocked-users.html
+  app.get("/api/admin/users/blocked", requireAdmin, async (req, res) => {
+    const q = lc(req.query.q).trim();
+    const rows = await db.all("SELECT email, reason, banned_at AS \"bannedAt\" FROM user_flags WHERE banned = 1 ORDER BY banned_at DESC LIMIT 500");
+    const emails = rows.map((r) => r.email);
+    if (emails.length) await users.warm(emails);
+    let list = rows.map((r) => ({ email: r.email, displayName: displayNameOf(r.email), handle: publicHandle(r.email), reason: r.reason || "", bannedAt: r.bannedAt || null, live: !!roomOfHost(r.email) }));
+    if (q) list = list.filter((u) => (u.email + " " + u.displayName + " " + u.handle + " " + u.reason).toLowerCase().includes(q));
+    ok(res, { blocked: list });
+  });
+  // creators blocked from withdrawing (5 failed attempts), with a way to lift the block
+  app.get("/api/admin/withdrawal-blocked", requireAdmin, async (req, res) => {
+    const all = await store.listWithdrawalSecurity();
+    ok(res, { blocked: all.filter((s) => s.banned || s.disqualified).map((s) => ({ creatorId: s.creatorId, failedAttempts: s.failedAttempts, banned: !!s.banned, disqualified: !!s.disqualified, lastAttemptAt: s.lastAttemptAt })) });
+  });
+  app.post("/api/admin/withdrawal-blocked/clear", requireAdmin, async (req, res) => {
+    const id = lc((req.body || {}).creatorId);
+    if (!id) return fail(res, 400, "creatorId is required.");
+    await store.saveWithdrawalSecurity(id, { failedAttempts: 0, banned: false, disqualified: false, lastAttemptAt: null });
+    ok(res, { creatorId: id });
+  });
   app.post("/api/admin/users/reset-link", requireAdmin, async (req, res) => {
     const email = lc((req.body || {}).email);
     if (!(await users.exists(email))) return fail(res, 404, "User not found.");

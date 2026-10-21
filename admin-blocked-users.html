@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex">
+<title>Blocked Users - VicoPay Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050812;color:#e8eefc;font-family:Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid #22304b;background:#071025;flex-wrap:wrap}
+.logo{font-weight:900;font-size:21px;margin-right:auto}.logo span{color:#e11d48}
+.wrap{width:min(1150px,96%);margin:20px auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.card{background:#0a1328;border:1px solid #203352;border-radius:14px;padding:16px}.card b{display:block;font-size:26px}.card span{color:#8fa7c5;font-size:13px}
+.panel{background:#0a1328;border:1px solid #203352;border-radius:14px;padding:16px;margin-bottom:16px}
+.panel h3{margin:0 0 4px;font-size:16px}.muted{color:#8fa7c5;font-size:13px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{border:1px solid #2a4066;background:#0a1328;color:#cfe3ff;border-radius:18px;padding:8px 15px;font:inherit;font-weight:700;cursor:pointer}.tab.on{background:#e11d48;border-color:#e11d48;color:#fff}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+input,select{padding:10px 14px;border-radius:10px;border:1px solid #2a4066;background:#050c1c;color:#fff;font:inherit}
+input.grow{flex:1;min-width:180px}
+.b{border:0;border-radius:12px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:#0787ed}
+.b.red{background:#e11d48}.b.gray{background:#334155}.b.green{background:#16a34a}.b.sm{padding:5px 11px;font-size:12px;border-radius:9px}.b:disabled{opacity:.5;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #1b2b47;vertical-align:top}
+th{color:#8fa7c5;font-weight:700;background:#0c1730;cursor:default}.tw{overflow-x:auto;border-radius:12px;background:#0a1328;border:1px solid #203352}
+.tag{background:#e11d48;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}.tag.g{background:#16a34a}.tag.o{background:#b45309}
+.empty{padding:26px;text-align:center;color:#8fa7c5}
+.gate{max-width:420px;margin:12vh auto;background:#0a1328;border:1px solid #203352;border-radius:16px;padding:26px}.gate input{width:100%;margin:12px 0}
+.err{color:#ff9fb5;font-size:13px;min-height:18px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}#toast.bad{background:#e11d48}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}.modal.on{display:flex}
+.mbox{background:#0a1328;border:1px solid #2a4066;border-radius:16px;padding:22px;width:min(440px,100%)}.mbox h3{margin:0 0 6px}.mbox input{width:100%;margin-top:10px}
+</style></head><body>
+
+<div id="gate" class="gate">
+  <h2 style="margin:0">Admin sign in</h2>
+  <p class="muted">Enter the ADMIN_KEY from your server's .env file. It is only kept in this tab.</p>
+  <input id="key" type="password" placeholder="ADMIN_KEY" onkeydown="if(event.key==='Enter')enter()">
+  <button class="b" style="width:100%;padding:11px" onclick="enter()">Open blocked users</button>
+  <div class="err" id="err"></div>
+</div>
+
+<div id="app" style="display:none">
+  <header>
+    <div class="logo">VicoPay <span>Blocked Users</span></div>
+    <a href="admin.html" class="b gray" style="text-decoration:none">← Dashboard</a>
+    <a href="admin-payouts.html" class="b" style="text-decoration:none;background:#f5b400;color:#1a1305">💸 Payouts</a>
+    <button class="b gray" onclick="sessionStorage.removeItem('vk');location.reload()">Lock</button>
+  </header>
+
+  <div class="wrap">
+    <div class="cards">
+      <div class="card"><b id="cAcc">0</b><span>Blocked accounts</span></div>
+      <div class="card"><b id="cWd">0</b><span>Withdrawal-blocked creators</span></div>
+      <div class="card"><b id="cLive">0</b><span>Blocked but still live</span></div>
+    </div>
+
+    <div class="panel">
+      <h3>Block an account</h3>
+      <div class="muted">The user is signed out of everything and any live they are running is ended immediately.</div>
+      <div class="row">
+        <input id="nbEmail" class="grow" type="email" placeholder="User email">
+        <select id="nbReason"><option value="">Reason…</option><option>Violated community guidelines</option><option>Fraud or chargeback</option><option>Harassment or abuse</option><option>Spam or scam</option><option>Underage user</option><option>Other</option></select>
+        <input id="nbNote" class="grow" placeholder="Extra note (optional)" maxlength="120">
+        <button class="b red" onclick="blockNew()">Block</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" id="tAcc" onclick="show('acc')">Blocked accounts</button>
+      <button class="tab" id="tWd" onclick="show('wd')">Withdrawal blocks</button>
+    </div>
+
+    <div id="vAcc">
+      <div class="row" style="margin:0 0 12px">
+        <input id="q" class="grow" placeholder="Search email, name, handle or reason…" oninput="renderAcc()">
+        <select id="sort" onchange="renderAcc()"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="name">Name A–Z</option></select>
+        <button class="b gray" onclick="exportCsv()">Export CSV</button>
+        <button class="b gray" onclick="loadAll()">↻ Refresh</button>
+      </div>
+      <div class="tw"><table><thead><tr><th>User</th><th>Reason</th><th>Blocked on</th><th>Status</th><th style="width:230px"></th></tr></thead><tbody id="accBody"></tbody></table></div>
+    </div>
+
+    <div id="vWd" style="display:none">
+      <p class="muted">Creators locked out of withdrawals after too many failed attempts. Their account itself still works. Clearing resets the failed-attempt count to zero.</p>
+      <div class="tw"><table><thead><tr><th>Creator</th><th>Failed attempts</th><th>Flags</th><th>Last attempt</th><th style="width:150px"></th></tr></thead><tbody id="wdBody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="mbox">
+  <h3 id="mTitle"></h3><div class="muted" id="mText"></div>
+  <input id="mInput" placeholder="Reason" maxlength="120" style="display:none">
+  <div class="row" style="justify-content:flex-end"><button class="b gray" onclick="closeModal()">Cancel</button><button class="b" id="mOk">Confirm</button></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+const esc=t=>{const d=document.createElement("div");d.textContent=t==null?"":String(t);return d.innerHTML};
+const $=id=>document.getElementById(id);
+let KEY=sessionStorage.getItem("vk")||"",ACC=[],WD=[];
+
+async function api(p,body){
+  const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json","x-admin-key":KEY},body:body?JSON.stringify(body):undefined});
+  const d=await r.json().catch(()=>({}));d._ok=r.ok&&d.success!==false;return d;
+}
+function toast(m,bad){const t=$("toast");t.textContent=m;t.className="show"+(bad?" bad":"");setTimeout(()=>t.className="",2600)}
+async function enter(){
+  KEY=$("key").value||KEY;
+  const d=await api("/api/admin/overview");
+  if(!d._ok){$("err").textContent="Wrong key (or ADMIN_KEY is not set on the server).";return}
+  sessionStorage.setItem("vk",KEY);$("gate").style.display="none";$("app").style.display="block";loadAll();
+}
+async function loadAll(){
+  const [a,w]=await Promise.all([api("/api/admin/users/blocked"),api("/api/admin/withdrawal-blocked")]);
+  ACC=a.blocked||[];WD=w.blocked||[];
+  $("cAcc").textContent=ACC.length;$("cWd").textContent=WD.length;$("cLive").textContent=ACC.filter(u=>u.live).length;
+  renderAcc();renderWd();
+}
+function show(w){
+  $("vAcc").style.display=w==="acc"?"block":"none";$("vWd").style.display=w==="wd"?"block":"none";
+  $("tAcc").className="tab"+(w==="acc"?" on":"");$("tWd").className="tab"+(w==="wd"?" on":"");
+}
+const fmt=s=>{if(!s)return"—";const d=new Date(s);return isNaN(d)?"—":d.toLocaleString()};
+
+function renderAcc(){
+  const q=$("q").value.trim().toLowerCase(),s=$("sort").value;
+  let l=ACC.filter(u=>!q||(u.email+" "+u.displayName+" "+u.handle+" "+u.reason).toLowerCase().includes(q));
+  l.sort((a,b)=>s==="name"?a.displayName.localeCompare(b.displayName):s==="old"?new Date(a.bannedAt||0)-new Date(b.bannedAt||0):new Date(b.bannedAt||0)-new Date(a.bannedAt||0));
+  $("accBody").innerHTML=l.map(u=>"<tr><td><b>"+esc(u.displayName)+"</b><br>"+esc(u.email)+" · @"+esc(u.handle)+"</td><td>"+(esc(u.reason)||'<span class="muted">No reason recorded</span>')+"</td><td>"+fmt(u.bannedAt)+"</td><td>"+(u.live?'<span class="tag o">STILL LIVE</span>':'<span class="tag">BLOCKED</span>')+'</td><td><button class="b sm green" data-e="'+esc(u.email)+'" onclick="unblock(this.dataset.e)">Unblock</button> <button class="b sm gray" data-e="'+esc(u.email)+'" data-r="'+esc(u.reason)+'" onclick="editReason(this.dataset.e,this.dataset.r)">Edit reason</button></td></tr>').join("")||'<tr><td colspan="5" class="empty">'+(ACC.length?"No blocked users match your search.":"No blocked accounts. 🎉")+"</td></tr>";
+}
+function renderWd(){
+  $("wdBody").innerHTML=WD.map(w=>"<tr><td><b>"+esc(w.creatorId)+"</b></td><td>"+esc(w.failedAttempts)+"</td><td>"+(w.banned?'<span class="tag">BANNED</span> ':"")+(w.disqualified?'<span class="tag o">DISQUALIFIED</span>':"")+"</td><td>"+fmt(w.lastAttemptAt)+'</td><td><button class="b sm green" data-e="'+esc(w.creatorId)+'" onclick="clearWd(this.dataset.e)">Clear block</button></td></tr>').join("")||'<tr><td colspan="5" class="empty">No creators are blocked from withdrawing.</td></tr>';
+}
+
+/* modal helper: resolves with the typed text, or null if cancelled */
+function ask(title,text,withInput,preset){
+  return new Promise(res=>{
+    $("mTitle").textContent=title;$("mText").textContent=text;
+    const i=$("mInput");i.style.display=withInput?"block":"none";i.value=preset||"";
+    $("modal").classList.add("on");if(withInput)i.focus();
+    const done=v=>{$("modal").classList.remove("on");$("mOk").onclick=null;window.closeModal=()=>{};res(v)};
+    $("mOk").onclick=()=>done(withInput?i.value.trim():"");
+    window.closeModal=()=>done(null);
+  });
+}
+window.closeModal=()=>{};
+
+async function blockNew(){
+  const email=$("nbEmail").value.trim().toLowerCase();
+  const reason=[$("nbReason").value,$("nbNote").value.trim()].filter(Boolean).join(": ");
+  if(!/^\S+@\S+\.\S+$/.test(email))return toast("Enter a valid email.",true);
+  if(ACC.some(u=>u.email===email))return toast("That account is already blocked.",true);
+  if(await ask("Block "+email+"?","Any live they are running will be ended.",false)===null)return;
+  const d=await api("/api/admin/users/ban",{email,banned:true,reason});
+  if(!d._ok)return toast(d.message||"Could not block this user.",true);
+  $("nbEmail").value="";$("nbNote").value="";$("nbReason").value="";toast("Account blocked.");loadAll();
+}
+async function unblock(email){
+  if(await ask("Unblock "+email+"?","They will be able to sign in and use VicoPay again.",false)===null)return;
+  const d=await api("/api/admin/users/ban",{email,banned:false,reason:""});
+  if(!d._ok)return toast(d.message||"Could not unblock.",true);
+  toast("Account unblocked.");loadAll();
+}
+async function editReason(email,cur){
+  const r=await ask("Edit reason","Shown only to admins.",true,cur);
+  if(r===null)return;
+  const d=await api("/api/admin/users/ban",{email,banned:true,reason:r});
+  if(!d._ok)return toast(d.message||"Could not save.",true);
+  toast("Reason updated.");loadAll();
+}
+async function clearWd(id){
+  if(await ask("Clear withdrawal block for "+id+"?","Their failed-attempt count is reset to zero and they can request withdrawals again.",false)===null)return;
+  const d=await api("/api/admin/withdrawal-blocked/clear",{creatorId:id});
+  if(!d._ok)return toast(d.message||"Could not clear.",true);
+  toast("Withdrawal block cleared.");loadAll();
+}
+function exportCsv(){
+  const c=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+  const rows=[["email","name","handle","reason","blocked_at"]].concat(ACC.map(u=>[u.email,u.displayName,u.handle,u.reason,u.bannedAt]));
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(c).join(",")).join("\n")],{type:"text/csv"}));
+  a.download="blocked-users.csv";a.click();URL.revokeObjectURL(a.href);
+}
+if(KEY)enter();
+</script>
+</body></html>
