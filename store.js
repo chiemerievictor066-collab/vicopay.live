@@ -116,6 +116,9 @@ module.exports = function makeStore(db) {
 
   // ---------------------------------------------------
   // HOST STATS & STARS
+  // 10 coins = 5 Golden Stars (2 coins = 1 star). Gifts are saved in coins; every star number shown or paid out comes from here.
+  const COINS_PER_STAR = 2;
+  const starsOf = (coins) => Math.max(0, Math.floor(Number(coins || 0) / COINS_PER_STAR));
   // ---------------------------------------------------
   const statsRow = (r) => ({ gifts: Number(r ? r.gifts : 0), giftCoins: Number(r ? r.giftCoins : 0), loves: Number(r ? r.loves : 0), viewers: Number(r ? r.viewers : 0), withdrawnStars: Number(r ? r.withdrawnStars : 0) });
   async function getHostStats(host) {
@@ -123,7 +126,7 @@ module.exports = function makeStore(db) {
   }
   async function getWallet(host) {
     const s = await getHostStats(host);
-    return { stars: Math.max(0, s.giftCoins - s.withdrawnStars), loves: s.loves };
+    return { stars: Math.max(0, starsOf(s.giftCoins) - s.withdrawnStars), loves: s.loves };
   }
   // Hearts are free and not money, so they are counted in memory and saved every few seconds in ONE statement per host.
   // (Thousands of taps on one popular live would otherwise all fight over a single database row.)
@@ -157,11 +160,14 @@ module.exports = function makeStore(db) {
          JOIN (SELECT host_id AS other, SUM(coin) AS amt FROM gift_transactions WHERE sender_id = ? GROUP BY host_id HAVING SUM(coin) > 0) s
            ON s.other = r.other`, [host, host]);
     const stats = await ex.get("SELECT withdrawn_stars AS v FROM host_stats WHERE host_id = ?", [host]);
-    const circular = Number(circ.v), withdrawn = Number(stats ? stats.v : 0);
+    const withdrawn = Number(stats ? stats.v : 0);
+    const totalC = total, maturedC = matured, circularC = Number(circ.v);   // coins -> stars below
     const nextMs = nxt && nxt.v ? new Date(nxt.v).getTime() : null;
+    const total_ = starsOf(totalC), matured_ = starsOf(maturedC), circular = starsOf(circularC);
     return {
-      total, matured, onHold: Math.max(0, total - matured), circular, withdrawn,
-      withdrawable: Math.max(0, matured - circular - withdrawn),
+      total: total_, matured: matured_, onHold: Math.max(0, total_ - matured_), circular, withdrawn,
+      earned: Math.max(0, total_ - withdrawn),                       // every star the host has, counting live (even while on hold)
+      withdrawable: Math.max(0, matured_ - circular - withdrawn),
       holdDays: PAYOUT_HOLD_DAYS, nextReleaseAt: nextMs === null ? null : nextMs + PAYOUT_HOLD_DAYS * 86400000
     };
   }
@@ -173,11 +179,11 @@ module.exports = function makeStore(db) {
     limit = Math.min(500, Number(limit) || 100);
     if (!sinceIso) {
       return db.all(
-        `SELECT host_id AS "hostId", CASE WHEN gift_coins - withdrawn_stars > 0 THEN gift_coins - withdrawn_stars ELSE 0 END AS "goldenStars",
-                gifts, loves, viewers FROM host_stats WHERE gift_coins > 0 OR loves > 0 ORDER BY gift_coins - withdrawn_stars DESC LIMIT ?`, [limit]);
+        `SELECT host_id AS "hostId", CASE WHEN gift_coins / 2 - withdrawn_stars > 0 THEN gift_coins / 2 - withdrawn_stars ELSE 0 END AS "goldenStars",
+                gifts, loves, viewers FROM host_stats WHERE gift_coins > 0 OR loves > 0 ORDER BY gift_coins / 2 - withdrawn_stars DESC LIMIT ?`, [limit]);
     }
     return db.all(
-      `SELECT host_id AS "hostId", SUM(golden_stars) AS "goldenStars", SUM(CASE WHEN coin > 0 THEN 1 ELSE 0 END) AS gifts
+      `SELECT host_id AS "hostId", SUM(golden_stars) / 2 AS "goldenStars", SUM(CASE WHEN coin > 0 THEN 1 ELSE 0 END) AS gifts
          FROM gift_transactions WHERE created_at >= ? GROUP BY host_id HAVING SUM(golden_stars) > 0 ORDER BY SUM(golden_stars) DESC LIMIT ?`, [sinceIso, limit]);
   }
   async function gifterRanking(sinceIso, limit) {
@@ -290,7 +296,7 @@ module.exports = function makeStore(db) {
 
   return {
     users, publicHandle, displayNameOf, avatarUrl, hashHandle, bannedUsers, refreshBans, setBan,
-    getHostStats, getWallet, addLove, flushLoves, addViewer, starBreakdown, PAYOUT_HOLD_DAYS,
+    getHostStats, getWallet, starsOf, COINS_PER_STAR, addLove, flushLoves, addViewer, starBreakdown, PAYOUT_HOLD_DAYS,
     hostRanking, gifterRanking, recentGiftsTo, allGifts, giftTotals,
     sessionStart, sessionEnd, sessionBeat, monthlyLiveStatus,
     getWithdrawalSecurity, saveWithdrawalSecurity, listWithdrawalSecurity, listWithdrawals, withdrawalsOf, withdrawalCount, recordWithdrawal,

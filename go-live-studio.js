@@ -33,7 +33,7 @@
       esc(String(name || "?").trim().charAt(0).toUpperCase() || "?") + (url ? '<img src="' + esc(url) + '" alt="" onerror="this.remove()">' : "") + "</span>";
   }
 
-  var me = null, battle = null, activeTab = "chat", pkDur = 180, lastEv = 0, seenInv = {}, oppId = null, oppLK = null;
+  var me = null, battle = null, activeTab = "chat", lastEv = 0, seenInv = {}, oppId = null, oppLK = null;
 
   /* ---------------- who am I ---------------- */
   function loadMe() {
@@ -67,7 +67,7 @@
   function loadPK() {
     var box = $("#pane-pk");
     if (!vicoLiveRoomId) {
-      box.innerHTML = '<div class="pad"><div class="pcard"><b>⚔️ PK Battles</b><p class="hint">Two hosts go live side by side. Every gift sent in either room becomes points for that host. Highest score when the timer ends wins.</p><p class="hint">Start your live first, then challenge another host here.</p><button class="gift-main" onclick="startLive()">🔴 Start Live</button></div></div>';
+      box.innerHTML = '<div class="pad"><div class="pcard"><b>⚔️ PK Battles</b><p class="hint">Two hosts go live side by side. Every gift sent in either room becomes points for that host. Highest score when a host stops the PK wins. There is no timer: stop whenever you want.</p><p class="hint">Start your live first, then challenge another host here.</p><button class="gift-main" onclick="startLive()">🔴 Start Live</button></div></div>';
       return;
     }
     if (battle) { box.innerHTML = '<div class="pad">' + battleCard(battle) + '<p class="hint">Gifts viewers send to you during the battle add to your score. The opponent’s video shows on your stage.</p></div>'; return; }
@@ -77,9 +77,8 @@
       var opp = r[0].opponents || [], inv = r[1].invites || [];
       var html = '<div class="pad">';
       inv.forEach(function (i) {
-        html += '<div class="pcard" style="border-color:#7c3aed"><b>⚔️ ' + esc(i.from) + ' challenges you</b><div class="hint">' + (i.duration / 60) + " minute battle · " + i.secondsLeft + 's left to answer</div><div style="margin-top:8px;display:flex;gap:8px"><button class="sm" onclick="pkAnswer(\'' + i.id + '\',true)">Accept</button><button class="sm gray" onclick="pkAnswer(\'' + i.id + '\',false)">Decline</button></div></div>';
+        html += '<div class="pcard" style="border-color:#7c3aed"><b>⚔️ ' + esc(i.from) + ' challenges you</b><div class="hint">' + "PK battle · " + i.secondsLeft + 's left to answer</div><div style="margin-top:8px;display:flex;gap:8px"><button class="sm" onclick="pkAnswer(\'' + i.id + '\',true)">Accept</button><button class="sm gray" onclick="pkAnswer(\'' + i.id + '\',false)">Decline</button></div></div>';
       });
-      html += '<div class="hint" style="margin-bottom:6px">Battle length</div><div class="chips">' + [180, 300, 600].map(function (x) { return '<button class="' + (pkDur === x ? "on" : "") + '" onclick="pkSetDur(' + x + ')">' + x / 60 + " min</button>"; }).join("") + "</div>";
       html += opp.length ? opp.map(function (o) {
         return '<div class="prow">' + avatar(o.displayName, o.avatar) + '<div class="g"><div class="n">' + esc(o.displayName) + '</div><div class="s">' + esc(o.title) + " · 👁 " + num(o.viewers) + " · " + num(o.followers) + ' followers</div></div><button class="sm violet" onclick="pkInvite(\'' + esc(o.handle) + '\')">⚔️ Challenge</button></div>';
       }).join("") : '<div class="pcard hint">No other hosts are live right now. When someone goes live they will appear here. You can also be challenged by others.</div>';
@@ -87,9 +86,15 @@
       box.innerHTML = html;
     });
   }
-  window.pkSetDur = function (x) { pkDur = x; loadPK(); };
   window.pkInvite = function (h) {
-    api("/api/pk/invite", { hostId: h, duration: pkDur }).then(function (d) { showToast(d._ok ? "⚔️ Challenge sent. They have 60 seconds to accept." : "❌ " + (d.message || "Could not send challenge.")); });
+    api("/api/pk/invite", { hostId: h }).then(function (d) { showToast(d._ok ? "⚔️ Challenge sent. They have 60 seconds to accept." : "❌ " + (d.message || "Could not send challenge.")); });
+  };
+  window.pkEnd = function () {
+    if (!confirm("End the PK battle now?")) return;
+    api("/api/pk/end", {}).then(function (d) {
+      showToast(d._ok ? "⚔️ PK ended." : "❌ " + (d.message || "Could not end the PK."));
+      if (d._ok) { battle = null; paintBattle(); loadPK(); }
+    });
   };
   window.pkAnswer = function (id, yes) {
     api("/api/pk/respond", { inviteId: id, accept: yes }).then(function (d) {
@@ -99,9 +104,9 @@
   };
   function battleCard(b) {
     var t = b.a.score + b.b.score, p = t ? Math.round(b.a.score / t * 100) : 50;
-    return '<div class="pcard"><div class="pkscore"><div><b>' + esc(b.a.displayName) + '</b><div class="big">' + num(b.a.score) + '</div></div><div>VS<div class="hint" id="pkClockPane">' + clock(b) + '</div></div><div><b>' + esc(b.b.displayName) + '</b><div class="big">' + num(b.b.score) + '</div></div></div><div class="pkbar"><i style="width:' + p + '%"></i></div></div>';
+    return '<div class="pcard"><div class="pkscore"><div><b>' + esc(b.a.displayName) + '</b><div class="big">' + num(b.a.score) + '</div></div><div>VS<div class="hint" id="pkClockPane">' + clock(b) + '</div></div><div><b>' + esc(b.b.displayName) + '</b><div class="big">' + num(b.b.score) + '</div></div></div><div class="pkbar"><i style="width:' + p + '%"></i></div><button class="sm" style="margin-top:10px;width:100%;background:#dc2626;color:#fff" onclick="pkEnd()">⏹ End PK</button></div>';
   }
-  function clock(b) { var s = Math.max(0, Math.ceil((b.endsAt - Date.now()) / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+  function clock(b) { var s = Math.max(0, Math.floor((Date.now() - (b.startedAt || Date.now())) / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
   function paintBattle() {
     var sp = $("#stagePK");
     if (!battle) { sp.classList.remove("on"); syncOpp(null); return; }
@@ -256,15 +261,31 @@
     });
   }
 
+  /* ---------------- stars (10 coins = 5 stars) ---------------- */
+  function paintStars(box, n, added){
+    if (!box) return; n = Math.max(0, Number(n) || 0);
+    const goal = Math.max(3000, Math.ceil(n / 3000) * 3000);
+    box.querySelector(".sn").textContent = n.toLocaleString();
+    box.querySelector(".sg").textContent = "/ " + goal.toLocaleString();
+    box.querySelector("u").style.width = Math.min(100, n / goal * 100) + "%";
+    if (box._n !== undefined && n > box._n) {
+      box.querySelector(".sa").textContent = "+" + (added || (n - box._n)).toLocaleString();
+      box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop");
+      clearTimeout(box._t); box._t = setTimeout(() => box.classList.remove("pop"), 2200);
+    }
+    box._n = n;
+  }
+  
   /* ---------------- the live loop ---------------- */
   function tick() {
     if (!vicoLiveRoomId) { if (battle) { battle = null; paintBattle(); } return; }
     api("/api/live/events/" + enc(vicoLiveRoomId) + "?since=" + lastEv + "&k=host").then(function (d) {
       if (d.ended) return;
+      if (d.stars !== undefined) paintStars(document.getElementById("starMeter"), d.stars);
       (d.events || []).forEach(function (e) {
         lastEv = Math.max(lastEv, e.id);
         if ((d.now || Date.now()) - e.ts > 12000) return;   // old news from before this page opened: do not replay it
-        if (e.type === "gift") { giftPop(e); if (activeTab === "gifts") loadGifts(); }
+        if (e.type === "gift") { if (e.stars != null) paintStars(document.getElementById("starMeter"), e.stars, e.starsAdded); giftPop(e); if (activeTab === "gifts") loadGifts(); }
         if (e.type === "love") lovePop(e);
         if (e.type === "follow") followPop(e);
         if (e.type === "pk_end") showToast(e.winner === "draw" ? "⚔️ PK ended in a draw." : "🏆 PK winner: " + e.winner);

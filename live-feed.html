@@ -20,10 +20,19 @@ html,body{height:100%;margin:0;background:#020a1f;color:#fff;font-family:var(--f
 .vid video{width:100%;height:100%;object-fit:cover;display:block}
 .vid.land video{object-fit:contain}
 .vid.opp{display:none;border-left:2px solid #fff}
-.slide.inpk .videos{inset:132px 0 auto 0;height:40%}
+.slide.inpk .videos{inset:140px 0 auto 0;height:50%}
+.slide.inpk .vid{flex:1 1 50%;max-width:50%}
+.slide.inpk .vid.main{border-right:1px solid #fff}
 .slide.inpk .vid video{object-fit:cover}
 .slide.inpk .vid.opp{display:block}
-.oppTag{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(3,28,93,.7);border-radius:12px;padding:3px 9px;font-size:11px;font-weight:800;white-space:nowrap}
+.slide:not(.inpk) .mainTag{display:none!important}
+.oppTag{position:absolute;max-width:92%;overflow:hidden;text-overflow:ellipsis;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(3,28,93,.7);border-radius:12px;padding:3px 9px;font-size:11px;font-weight:800;white-space:nowrap}
+.starm{position:absolute;top:calc(96px + env(safe-area-inset-top));left:12px;z-index:5;width:max-content;min-width:128px;max-width:190px;background:rgba(3,28,93,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,205,70,.4);border-radius:14px;padding:5px 10px 7px;font-size:12px;font-weight:800;pointer-events:none;color:#fff}
+.starm .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.starm .row i{font-style:normal;opacity:.7;font-weight:700;font-size:11px}
+.starm .sa{color:#ffd24a;margin-left:5px;opacity:0;transition:opacity .3s}.starm.pop .sa{opacity:1}
+.starm em{display:block;height:5px;border-radius:5px;background:rgba(255,255,255,.2);margin-top:4px;overflow:hidden}
+.starm u{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd24a,#ff9d00);border-radius:5px;transition:width .9s cubic-bezier(.2,.9,.25,1);text-decoration:none}
+.starm.pop{animation:starpop .7s ease}@keyframes starpop{40%{transform:scale(1.1);box-shadow:0 0 18px #ffc94a99}}
 .shade{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(2,10,31,.65) 0,rgba(2,10,31,0) 22%,rgba(2,10,31,0) 55%,rgba(2,10,31,.82) 100%)}
 
 .top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 12px 8px}
@@ -146,6 +155,19 @@ function needLogin(){
   if (VicoAuth.isSignedIn()) return false;
   location.href = "join-now.html?next=" + enc("live-feed.html" + location.search); return true;
 }
+function paintStars(box, n, added){
+  if (!box) return; n = Math.max(0, Number(n) || 0);
+  const goal = Math.max(3000, Math.ceil(n / 3000) * 3000);
+  box.querySelector(".sn").textContent = n.toLocaleString();
+  box.querySelector(".sg").textContent = "/ " + goal.toLocaleString();
+  box.querySelector("u").style.width = Math.min(100, n / goal * 100) + "%";
+  if (box._n !== undefined && n > box._n) {
+    box.querySelector(".sa").textContent = "+" + (added || (n - box._n)).toLocaleString();
+    box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop");
+    clearTimeout(box._t); box._t = setTimeout(() => box.classList.remove("pop"), 2200);
+  }
+  box._n = n;
+}
 function setStatus(st, text){ const e = $(".status", st.el); e.textContent = text; e.classList.toggle("on", !!text); }
 function addMsg(st, m){
   const box = $(".msgs", st.el), d = document.createElement("div");
@@ -168,11 +190,12 @@ function slideHTML(r){
   const prof = "profile.html?u=" + enc(r.handle);
   return '<div class="phone">' +
     '<div class="poster" style="' + poster + '"></div>' +
-    '<div class="videos"><div class="vid main"><video playsinline autoplay></video></div><div class="vid opp" data-act="giftOpp"><video playsinline autoplay></video><span class="oppTag">🎁 Tap to support</span></div></div>' +
+    '<div class="videos"><div class="vid main"><video playsinline autoplay></video><span class="oppTag mainTag" style="display:none"></span></div><div class="vid opp" data-act="giftOpp"><video playsinline autoplay></video><span class="oppTag">🎁 Tap to support</span></div></div>' +
     '<div class="shade"></div>' +
     '<div class="top"><div class="host"><a href="' + prof + '">' + U.avatar(r.displayName, false, null, 38, r.avatar) + '</a><div><a class="nm" href="' + prof + '">' + U.esc(r.displayName) + '</a><button class="fl" data-act="people"><span class="fc">' + U.num(r.followers) + '</span> followers</button></div></div>' +
     '<button class="follow" data-act="follow">+ Follow</button><span class="grow"></span><span class="pill">👁 <b class="vc">' + U.num(r.viewers) + '</b></span><button class="xbtn" data-act="more" aria-label="More">⋯</button><button class="xbtn" data-act="close" aria-label="Back to live room">✕</button></div>' +
     '<div class="meta"><span class="badge">LIVE</span><span class="mt">' + U.esc(r.title) + '</span><span class="views"><b class="vw">' + U.num(r.views || 0) + '</b> <i class="vl" style="font-style:normal">' + (Number(r.views) === 1 ? "view" : "views") + '</i></span></div>' +
+    '<div class="starm"><div class="row"><span>⭐ <b class="sn">0</b><span class="sa"></span></span><i class="sg">/ 3,000</i></div><em><u></u></em></div>' +
     '<div class="own">This is your live. <a href="Go-Live.html">Open your studio</a></div>' +
     '<div class="pk"><div class="t">⚔️ PK Battle · <span class="clock">0:00</span></div><div class="bar"><i style="width:50%"></i></div><div class="sc"><span class="pa"></span><span class="pb"></span></div></div>' +
     '<div class="rail">' +
@@ -316,10 +339,11 @@ async function poll(){
   if (cur !== st) return;
   if (d.ended) { markEnded(st); return; }
   $(".vc", st.el).textContent = U.num(d.viewers); $(".vw", st.el).textContent = U.num(d.views); $(".vl", st.el).textContent = Number(d.views) === 1 ? "view" : "views"; $(".lc", st.el).textContent = U.num(d.loves);
+  if (d.stars !== undefined) paintStars($(".starm", st.el), d.stars);
   (d.events || []).forEach(ev => {
     if ((d.now || Date.now()) - ev.ts > 12000) { st.lastEv = Math.max(st.lastEv || 0, ev.id); return; }   // do not replay old gifts when a live opens
     st.lastEv = Math.max(st.lastEv, ev.id);
-    if (ev.type === "gift") fly(st, ev);
+    if (ev.type === "gift") { fly(st, ev); if (ev.stars != null) paintStars($(".starm", st.el), ev.stars, ev.starsAdded); }
     if (ev.type === "love") { const n = Math.min(ev.total || 1, 6); for (let i = 0; i < n; i++) setTimeout(() => heart(st), i * 140); }
     if (ev.type === "pk_start") addMsg(st, { sys: true, text: "⚔️ PK battle started!" });
     if (ev.type === "pk_end") addMsg(st, { sys: true, text: ev.winner === "draw" ? "⚔️ PK ended in a draw" : "🏆 PK winner: " + ev.winner });
@@ -330,11 +354,14 @@ setInterval(poll, 3000);
 function paintPK(st){
   const b = st.battle; if (!b) { st.el.classList.remove("inpk"); return; }
   st.el.classList.add("inpk");
+  const mineA = !st.room || b.a.handle === st.room.handle, mine = mineA ? b.a : b.b, other = mineA ? b.b : b.a;
+  const mt = $(".mainTag", st.el); mt.style.display = "block"; mt.textContent = mine.displayName + " · " + U.num(mine.score);
+  const ot = $(".vid.opp .oppTag", st.el); if (ot) ot.textContent = "🎁 " + other.displayName + " · " + U.num(other.score);
   $(".pa", st.el).textContent = b.a.displayName + " · " + U.num(b.a.score); $(".pb", st.el).textContent = U.num(b.b.score) + " · " + b.b.displayName;
   const t = b.a.score + b.b.score; $(".bar i", st.el).style.width = (t ? Math.round(b.a.score / t * 100) : 50) + "%";
 }
 setInterval(() => {
-  if (!cur || !cur.battle) return; const s = Math.max(0, Math.ceil((cur.battle.endsAt - Date.now()) / 1000));
+  if (!cur || !cur.battle) return; const s = Math.max(0, Math.floor((Date.now() - (cur.battle.startedAt || Date.now())) / 1000));
   $(".clock", cur.el).textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
 }, 500);
 
@@ -432,7 +459,7 @@ async function openPK(st){
   openSheet("⚔️ PK Battles", "<div class='muted'>Loading…</div>");
   const [a, lb] = await Promise.all([U.api("/api/pk/active"), U.api("/api/pk/leaderboard")]);
   const mine = st.battle;
-  const card = b => "<div class='pkcard'><div class='vs'><div>" + U.avatar(b.a.displayName, false, null, 44, b.a.avatar) + "<div class='n' style='font-weight:800;font-size:13px;margin-top:4px'>" + U.esc(b.a.displayName) + "</div></div><div><div class='sc2'>" + U.num(b.a.score) + " : " + U.num(b.b.score) + "</div><div class='s' style='font-size:12px;color:#9fc3e8'>⏱ " + Math.floor(b.remainingSeconds / 60) + ":" + String(b.remainingSeconds % 60).padStart(2, "0") + "</div></div><div>" + U.avatar(b.b.displayName, false, null, 44, b.b.avatar) + "<div class='n' style='font-weight:800;font-size:13px;margin-top:4px'>" + U.esc(b.b.displayName) + "</div></div></div>" +
+  const card = b => "<div class='pkcard'><div class='vs'><div>" + U.avatar(b.a.displayName, false, null, 44, b.a.avatar) + "<div class='n' style='font-weight:800;font-size:13px;margin-top:4px'>" + U.esc(b.a.displayName) + "</div></div><div><div class='sc2'>" + U.num(b.a.score) + " : " + U.num(b.b.score) + "</div><div class='s' style='font-size:12px;color:#9fc3e8'>⏱ " + "Live PK" + "</div></div><div>" + U.avatar(b.b.displayName, false, null, 44, b.b.avatar) + "<div class='n' style='font-weight:800;font-size:13px;margin-top:4px'>" + U.esc(b.b.displayName) + "</div></div></div>" +
     "<div style='display:flex;gap:8px;justify-content:center;margin-top:10px'>" + (b.a.roomId ? "<button class='mini' data-jump='" + U.esc(b.a.roomId) + "'>Watch " + U.esc(b.a.displayName) + "</button>" : "") + (b.b.roomId ? "<button class='mini' data-jump='" + U.esc(b.b.roomId) + "'>Watch " + U.esc(b.b.displayName) + "</button>" : "") + "</div></div>";
   body.innerHTML = (mine ? "<b>This live is in a PK battle</b>" + card(mine) + (st.info && st.info.isOwner ? "" : "<button class='mini' style='width:100%;padding:11px' data-giftnow>🎁 Send a gift to help win</button>") : "<div class='muted' style='text-align:left;padding-top:4px'>" + U.esc(st.room.displayName) + " is not in a battle right now. Hosts can challenge each other from the studio.</div>") +
     "<b style='display:block;margin:14px 0 6px'>Live battles now</b>" + ((a.battles || []).filter(b => !mine || b.battleId !== mine.battleId).map(card).join("") || "<div class='muted'>No other battles right now.</div>") +

@@ -5,7 +5,6 @@
 // Data is stored in PostgreSQL (see db.js). The real-time bits (who is watching right now, gift pop-ups, chat pulse)
 // live in this server's memory because they only matter for seconds.
 // =====================================================
-const mailer = require("./mailer"); // email through Resend (see mailer.js)
 module.exports = function (ctx) {
   const {
     app, db, ledger, store, axios, crypto, liveRooms, giftPrices, getAuthEmail, requireAuth, requireAdmin,
@@ -17,7 +16,8 @@ module.exports = function (ctx) {
 
   const FAN_CLUB_COST = 100;                       // coins to join a fan club
   const FAN_LEVELS = [0, 500, 2000, 10000, 50000]; // points needed for level 1..5
-  const PK_DURATIONS = [180, 300, 600];
+  // PK battles have no timer: they run until a host stops them (or a host's live ends). This is only a safety cap for the database column.
+  const PK_SAFETY_MS = 12 * 3600 * 1000;
   const lc = (v) => String(v || "").toLowerCase();
   const ok = (res, extra) => res.json({ success: true, ...extra });
   const fail = (res, code, message) => res.status(code).json({ success: false, message });
@@ -148,11 +148,13 @@ module.exports = function (ctx) {
     }
     if (room.lovesAt === undefined || Date.now() - room.lovesAt > 5000) {
       room.lovesAt = Date.now();
-      room.lovesN = (await getHostStats(room.hostId)).loves;
+      const hs = await getHostStats(room.hostId);
+      room.lovesN = hs.loves;
+      room.starsN = Math.max(0, store.starsOf(hs.giftCoins) - hs.withdrawnStars);
     }
     const since = Number(req.query.since) || 0;
     ok(res, {
-      viewers: countViewers(room.roomId), views: (uniq.get(room.roomId) || new Set()).size, loves: room.lovesN,
+      viewers: countViewers(room.roomId), views: (uniq.get(room.roomId) || new Set()).size, loves: room.lovesN, stars: room.starsN || 0, starGoal: 3000,
       now: Date.now(),
       events: (events.get(room.roomId) || []).filter((e) => e.id > since),
       battle: battleOfHost(lc(room.hostId))
@@ -262,7 +264,7 @@ module.exports = function (ctx) {
     };
     return {
       battleId: b.id, status: b.status, a: side(b.host_a, b.score_a), b: side(b.host_b, b.score_b),
-      endsAt: Number(b.ends_at), remainingSeconds: Math.max(0, Math.ceil((Number(b.ends_at) - Date.now()) / 1000)),
+      startedAt: Number(b.started_at), endsAt: null, remainingSeconds: null,
       winner: b.winner ? (b.winner === "draw" ? "draw" : publicHandle(b.winner)) : null
     };
   }
@@ -294,7 +296,6 @@ module.exports = function (ctx) {
   });
   app.post("/api/pk/invite", requireAuth, async (req, res) => {
     const me = roomOfHost(req.userEmail), to = await resolveHandle(req.body && req.body.hostId);
-    const dur = PK_DURATIONS.includes(Number((req.body || {}).duration)) ? Number(req.body.duration) : 300;
     if (!me) return fail(res, 400, "Start your live first, then challenge someone.");
     if (me.pkActive) return fail(res, 400, "You are already in a PK battle.");
     const other = to && roomOfHost(to);
@@ -302,9 +303,9 @@ module.exports = function (ctx) {
     if (other.pkActive) return fail(res, 400, "That host is already in a PK battle.");
     for (const i of invites.values()) if (i.from === req.userEmail && i.to === to && i.expires > Date.now()) return fail(res, 409, "Invite already sent.");
     const id = "INV-" + crypto.randomBytes(5).toString("hex");
-    invites.set(id, { id, from: req.userEmail, to, duration: dur, expires: Date.now() + 60000 });
+    invites.set(id, { id, from: req.userEmail, to, expires: Date.now() + 60000 });
     await users.warm([req.userEmail]);
-    notify(to, displayNameOf(req.userEmail) + " challenged you to a " + dur / 60 + " minute PK battle", "pk-battles.html");
+    notify(to, displayNameOf(req.userEmail) + " challenged you to a PK battle", "pk-battles.html");
     ok(res, { inviteId: id });
   });
   app.get("/api/pk/invites", requireAuth, async (req, res) => {
@@ -314,7 +315,7 @@ module.exports = function (ctx) {
       if (i.to === req.userEmail) mine.push(i);
     }
     await users.warm(mine.map((i) => i.from));
-    ok(res, { invites: mine.map((i) => ({ id: i.id, from: displayNameOf(i.from), handle: publicHandle(i.from), duration: i.duration, secondsLeft: Math.ceil((i.expires - Date.now()) / 1000) })) });
+    ok(res, { invites: mine.map((i) => ({ id: i.id, from: displayNameOf(i.from), handle: publicHandle(i.from), secondsLeft: Math.ceil((i.expires - Date.now()) / 1000) })) });
   });
   app.post("/api/pk/respond", requireAuth, async (req, res) => {
     const inv = invites.get(String((req.body || {}).inviteId));
@@ -326,14 +327,22 @@ module.exports = function (ctx) {
     if (!ra || !rb || ra.pkActive || rb.pkActive) return fail(res, 400, "One of the hosts is no longer available.");
     const id = "PK-" + Date.now() + "-" + Math.floor(Math.random() * 10000), now = Date.now();
     await db.run("INSERT INTO pk_battles (id, host_a, host_b, room_a, room_b, started_at, ends_at) VALUES (?,?,?,?,?,?,?)",
-      [id, lc(inv.from), lc(inv.to), ra.roomId, rb.roomId, now, now + inv.duration * 1000]);
-    const b = await withNames({ id, host_a: lc(inv.from), host_b: lc(inv.to), score_a: 0, score_b: 0, status: "active", winner: null, started_at: now, ends_at: now + inv.duration * 1000 });
+      [id, lc(inv.from), lc(inv.to), ra.roomId, rb.roomId, now, now + PK_SAFETY_MS]);
+    const b = await withNames({ id, host_a: lc(inv.from), host_b: lc(inv.to), score_a: 0, score_b: 0, status: "active", winner: null, started_at: now, ends_at: now + PK_SAFETY_MS });
     activeBattles.set(id, b);
     ra.pkActive = rb.pkActive = true;
     const ev = { type: "pk_start", battleId: id };
     pushEvent(ra.roomId, ev); pushEvent(rb.roomId, ev);
     notify(inv.from, displayNameOf(req.userEmail) + " accepted your PK challenge!", "Go-Live.html");
     ok(res, { accepted: true, battle: view(b) });
+  });
+  // either host can stop the battle whenever they want
+  app.post("/api/pk/end", requireAuth, async (req, res) => {
+    let mine = null;
+    for (const b of activeBattles.values()) if (b.host_a === req.userEmail || b.host_b === req.userEmail) { mine = b; break; }
+    if (!mine) return fail(res, 404, "You are not in a PK battle right now.");
+    const winner = await settle(mine);
+    ok(res, { ended: true, winner: winner ? (winner === "draw" ? "draw" : publicHandle(winner)) : null });
   });
   app.get("/api/pk/active", (req, res) => {
     const rows = Array.from(activeBattles.values()).sort((a, b) => b.started_at - a.started_at).slice(0, 50);
@@ -363,6 +372,10 @@ module.exports = function (ctx) {
     const host = lc(hostId), sender = lc(senderId);
     const room = roomOfHost(host);
     if (room) { room.gifts = (room.gifts || 0) + 1; room.giftCoins = (room.giftCoins || 0) + price; }
+    // the host's star total after this gift (10 coins = 5 stars), shown growing on the live screen
+    const starsAdded = store.starsOf(price);
+    let starsNow = null;
+    try { const w = await store.getWallet(host); starsNow = w.stars; if (room) room.starsN = starsNow; } catch (e) {}
     let b = null;
     for (const x of activeBattles.values()) if ((x.host_a === host || x.host_b === host) && Number(x.ends_at) > Date.now()) { b = x; break; }
     if (b) {
@@ -374,7 +387,7 @@ module.exports = function (ctx) {
     const ck = host + "|" + sender + "|" + gift, prev = combos.get(ck);
     const combo = prev && Date.now() - prev.t < 6000 ? prev.n + 1 : 1;
     combos.set(ck, { n: combo, t: Date.now() });
-    const ev = { type: "gift", from: displayNameOf(sender), avatar: avatarUrl(sender), gift, price, combo };
+    const ev = { type: "gift", from: displayNameOf(sender), avatar: avatarUrl(sender), gift, price, combo, starsAdded, stars: starsNow };
     if (room) pushEvent(room.roomId, ev);
     if (b) { const other = roomOfHost(b.host_a === host ? b.host_b : b.host_a); if (other) pushEvent(other.roomId, { ...ev, toHost: displayNameOf(host) }); }
     return b ? view(b) : null;
@@ -441,13 +454,11 @@ module.exports = function (ctx) {
   // ---------- self-service password reset ----------
   const sha = (t) => crypto.createHash("sha256").update(t).digest("hex");
   async function sendResetMail(email, link) {
-    if (mailer.ready()) {
-      // resend.emails.send({ from, to, subject, html }) — see mailer.js
-      const r = await mailer.sendMail({
-        to: email, subject: "Reset your VicoPay Live password",
+    if (process.env.RESEND_API_KEY && process.env.MAIL_FROM) {
+      await axios.post("https://api.resend.com/emails", {
+        from: process.env.MAIL_FROM, to: [email], subject: "Reset your VicoPay Live password",
         html: '<p>Click the button below to choose a new password. This link works for 30 minutes.</p><p><a href="' + link + '" style="background:#0787ed;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none">Reset password</a></p><p>If you did not ask for this, ignore this email.</p>'
-      });
-      if (r.error) throw new Error("Resend: " + r.error.message);
+      }, { headers: { Authorization: "Bearer " + process.env.RESEND_API_KEY }, timeout: 10000 });
       return "email";
     }
     console.log("PASSWORD RESET LINK (no email provider configured) for " + email + ": " + link);
@@ -460,57 +471,11 @@ module.exports = function (ctx) {
   }
   app.post("/api/auth/forgot", authRateLimit, async (req, res) => {
     const email = lc((req.body || {}).email).trim();
-    let delivery = mailer.ready() ? "email" : "console";
+    let delivery = process.env.RESEND_API_KEY && process.env.MAIL_FROM ? "email" : "console";
     try { if (email && await users.exists(email) && !bannedUsers.has(email)) delivery = await sendResetMail(email, await makeResetLink(email)); }
     catch (e) { console.error("RESET MAIL ERROR:", e.message); }
     // same answer whether or not the account exists
     ok(res, { delivery, message: "If an account exists for that email, a reset link has been sent. It works for 30 minutes." });
-  });
-  // ---------- email (Resend): status, test, and RECEIVING ----------
-  // Admin: is email set up?
-  app.get("/api/admin/email/status", requireAdmin, async (req, res) => {
-    ok(res, {
-      canSend: mailer.ready(), from: mailer.mailFrom() || null,
-      canReceive: !!(process.env.RESEND_WEBHOOK_SECRET && process.env.INBOX_FORWARD_TO && process.env.RESEND_API_KEY),
-      forwardTo: process.env.INBOX_FORWARD_TO || null,
-      webhookUrl: (process.env.APP_URL || "").replace(/\/$/, "") + "/api/resend/webhook"
-    });
-  });
-  // Admin: send yourself a test email  { "to": "you@gmail.com" }
-  app.post("/api/admin/email/test", requireAdmin, async (req, res) => {
-    const to = String((req.body || {}).to || process.env.INBOX_FORWARD_TO || "").trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return fail(res, 400, 'Send { "to": "your@email.com" }.');
-    const r = await mailer.sendMail({
-      to, subject: "VicoPay Live test email",
-      html: "<p>Your VicoPay Live website can send email through Resend. ✅</p>"
-    });
-    if (r.error) return fail(res, 502, "Resend could not send: " + r.error.message);
-    ok(res, { message: "Test email sent to " + to + ".", id: r.id });
-  });
-  // Resend calls this when someone emails your receiving address (event "email.received").
-  // We check the signature, read the email, and forward it to INBOX_FORWARD_TO (a reply goes to the original sender).
-  app.post("/api/resend/webhook", async (req, res) => {
-    const secret = process.env.RESEND_WEBHOOK_SECRET;
-    if (!secret) return fail(res, 503, "RESEND_WEBHOOK_SECRET is not set.");
-    if (!mailer.verifyWebhook(req.rawBody, req.headers, secret)) return fail(res, 400, "Invalid signature.");
-    const event = req.body || {};
-    if (event.type !== "email.received") return ok(res, { ignored: event.type || true });
-    const forwardTo = String(process.env.INBOX_FORWARD_TO || "").trim();
-    const meta = event.data || {};
-    if (!forwardTo) { console.log("EMAIL RECEIVED from " + meta.from + " (set INBOX_FORWARD_TO to get it in your inbox)"); return ok(res, { stored: false }); }
-    const own = (mailer.mailFrom().match(/[^<\s]+@[^>\s]+/) || [""])[0].toLowerCase();
-    if (own && String(meta.from || "").toLowerCase() === own) return ok(res, { skipped: "own address" }); // never forward in a loop
-    const got = await mailer.resend.emails.receiving.get(meta.email_id);
-    if (got.error) { console.error("RESEND RECEIVE ERROR:", got.error.message); return fail(res, 502, "Could not read the email yet."); } // Resend will retry
-    const m = got.data || {}, e = mailer.esc;
-    const from = (m.headers && m.headers.from) || m.from || meta.from || "unknown sender";
-    const head = '<div style="font-family:Arial,sans-serif;font-size:13px;color:#555;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:12px">' +
-      "<b>From:</b> " + e(from) + "<br><b>To:</b> " + e((m.to || meta.to || []).join(", ")) + "<br><b>Subject:</b> " + e(m.subject || meta.subject || "") + "</div>";
-    const body = m.html || ('<pre style="font-family:inherit;white-space:pre-wrap">' + e(m.text || "(no text)") + "</pre>");
-    const replyTo = (String(from).match(/[^<\s]+@[^>\s]+/) || [""])[0] || meta.from;
-    const sent = await mailer.sendMail({ to: forwardTo, subject: "[VicoPay inbox] " + (m.subject || meta.subject || "(no subject)"), html: head + body, replyTo });
-    if (sent.error) { console.error("RESEND FORWARD ERROR:", sent.error.message); return fail(res, 502, "Could not forward the email yet."); }
-    ok(res, { forwarded: true });
   });
   app.post("/api/auth/reset", authRateLimit, async (req, res) => {
     const token = String((req.body || {}).token || ""), password = String((req.body || {}).password || "");
@@ -663,6 +628,18 @@ module.exports = function (ctx) {
     await users.warm(rows.map((r) => r.senderId));
     ok(res, { gifts: rows.map((t) => ({ from: displayNameOf(t.senderId), handle: publicHandle(t.senderId), avatar: avatarUrl(t.senderId), gift: t.gift, coin: Number(t.coin), ts: new Date(t.createdAt).getTime() })) });
   });
+  // ALL gifts the signed-in host has received (newest first) + the lifetime total, for my-gifts.html and the gift badge on Go-Live
+  app.get("/api/host/my-gifts", requireAuth, async (req, res) => {
+    const rows = await store.recentGiftsTo(req.userEmail, 500);
+    await users.warm(rows.map((r) => r.senderId));
+    let total = rows.length;
+    try { const st = await getHostStats(req.userEmail); if (st && Number(st.gifts) > total) total = Number(st.gifts); } catch (e) { /* keep list length */ }
+    ok(res, {
+      total,
+      coins: rows.reduce((a, t) => a + Number(t.coin || 0), 0),
+      gifts: rows.map((t) => ({ from: displayNameOf(t.senderId), handle: publicHandle(t.senderId), avatar: avatarUrl(t.senderId), gift: t.gift, coin: Number(t.coin), ts: new Date(t.createdAt).getTime() }))
+    });
+  });
   // coin statement of the signed-in user (also at /api/wallet/:id/statement)
   app.get("/api/me/statement", requireAuth, async (req, res) => {
     const entries = (await ledger.statement(req.userEmail, req.query.limit)).filter((r) => r.currency === "coin");
@@ -688,7 +665,7 @@ module.exports = function (ctx) {
     }
     const flags = [];
     if (b.circular > 0) flags.push(b.circular + " stars are round-trip gifts (excluded automatically).");
-    if (senders.length && b.total > 0 && senders.slice(0, 2).reduce((n, x) => n + x.coins, 0) / b.total > 0.6) flags.push("More than 60% of the stars come from one or two accounts.");
+    if (senders.length && b.total > 0 && senders.slice(0, 2).reduce((n, x) => n + x.coins, 0) / (b.total * store.COINS_PER_STAR) > 0.6) flags.push("More than 60% of the stars come from one or two accounts.");
     if (senders.some((x) => x.sameNetwork)) flags.push("Some gifters use the same network as this host. Could be family or shared Wi-Fi; check before paying.");
     if (senders.some((x) => x.accountAgeDays !== null && x.accountAgeDays < 2)) flags.push("Some gifters have accounts less than 2 days old.");
     if (senders.some((x) => x.reversedPayments > 0)) flags.push("A gifter has had a payment reversed.");
