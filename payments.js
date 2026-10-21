@@ -40,7 +40,7 @@ function packageForPayment(coinPackages, payment) {
 // minUsd dollars are not offered in dollars. Returns { "10000": 6.67, ... }.
 function usdPackages(coinPackages, ngnPerUsd, minUsd) {
   const out = {};
-  const rate = Number(ngnPerUsd) > 0 ? Number(ngnPerUsd) : 1500;
+  const rate = Number(ngnPerUsd) > 0 ? Number(ngnPerUsd) : 1428.57;
   for (const key of Object.keys(coinPackages)) {
     const usd = round2(Number(key) / rate);
     if (usd >= (Number(minUsd) || 0)) out[key] = usd;

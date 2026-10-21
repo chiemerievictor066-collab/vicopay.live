@@ -436,6 +436,7 @@
     <script src="auth.js"></script>
     <script>VicoAuth.requireLogin();</script>
     <script src="vico-ui.js"></script>
+<script src="vico-currency.js"></script>
 </head>
 
 <body>
@@ -594,13 +595,6 @@
 
             <!-- GIFT GRID -->
 
-            <!-- CURRENCY TOGGLE -->
-            <div class="currency-toggle" role="group" aria-label="Choose price currency">
-                <span class="currency-label">Show price in:</span>
-                <button type="button" class="currency-btn active" id="btnNaira" onclick="setCurrency('NGN')">₦ Naira</button>
-                <button type="button" class="currency-btn" id="btnDollar" onclick="setCurrency('USD')">$ Dollar</button>
-            </div>
-
             <!-- GIFT GRID (built from the GIFTS list in the script below) -->
             <div class="gift-grid" id="giftGrid"></div>
 
@@ -722,7 +716,7 @@
     <script>
         // ===== GIFT LIST: cheapest to most expensive (coins), prices as requested =====
         // The Dollar price = Naira price / NGN_PER_USD (same rate as NGN_PER_USD in .env).
-        const NGN_PER_USD = 1500;
+        const NGN_PER_USD = 1428.57;   // 10 coins = ₦100 = $0.07
         const GIFTS = [
             { name: "Strawberry", icon: "🍓", coins: 10, priceNGN: 100 },
             { name: "Fire", icon: "🔥", coins: 50, priceNGN: 500 },
@@ -739,7 +733,7 @@
             { name: "Elephant", icon: "🐘", coins: 30000, priceNGN: 300000 },
             { name: "Whale", icon: "🐋", coins: 50000, priceNGN: 500000 }
         ];
-        let currency = localStorage.getItem("giftShopCurrency") === "USD" ? "USD" : "NGN";
+        let currency = window.VicoCurrency ? VicoCurrency.get() : "NGN";   // chosen once on the Home page
         function formatMoney(priceNGN) {
             if (currency === "USD") {
                 return "$" + (priceNGN / NGN_PER_USD).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -763,12 +757,10 @@
                     '<button class="send-button" onclick="sendGift(\'' + g.name + '\',' + g.coins + ')">Send</button></div>';
             });
             grid.innerHTML = html;
-            document.getElementById("btnNaira").classList.toggle("active", currency === "NGN");
-            document.getElementById("btnDollar").classList.toggle("active", currency === "USD");
         }
+        if (window.VicoCurrency) VicoCurrency.on(function (c) { currency = c; renderGifts(); });
         function setCurrency(c) {
             currency = c === "USD" ? "USD" : "NGN";
-            try { localStorage.setItem("giftShopCurrency", currency); } catch (e) {}
             renderGifts();
         }
         let coinBalance = 0;

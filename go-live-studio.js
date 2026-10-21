@@ -109,8 +109,9 @@
   function clock(b) { var s = Math.max(0, Math.floor((Date.now() - (b.startedAt || Date.now())) / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
   function paintBattle() {
     var sp = $("#stagePK");
-    if (!battle) { sp.classList.remove("on"); syncOpp(null); return; }
-    sp.classList.add("on");
+    var stg = document.querySelector(".live-stage");
+    if (!battle) { sp.classList.remove("on"); if (stg) stg.classList.remove("pk-on"); syncOpp(null); return; }
+    sp.classList.add("on"); if (stg) stg.classList.add("pk-on");
     $("#spA").textContent = battle.a.displayName + " · " + num(battle.a.score);
     $("#spB").textContent = num(battle.b.score) + " · " + battle.b.displayName;
     var t = battle.a.score + battle.b.score; $("#spBar").style.width = (t ? Math.round(battle.a.score / t * 100) : 50) + "%";

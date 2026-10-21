@@ -330,6 +330,7 @@ footer {
 
 <script src="auth.js"></script>
 <script>VicoAuth.requireLogin();</script>
+<script src="vico-currency.js"></script>
 </head>
 
 
@@ -366,11 +367,6 @@ footer {
 
     </div>
 
-
-    <div class="currency-switch" id="currencySwitch" style="display:none">
-        <button type="button" id="curNGN" class="on" onclick="setCurrency('NGN')">₦ Naira</button>
-        <button type="button" id="curUSD" onclick="setCurrency('USD')">$ US Dollar</button>
-    </div>
 
     <div class="packages">
 
@@ -646,9 +642,6 @@ function priceLabel(ngn) {
 // Show every package in naira or in dollars (packages with no dollar price are hidden in dollars)
 function setCurrency(c) {
     currency = (c === "USD" && Object.keys(usdPrices).length) ? "USD" : "NGN";
-    try { localStorage.setItem("vicoPayCurrency", currency); } catch (e) {}
-    document.getElementById("curNGN").classList.toggle("on", currency === "NGN");
-    document.getElementById("curUSD").classList.toggle("on", currency === "USD");
     document.querySelectorAll(".package").forEach(function (card) {
         const btn = card.querySelector("button");
         const m = btn && /selectPackage\(\s*(\d+)\s*,\s*(\d+)\s*\)/.exec(btn.getAttribute("onclick") || "");
@@ -664,14 +657,14 @@ function setCurrency(c) {
     }
 }
 
+if (window.VicoCurrency) VicoCurrency.on(function (c) { setCurrency(c); });
+
 // Ask the server which currencies it accepts and what each package costs in dollars
 fetch("/api/coin-prices").then(function (r) { return r.json(); }).then(function (d) {
     if (!d || !d.success || !d.currencies || d.currencies.indexOf("USD") === -1) return;
     (d.packages || []).forEach(function (p) { if (p.usd != null) usdPrices[p.ngn] = p.usd; });
     if (!Object.keys(usdPrices).length) return;
-    document.getElementById("currencySwitch").style.display = "flex";
-    let saved = "NGN"; try { saved = localStorage.getItem("vicoPayCurrency") || "NGN"; } catch (e) {}
-    setCurrency(saved);
+    setCurrency(window.VicoCurrency ? VicoCurrency.get() : "NGN");   // the currency chosen on the Home page
 }).catch(function () { /* naira only if the prices cannot be loaded */ });
 
 

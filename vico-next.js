@@ -55,28 +55,17 @@
   }
   var next = neighbour(1), prev = neighbour(-1);
 
+  // Both arrows sit together at the TOP CENTER of the screen, small and slightly see-through, so they never cover
+  // a button at the bottom (My Gifts, Go Live, menus) or the sides. Nothing expands on hover.
   var css = document.createElement("style");
   css.textContent =
-    "#vicoNextBtn{position:fixed;right:max(12px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);z-index:9000;" +
-    "display:flex;align-items:center;flex-direction:row-reverse;gap:0;height:48px;min-width:48px;padding:0;border:0;border-radius:24px;" +
-    "background:linear-gradient(135deg,#10bfff,#0646b8);color:#fff;text-decoration:none;font:700 13px system-ui,Arial,sans-serif;" +
-    "box-shadow:0 6px 18px rgba(3,28,93,.35);opacity:.92;cursor:pointer;overflow:hidden;transition:all .2s}" +
-    "#vicoNextBtn:hover,#vicoNextBtn:focus-visible{opacity:1;padding-left:14px;gap:8px}" +
-    "#vicoNextBtn .arr{width:48px;height:48px;display:grid;place-items:center;flex:none}" +
-    "#vicoNextBtn .arr svg{width:22px;height:22px}" +
-    "#vicoNextBtn .lbl{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .2s}" +
-    "#vicoNextBtn:hover .lbl,#vicoNextBtn:focus-visible .lbl{max-width:170px}" +
-    "@media(max-width:700px){#vicoNextBtn{top:auto;bottom:calc(86px + env(safe-area-inset-bottom));transform:none;height:44px;min-width:44px}#vicoNextBtn .arr{width:44px;height:44px}}" +
-    "#vicoPrevBtn{position:fixed;left:max(12px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);z-index:9000;" +
-    "display:flex;align-items:center;flex-direction:row;gap:0;height:48px;min-width:48px;padding:0;border:0;border-radius:24px;" +
-    "background:linear-gradient(135deg,#10bfff,#0646b8);color:#fff;text-decoration:none;font:700 13px system-ui,Arial,sans-serif;" +
-    "box-shadow:0 6px 18px rgba(3,28,93,.35);opacity:.92;cursor:pointer;overflow:hidden;transition:all .2s}" +
-    "#vicoPrevBtn:hover,#vicoPrevBtn:focus-visible{opacity:1;padding-right:14px;gap:8px}" +
-    "#vicoPrevBtn .arr{width:48px;height:48px;display:grid;place-items:center;flex:none}" +
-    "#vicoPrevBtn .arr svg{width:22px;height:22px}" +
-    "#vicoPrevBtn .lbl{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .2s}" +
-    "#vicoPrevBtn:hover .lbl,#vicoPrevBtn:focus-visible .lbl{max-width:170px}" +
-    "@media(max-width:700px){#vicoPrevBtn{top:auto;bottom:calc(86px + env(safe-area-inset-bottom));transform:none;height:44px;min-width:44px}#vicoPrevBtn .arr{width:44px;height:44px}}" +
+    "#vicoPrevBtn,#vicoNextBtn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:9000;width:32px;height:32px;display:grid;place-items:center;padding:0;border:1px solid #ffffff55;border-radius:50%;" +
+    "background:linear-gradient(135deg,#10bfffd9,#0646b8d9);color:#fff;text-decoration:none;box-shadow:0 3px 10px rgba(3,28,93,.35);opacity:.8;cursor:pointer;transition:opacity .2s,transform .2s;-webkit-tap-highlight-color:transparent}" +
+    "#vicoPrevBtn{left:calc(50% - 38px)}#vicoNextBtn{left:calc(50% + 6px)}" +
+    "#vicoPrevBtn:hover,#vicoNextBtn:hover,#vicoPrevBtn:focus-visible,#vicoNextBtn:focus-visible{opacity:1;transform:scale(1.08)}" +
+    "#vicoPrevBtn .arr,#vicoNextBtn .arr{display:grid;place-items:center;width:100%;height:100%}" +
+    "#vicoPrevBtn .arr svg,#vicoNextBtn .arr svg{width:16px;height:16px}" +
+    "#vicoPrevBtn .lbl,#vicoNextBtn .lbl{display:none}" +
     "@media print{#vicoNextBtn,#vicoPrevBtn{display:none}}";
   document.head.appendChild(css);
 

@@ -252,6 +252,7 @@
   }
 </style>
 <script src="auth.js"></script>
+<script src="vico-currency.js"></script>
 </head>
 <body>
 
@@ -283,10 +284,6 @@
     </ul>
   </div>
   <div class="join-card" id="join-card">
-    <div class="cur-toggle" id="cur-toggle" role="group" aria-label="Choose currency">
-      <button type="button" data-c="USD">$ USD</button>
-      <button type="button" data-c="NGN">₦ Naira</button>
-    </div>
     <div class="price"><span id="price-amt">$9.99</span><small id="price-note">for full access</small></div>
     <button class="btn-join" id="btn-join-hero" type="button">Join for $9.99</button>
     <div class="join-err" id="join-err"></div>
@@ -451,7 +448,8 @@
   /* ------------------------- state ------------------------- */
   var S = { plans: { usd: 9.99, ngn: 15000, days: 30, lifetime: false }, cur: "USD", signedIn: false, member: false, lifetime: false, daysLeft: null, busy: false };
   var tzGuess = ""; try { tzGuess = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
-  S.cur = localStorage.getItem("vicoForexCur") || (tzGuess === "Africa/Lagos" ? "NGN" : "USD");
+  S.cur = window.VicoCurrency ? VicoCurrency.get() : (tzGuess === "Africa/Lagos" ? "NGN" : "USD");   // chosen once on the Home page
+  if (window.VicoCurrency) VicoCurrency.on(function (c) { S.cur = c; var er = $("#join-err"); if (er) er.style.display = "none"; renderPrice(); });
 
   function money(cur) { return cur === "USD" ? "$" + Number(S.plans.usd).toFixed(2) : "₦" + Number(S.plans.ngn).toLocaleString("en-NG"); }
   function accessText() { return S.plans.lifetime ? "lifetime access" : S.plans.days + " days of full access"; }
@@ -507,7 +505,7 @@
     err.style.display = "block";
     if (S.cur === "USD" && /naira/i.test(err.textContent)) {
       var sw = el("button", "btn-ghost", "Pay in Naira instead"); sw.type = "button"; sw.style.marginTop = "8px"; sw.style.display = "block";
-      sw.onclick = function () { S.cur = "NGN"; localStorage.setItem("vicoForexCur", "NGN"); err.style.display = "none"; renderPrice(); join(); };
+      sw.onclick = function () { S.cur = "NGN"; if (window.VicoCurrency) VicoCurrency.set("NGN"); err.style.display = "none"; renderPrice(); join(); };
       err.appendChild(sw);
     }
   }
@@ -551,7 +549,6 @@
       if (!S.lifetime) {
         var box = el("div"); box.style.cssText = "border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px";
         box.appendChild(el("div", "join-note", "Need more time? Pay again and the days are added on top of what you have left. Nothing is lost."));
-        var tg = el("div", "cur-toggle"); tg.id = "cur-toggle"; tg.innerHTML = '<button type="button" data-c="USD">$ USD</button><button type="button" data-c="NGN">₦ Naira</button>'; box.appendChild(tg);
         var more = el("button", "btn-ghost join-btn", ""); more.type = "button"; more.id = "btn-add-time"; box.appendChild(more);
         var er = el("div", "join-err"); er.id = "join-err"; box.appendChild(er);
         card.appendChild(box);
