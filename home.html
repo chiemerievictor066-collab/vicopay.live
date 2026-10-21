@@ -63,15 +63,30 @@
             font-size: 28px;
             font-weight: 900;
             color: white;
-            background: linear-gradient(135deg, #00d9ff, #1768ff);
+            background: linear-gradient(145deg, #7aeaff, #1d8bff 55%, #0a3fd1);
             clip-path: polygon(50% 0, 100% 0, 72% 100%, 50% 100%, 0 0);
+            text-shadow: 0 2px 6px rgba(3, 20, 80, .45);
         }
 
         .brand-name {
             font-size: 24px;
-            font-weight: 800;
-            color: #fff
+            font-weight: 500;
+            color: #e9f4ff;
+            letter-spacing: .2px
         }
+
+        .brand-name span {
+            color: #1fb0ff;
+            font-weight: 900
+        }
+
+        /* currency choice under the hero tags */
+        .cur-pick { margin-top: 20px; display: flex; flex-direction: column; gap: 9px; align-items: flex-start }
+        .cur-title { font-size: 13px; font-weight: 700; color: #bcd9ff; letter-spacing: .2px }
+        .cur-btns { display: flex; gap: 8px }
+        .cur-btns button { border: 1px solid #ffffff33; background: #ffffff12; color: #fff; font: 800 14px system-ui, Arial, sans-serif; padding: 10px 20px; border-radius: 999px; cursor: pointer; transition: .15s }
+        .cur-btns button:hover { background: #ffffff22 }
+        .cur-btns button.on { background: #19d98b; border-color: #19d98b; color: #04210f; box-shadow: 0 4px 14px #19d98b55 }
 
         .brand-sub {
             font-size: 10px;
@@ -827,6 +842,7 @@
     </style>
     <script src="auth.js"></script>
     <script src="vico-ui.js"></script>
+<script src="vico-currency.js"></script>
 </head>
 
 <body>
@@ -835,7 +851,7 @@
         <a href="home.html" class="brand">
             <div class="brand-mark">V</div>
             <div>
-                <div class="brand-name">VicoPay</div>
+                <div class="brand-name">Vico<span>Pay</span></div>
                 <div class="brand-sub">Live • Chat • Connect • Earn</div>
             </div>
         </a>
@@ -855,7 +871,7 @@
             <input class="search" type="search" placeholder="Search creators, tags, or users...">
             <a href="join-now.html" class="nav-btn" id="navLogin">Login</a>
             <a href="join-now.html" class="nav-btn primary" id="navJoin">Join Now</a>
-            <a href="profile.html" id="navMe" data-my-avatar data-size="40" data-my-name style="display:none;color:#fff;text-decoration:none;align-items:center" title="My profile"></a>
+            <a href="profile.html" id="navMe" data-my-avatar data-size="40" style="display:none;color:#fff;text-decoration:none;align-items:center" title="My profile"></a>
         </div>
     </header>
 
@@ -881,6 +897,14 @@
                     <span class="hero-feature">🎁 Virtual Gifts</span>
                     <span class="hero-feature">🌐 Global Community</span>
                     <span class="hero-feature">💰 Creator Earnings</span>
+                </div>
+
+                <div class="cur-pick" id="vicoCurBar" role="group" aria-label="Choose VicoPay preferred currency">
+                    <span class="cur-title">Choose VicoPay preferred currency</span>
+                    <div class="cur-btns">
+                        <button type="button" data-c="NGN">₦ Naira</button>
+                        <button type="button" data-c="USD">$ Dollar</button>
+                    </div>
                 </div>
             </div>
 

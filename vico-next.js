@@ -39,7 +39,10 @@
   var here = (location.pathname.split("/").pop() || "").toLowerCase();
   var idx = -1;
   for (var i = 0; i < ORDER.length; i++) if (ORDER[i][0].toLowerCase() === here) { idx = i; break; }
-  if (idx < 0 || document.getElementById("vicoNextBtn")) return;
+  // The arrows only appear on pages that have no button of their own leading to another page.
+  // They are NOT on Home, Live Room, Go Live, Profile, Settings or the other pages that already have menus.
+  var SHOW_ON = ["hosts.html", "gifters.html", "host-wallet.html", "creator-withdrawal.html", "buy-coin.html", "coin-history.html", "my-gifts.html", "forex.html", "terms.html", "privacy.html"];
+  if (idx < 0 || SHOW_ON.indexOf(here) === -1 || document.getElementById("vicoNextBtn")) return;
 
   var signedIn = false;
   try { signedIn = !!(window.VicoAuth && VicoAuth.isSignedIn && VicoAuth.isSignedIn()) || !!localStorage.getItem("vicoPayToken"); } catch (e) {}
