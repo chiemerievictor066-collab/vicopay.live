@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vico Wallet - Vico Pay Live</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;align-items:center;padding:22px;border-radius:26px;background:linear-gradient(120deg,#bfe0ff,#c9b8ff);margin-bottom:14px}
+.hero h1{margin:0;font-size:clamp(30px,6vw,44px);color:#12275c}.hero p{margin:4px 0 12px;font-weight:700;color:#1b2f66}
+.bal{padding:18px;text-align:center}.bal small{color:var(--gm-muted);font-weight:800}.bal b{display:block;font-size:38px;color:var(--gm-purple);margin:4px 0}
+.tabs{display:flex;gap:8px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none}.tabs button{flex:0 0 auto;border:1px solid var(--gm-line);background:#fff;border-radius:16px;padding:10px 16px;font-weight:800;cursor:pointer;color:var(--gm-ink)}.tabs button.on{background:linear-gradient(135deg,#3b8bff,#1d4fd8);color:#fff;border-color:transparent}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.act{padding:16px;display:flex;flex-direction:column;gap:8px}.act h3{margin:0;color:var(--gm-purple)}.act p{margin:0;color:var(--gm-muted);font-weight:600;font-size:14px}
+.tx{padding:6px 16px}.tx h3{margin:12px 0 4px}.tr{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #e3eefc}.tr:last-child{border:0}
+.ic{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex:0 0 40px}.in{background:#16a34a}.out{background:#ef4444}
+.tr .t{flex:1;min-width:0}.tr b{display:block;font-size:14.5px}.tr small{color:var(--gm-muted);display:block}.amt{font-weight:900}.amt.in{color:#16a34a;background:none;width:auto;height:auto}.amt.out{color:#ef4444;background:none;width:auto;height:auto}
+.k3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}.k{padding:14px;text-align:center}.k b{display:block;font-size:24px;color:var(--gm-purple)}.k small{color:var(--gm-muted);font-weight:800}
+.st{display:inline-block;border-radius:10px;padding:2px 9px;font-size:11.5px;font-weight:900;color:#fff;background:#64748b}.st.paid,.st.shipped{background:#d97706}.st.completed,.st.available{background:#16a34a}.st.disputed,.st.refund_due{background:#dc2626}.st.pending{background:#d97706}.st.refunded,.st.reversed{background:#94a3b8}
+.note{padding:12px 16px;border-radius:16px;background:#eef6ff;border:1px solid var(--gm-line);font-weight:700;font-size:13.5px;margin-bottom:12px;color:#1b3a8a}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.err{color:#dc2626;font-weight:700;font-size:13.5px;min-height:18px;margin-top:8px}
+@media(max-width:680px){.hero{grid-template-columns:1fr}}
+</style></head>
+<body class="gm" data-gm="wallet" data-title="Vico Wallet" data-ai="wallet" data-ai-img="vico-ai-guide.gif">
+<div class="gm-wrap">
+  <div class="hero"><div><h1>Vico Wallet</h1><p>Your Wallet. Your Power.<br>Send · Receive · Earn · Spend</p><a class="gm-btn" href="buy-coin.html">Top Up Coins →</a></div>
+    <div class="gm-card bal"><small>Available coins</small><b id="bal">…</b><a href="coin-history.html" style="font-weight:800;color:var(--gm-blue)">Full history →</a></div></div>
+  <div class="tabs" id="tabs"><button class="on" data-t="coins">Coins</button><button data-t="seller">Seller wallet</button><button data-t="sales">My sales</button><button data-t="buys">My purchases</button><button data-t="partnership">Creator partnership</button></div>
+
+  <div id="p-coins">
+    <div class="row">
+      <div class="gm-card act"><h3>🪙 Buy coins</h3><p>Top up to send gifts and support creators.</p><a class="gm-btn sm" href="buy-coin.html">Top Up</a></div>
+      <div class="gm-card act"><h3>🌟 Creator earnings</h3><p>Live-stream earnings are kept for you until you withdraw them. See your stars and monthly progress.</p><a class="gm-btn sm" href="host-wallet.html">Open</a></div>
+      <div class="gm-card act"><h3>💸 Withdraw creator earnings</h3><p>Creators who complete the monthly requirement can withdraw.</p><a class="gm-btn sm blue" href="creator-withdrawal.html">Withdraw</a></div>
+      <div class="gm-card act" id="secCard"><h3>🔐 Wallet PIN</h3><p id="secTxt">Checking…</p><div class="btns" id="secBtns"></div><div class="err" id="secE"></div></div>
+      <div class="gm-card act"><h3>📢 Pay for ads</h3><p>Ads are paid with Paystack when you create them.</p><a class="gm-btn sm blue" href="vico-ad-center.html">Ad Center</a></div></div>
+    <div class="gm-card tx"><h3>Recent coin transactions</h3><div id="tx"><p style="color:var(--gm-muted);font-weight:700">Loading…</p></div></div>
+  </div>
+
+  <div id="p-seller" style="display:none">
+    <div class="note">Money from products sold in Vico Marketplace goes here. It is <b>pending</b> until the buyer confirms they received the item (or after <span id="relDays">7</span> days), then it becomes <b>available</b> and you can withdraw it.</div>
+    <div class="k3"><div class="gm-card k"><b id="wPend">—</b><small>Pending</small></div><div class="gm-card k"><b id="wAvail">—</b><small>Available to withdraw</small></div><div class="gm-card k"><b id="wOut">—</b><small>Withdrawn</small></div><div class="gm-card k"><b id="wLife">—</b><small>Total sold</small></div></div>
+    <button class="gm-btn" id="wBtn" type="button">Withdraw money</button> <a class="gm-btn blue" href="vico-marketplace.html?mine=1">My Marketplace items</a>
+    <div class="gm-card tx" style="margin-top:12px"><h3>Withdrawals</h3><div id="wl"></div></div>
+  </div>
+  <div id="p-sales" style="display:none"><div class="gm-card tx"><div id="sl"><p style="color:var(--gm-muted);font-weight:700">Loading…</p></div></div></div>
+  <div id="p-buys" style="display:none"><div class="gm-card tx"><div id="bl"><p style="color:var(--gm-muted);font-weight:700">Loading…</p></div></div></div>
+  <div id="p-partnership" style="display:none">
+    <div class="note">Creator Video Partnership payments are shown separately from your spendable coins. Company funding is verified through Paystack. NGN earnings are transferred to your verified bank after video approval; USD earnings are shown separately until a USD payout route is enabled.</div>
+    <div class="k3"><div class="gm-card k"><b id="cpPending">—</b><small>Pending partnership amount</small></div><div class="gm-card k"><b id="cpAvailable">—</b><small>Available partnership earnings</small></div><div class="gm-card k"><b id="cpPaid">—</b><small>Paid to bank</small></div></div>
+    <div class="btns"><a class="gm-btn sm blue" href="creator-partnership.html">Open Creator Partnership</a><a class="gm-btn sm" href="payout-setup.html">Manage bank details</a></div>
+    <div class="gm-card tx" style="margin-top:12px"><h3>Partnership payment history</h3><div id="cpEntries">Loading…</div></div>
+  </div>
+</div>
+
+<div class="gm-modal" id="mW"><div class="box">
+  <h2 style="margin:0 0 4px">Withdraw money</h2><div class="note" style="margin-top:8px">Available: <b id="wA2"></b>. Smallest withdrawal: <span id="wMin"></span>. You are paid in Naira (₦) to your bank account, after the Vico team checks the request.</div>
+  <label class="gm-lab">Amount (₦)</label><input class="gm-in" id="wAmt" type="number" min="1" inputmode="numeric">
+  <label class="gm-lab">Bank name</label><input class="gm-in" id="wBank" maxlength="60"><label class="gm-lab">Account number (10 digits)</label><input class="gm-in" id="wNum" inputmode="numeric" maxlength="10"><label class="gm-lab">Account name</label><input class="gm-in" id="wName" maxlength="80">
+  <div class="err" id="wE"></div><div style="display:flex;gap:10px;margin-top:12px"><button class="gm-btn" id="wGo" type="button">Send request</button><button class="gm-btn blue" id="wX" type="button">Cancel</button></div>
+</div></div>
+<script src="auth.js"></script><script src="gm-nav.js"></script><script src="vico-pin.js"></script>
+<script>
+var SW=null;
+function $(i){return document.getElementById(i);}
+function ago(t){var d=new Date(t);return d.toLocaleDateString(undefined,{day:"numeric",month:"short"})+" "+d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});}
+var SL={paid:"Paid · waiting for seller to send",shipped:"Sent · waiting for you to confirm",completed:"Completed",disputed:"Problem reported · Vico is reviewing",refund_due:"Refund due",refunded:"Refunded"};
+function show(t){[].forEach.call($("tabs").children,function(b){b.classList.toggle("on",b.dataset.t===t);});["coins","seller","sales","buys","partnership"].forEach(function(x){$("p-"+x).style.display=x===t?"block":"none";});
+  if(t==="seller")loadSeller();if(t==="sales")loadOrders("seller");if(t==="buys")loadOrders("buyer");if(t==="partnership")loadPartnershipWallet();}
+$("tabs").onclick=function(e){var b=e.target.closest("button");if(b)show(b.dataset.t);};
+if(!gmSignedIn()){$("bal").textContent="—";$("tx").innerHTML='<p style="font-weight:700">Please <a href="join-now.html" style="color:var(--gm-blue)">log in</a> to see your wallet.</p>';}
+else{gmApi("/api/me/statement?limit=20").then(function(d){$("bal").textContent=d.success?Number(d.balance).toLocaleString():"—";
+  var e=d.entries||[];$("tx").innerHTML=e.length?e.map(function(x){var up=x.delta>=0;return '<div class="tr"><div class="ic '+(up?"in":"out")+'">'+(up?"↓":"↑")+'</div><div class="t"><b>'+gmEsc(x.memo||"Transaction")+'</b><small>'+ago(x.createdAt)+'</small></div><span class="amt '+(up?"in":"out")+'">'+(up?"+":"")+Number(x.delta).toLocaleString()+' 🪙</span></div>';}).join(""):'<p style="color:var(--gm-muted);font-weight:700">No transactions yet.</p>';});
+  if(location.hash==="#purchases")show("buys");if(location.hash==="#partnership")show("partnership");}
+function loadPartnershipWallet(){if(!gmSignedIn())return;gmApi("/api/creator-partnership/wallet").then(function(d){var p=d.pending||[],e=d.entries||[],cur=gmIsUsd()?"USD":"NGN";function sum(a,fn){return a.filter(fn).reduce(function(n,x){return n+Number(x.amount||0)},0)}var pending=sum(p,function(x){return x.currency===cur}),available=sum(e,function(x){return x.currency===cur&&x.status==="available"}),paid=sum(e,function(x){return x.currency===cur&&x.status==="paid"});function fmt(a,c){return (c==="USD"?"$":"₦")+a.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}$("cpPending").textContent=fmt(pending,cur);$("cpAvailable").textContent=fmt(available,cur);$("cpPaid").textContent=fmt(paid,cur);$("cpEntries").innerHTML=e.length?e.map(function(x){return '<div class="tr"><div class="ic in">↗</div><div class="t"><b>'+gmEsc(x.businessName||"Business partnership")+'</b><small>'+gmEsc(x.videoTitle||"Promotional video")+' · '+ago(x.createdAt)+'</small></div><span class="amt">'+fmt(Number(x.amount),x.currency)+'</span><span class="st '+gmEsc(x.status)+'">'+gmEsc(x.status)+'</span></div>'}).join(""):'<p style="color:var(--gm-muted);font-weight:700">No partnership payments yet.</p>';}).catch(function(e){$("cpEntries").textContent=e.message||"Could not load partnership wallet."});}
+function loadSeller(){if(!gmSignedIn())return;gmApi("/api/seller/wallet").then(function(d){if(!d.success)return;SW=d;var t=d.totals;
+  $("wPend").innerHTML=gmM(t.pending);$("wAvail").innerHTML=gmM(Math.max(0,t.available));$("wOut").innerHTML=gmM(t.withdrawn);$("wLife").innerHTML=gmM(t.lifetime);$("relDays").textContent=d.settings.releaseDays;
+  $("wl").innerHTML=d.withdrawals.map(function(w){return '<div class="tr"><div class="ic out">↑</div><div class="t"><b>'+gmM(w.amount)+'</b><small>'+ago(w.createdAt)+' · '+gmEsc(w.bank||"")+'</small></div><span class="st '+(w.status==="paid"?"completed":w.status==="rejected"?"disputed":"pending")+'">'+(w.status==="requested"?"Waiting":w.status==="paid"?"Paid":"Declined")+'</span></div>';}).join("")||'<p style="color:var(--gm-muted);font-weight:700">No withdrawals yet.</p>';});}
+$("wBtn").onclick=function(){if(!SW)return;$("wA2").innerHTML=gmM(Math.max(0,SW.totals.available));$("wMin").innerHTML=gmM(SW.settings.minWithdrawal);$("wE").textContent="";$("mW").classList.add("on");};
+$("wX").onclick=function(){$("mW").classList.remove("on");};
+$("wGo").onclick=function(){$("wE").textContent="";gmApi("/api/seller/withdraw",{body:{amount:$("wAmt").value,bankName:$("wBank").value,accountNumber:$("wNum").value,accountName:$("wName").value}}).then(function(d){if(d.success){$("mW").classList.remove("on");gmToast("Request sent. The Vico team will pay it.");loadSeller();}else $("wE").textContent=d.message||"Could not send.";});};
+function loadOrders(role){var el=$(role==="seller"?"sl":"bl");gmApi("/api/market/orders?role="+role).then(function(d){var o=d.orders||[];
+  el.innerHTML=o.map(function(x){var b="";
+    if(role==="seller"&&x.status==="paid")b='<button class="gm-btn sm" data-a="shipped" data-id="'+x.id+'">I have sent it</button>';
+    if(role==="buyer"&&(x.status==="paid"||x.status==="shipped"))b='<button class="gm-btn sm" data-a="confirm" data-id="'+x.id+'">I received it</button><button class="gm-btn sm blue" data-a="dispute" data-id="'+x.id+'">Report a problem</button>';
+    var who=role==="seller"?'Buyer: '+gmEsc(x.other.displayName)+(x.buyerPhone?' · '+gmEsc(x.buyerPhone):"")+(x.method==="address"&&x.buyerAddress?'<br>Send to: '+gmEsc(x.buyerAddress):'<br>Buyer wants to be contacted to arrange delivery'):'Seller: '+gmEsc(x.other.displayName);
+    return '<div class="tr"><div class="t"><b>'+gmEsc(x.title)+'</b> · '+gmM(x.amount)+'<small>'+who+'</small><small>'+ago(x.createdAt)+'</small><span class="st '+x.status+'">'+(SL[x.status]||x.status)+'</span><div class="btns">'+b+'<a class="gm-btn sm blue" href="vico-messages.html?to='+encodeURIComponent(x.other.handle)+'">💬 Message</a></div></div></div>';}).join("")||'<p style="color:var(--gm-muted);font-weight:700">Nothing here yet.</p>';});}
+document.addEventListener("click",function(e){var b=e.target.closest("button[data-a]");if(!b||!b.dataset.id)return;var a=b.dataset.a,id=b.dataset.id,body={};
+  if(a==="dispute"){var r=prompt("What went wrong?");if(!r)return;body.reason=r;}
+  if(a==="confirm"&&!confirm("Confirm you received the item? The seller will be paid."))return;
+  gmApi("/api/market/orders/"+id+"/"+a,{method:"POST",body:body}).then(function(d){gmToast(d.success?"Done.":d.message);loadOrders(b.closest("#p-sales")?"seller":"buyer");});});
+
+/* ---- Wallet PIN card: create / change / forgot ---- */
+function secLoad(){if(!gmSignedIn())return;gmApi("/api/wallet-security/status").then(function(d){if(!d.success){$("secTxt").textContent=d.message||"Could not load.";return;}
+  var L=d.limits||{};$("secTxt").innerHTML=d.hasPin?"Your PIN protects withdrawals and paid gifts. "+(d.locked?"<b>Locked for a while after wrong tries.</b> ":"")+"Limits: "+gmM(L.maxTx)+" per withdrawal, "+gmM(L.daily)+" per 24 hours. Withdrawals of "+gmM(L.otpAbove)+" or more also need an email code.":"Create a 4 digit PIN. You will need it for every withdrawal and paid gift.";
+  $("secBtns").innerHTML=d.hasPin?'<button class="gm-btn sm" data-p="change">Change PIN</button><button class="gm-btn sm blue" data-p="reset">Forgot PIN</button>':'<button class="gm-btn sm" data-p="create">Create PIN</button>';});}
+$("secBtns").onclick=function(e){var b=e.target.closest("button");if(!b)return;$("secE").textContent="";var f=VicoPin[b.dataset.p];f().then(secLoad,function(x){if(x&&!x.cancel)$("secE").textContent=x.message||"Could not finish.";secLoad();});};
+secLoad();
+window.gmOnCurrency=function(){if(document.getElementById("p-partnership").style.display!=="none")loadPartnershipWallet();};
+</script></body></html>

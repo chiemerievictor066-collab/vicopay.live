@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify your email - Vico Pay Live</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#3a1280 0,#0b0620 45%,#05020f 100%);color:#fff;font-family:Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.box{width:min(440px,100%);border:1.5px solid #6d3bd0;background:linear-gradient(180deg,rgba(34,12,76,.92),rgba(12,5,30,.96));border-radius:22px;padding:26px 22px;text-align:center}
+h1{margin:0 0 4px;font-size:24px;color:#f5c542}p{color:#d6c7ff;font-size:14px;line-height:1.5}
+#mail{font-weight:800;color:#fff;word-break:break-all}
+#code{width:100%;margin:14px 0 4px;padding:14px;border-radius:14px;border:2px solid #5b2fb3;background:#0b0620;color:#fff;font:900 32px Arial;letter-spacing:10px;text-align:center}
+.btn{width:100%;border:0;border-radius:14px;padding:14px;font:inherit;font-weight:900;font-size:15px;cursor:pointer;margin-top:10px}
+.gold{background:linear-gradient(135deg,#f9d24f,#d99a00);color:#2a1700}.ghost{background:transparent;color:#f5c542;border:2px solid #f5c542}
+.btn:disabled{opacity:.55;cursor:default}
+#msg{min-height:20px;margin-top:10px;font-size:13.5px;font-weight:700}.ok{color:#4ade80}.err{color:#ff9fb5}
+a{color:#c9b8f0;font-size:13px}
+</style></head><body>
+<div class="box"><h1>Verify your email</h1>
+  <p>We send a 6-digit code to <span id="mail">your email</span>. Type it below to confirm your email is real.</p>
+  <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+  <button class="btn gold" id="go" onclick="confirmCode()">Verify</button>
+  <button class="btn ghost" id="send" onclick="sendCode()">Send me a code</button>
+  <div id="msg"></div>
+  <p style="margin-top:14px"><a id="skip" href="home.html">Do this later</a></p></div>
+<script src="auth.js"></script>
+<script>
+var q=new URLSearchParams(location.search),NEXT=(q.get("next")||"home.html");if(!/^[a-z0-9_-]+\.html$/i.test(NEXT))NEXT="home.html";
+document.getElementById("skip").href=NEXT;
+function $(i){return document.getElementById(i);}
+function say(m,ok){var e=$("msg");e.textContent=m;e.className=ok?"ok":"err";}
+var left=0,tm=null;
+function cool(s){left=s;clearInterval(tm);var b=$("send");function t(){if(left>0){b.disabled=true;b.textContent="Send again in "+left+"s";left--;}else{b.disabled=false;b.textContent="Send me a code";clearInterval(tm);}}t();tm=setInterval(t,1000);}
+async function post(p,b){var r=await fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b||{})});var d=await r.json().catch(function(){return{};});d._ok=r.ok;return d;}
+async function sendCode(){$("send").disabled=true;var d=await post("/api/email-verify/send");
+  if(d.verified){done();return;}
+  if(d.success){say("Code sent. Check your inbox (and spam).",1);cool(d.cooldownSeconds||60);}else{say(d.message||"Could not send.");if(d.waitSeconds)cool(d.waitSeconds);else $("send").disabled=false;}}
+async function confirmCode(){var c=$("code").value.trim();if(!/^\d{6}$/.test(c)){say("Enter the 6-digit code.");return;}$("go").disabled=true;
+  var d=await post("/api/email-verify/confirm",{code:c});$("go").disabled=false;if(d.success&&d.verified)done();else say(d.message||"That code is not right.");}
+function done(){say("Email verified. Thank you!",1);setTimeout(function(){location.href=NEXT;},900);}
+$("code").addEventListener("keydown",function(e){if(e.key==="Enter")confirmCode();});
+fetch("/api/email-verify/status").then(function(r){return r.json();}).then(function(d){if(!d.success)return;$("mail").textContent=d.email;if(d.verified){done();}else if(q.get("auto")==="1")sendCode();});
+</script></body></html>

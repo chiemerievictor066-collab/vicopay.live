@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My VIP - VicoPay Live</title>
+<link rel="stylesheet" href="vico.css">
+<style>
+.vp-hero{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:18px}
+.vp-prog{flex:1;min-width:230px}
+.vp-bar{height:8px;border-radius:6px;background:var(--mist);overflow:hidden;margin:6px 0 2px}
+.vp-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sky),var(--cyan));width:0}
+.vp-sec{padding:16px;margin-top:16px}
+.vp-sec h3{margin:0 0 10px;font-size:16px}
+.vp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+.vp-item{position:relative;border:2px solid var(--line);border-radius:14px;padding:10px 8px;background:#fff;text-align:center;cursor:pointer;font:inherit;color:var(--ink)}
+.vp-item.on{border-color:var(--sky);box-shadow:0 0 0 3px rgba(8,127,232,.18)}
+.vp-item.lock{opacity:.5;cursor:not-allowed}
+.vp-item small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.vp-prev{height:54px;display:grid;place-items:center;font-size:22px;margin-bottom:6px;border-radius:10px}
+.vp-none{margin-top:10px}
+#msg{min-height:20px;font-size:13px;margin-top:8px;color:var(--muted)}
+.off{padding:30px;text-align:center}
+</style></head>
+<body class="vico">
+<header class="v-header"><a class="v-logo" href="index.html">Vico<span>Pay</span></a>
+  <nav class="v-nav"><a href="index.html">Home</a></nav></header>
+<main class="v-wrap">
+  <div id="off" class="v-card off" style="display:none"><h2 style="margin:0 0 6px">VIP is coming soon</h2><p class="muted" style="color:var(--muted)">VicoPay VIP is not open yet. Everything else works as normal.</p></div>
+  <div id="app" style="display:none">
+    <div class="v-card vp-hero">
+      <div id="cardBox"></div>
+      <div class="vp-prog">
+        <b id="tierTxt" style="font-size:18px"></b>
+        <div id="progTxt" class="muted" style="color:var(--muted);font-size:13px"></div>
+        <div class="vp-bar"><i id="bar"></i></div>
+        <div id="progSub" class="muted" style="color:var(--muted);font-size:12px"></div>
+        <div id="msg"></div>
+      </div>
+    </div>
+    <div id="sections"></div>
+  </div>
+</main>
+<script src="auth.js"></script><script>VicoAuth.requireLogin();</script>
+<script src="vip-ui.js"></script>
+<script>
+var ME = null;
+var SLOTS = [
+  ["badge", "Badge", "badges"], ["frame", "Profile frame", "frames"], ["name_color", "Username colour", "decor"],
+  ["crown", "Crown", "decor"], ["title", "Profile title", "decor"], ["background", "Profile background", "decor"], ["card", "Identity card", "decor"]
+];
+function say(t, bad) { var m = document.getElementById("msg"); m.textContent = t || ""; m.style.color = bad ? "#e11d48" : "var(--muted)"; }
+
+async function load() {
+  var r = await fetch("/api/vip/me"); var d = await r.json();
+  if (!d.success || !d.enabled) { document.getElementById("off").style.display = ""; document.getElementById("app").style.display = "none"; return; }
+  ME = d; document.getElementById("off").style.display = "none"; document.getElementById("app").style.display = "";
+  render();
+}
+
+function render() {
+  var d = ME;
+  document.getElementById("tierTxt").textContent = d.tier === "none" ? "You are a regular member" : d.label + " VIP" + (d.verified ? " • Verified streamer" : "");
+  var nx = d.progress.next, p = d.progress;
+  if (nx) {
+    var parts = [p.followers / Math.max(1, nx.minFollowers), p.liveHours / Math.max(1, nx.minLiveHours)];
+    if (nx.minStars > 0) parts.push(p.stars / nx.minStars);
+    var pct = Math.min(100, Math.round(100 * Math.min.apply(null, parts)));
+    document.getElementById("bar").style.width = pct + "%";
+    document.getElementById("progTxt").textContent = "Next: " + nx.label + " VIP" + (nx.byAdminOnly ? " (approved by VicoPay)" : "");
+    document.getElementById("progSub").textContent = p.followers + " / " + nx.minFollowers + " followers • " + (nx.minStars > 0 ? p.stars + " / " + nx.minStars + " Golden Stars • " : "") + p.liveHours + " / " + nx.minLiveHours + " live hours";
+  } else { document.getElementById("bar").style.width = "100%"; document.getElementById("progTxt").textContent = "You have the highest tier."; document.getElementById("progSub").textContent = ""; }
+
+  var box = document.getElementById("cardBox"); box.innerHTML = "";
+  var name = localStorage.getItem("vicoPayDisplayName") || "You";
+  if (d.tier !== "none") box.appendChild(VicoVIP.card(d.equipped, { name: name, avatar: localStorage.getItem("vicoPayProfileImage") || "" }));
+
+  var host = document.getElementById("sections"); host.innerHTML = "";
+  SLOTS.forEach(function (s) {
+    var slot = s[0], list = (d.items[s[2]] || []).filter(function (i) { return s[2] !== "decor" || i.kind === slot; });
+    if (!list.length) return;
+    var sec = document.createElement("div"); sec.className = "v-card vp-sec";
+    var h = document.createElement("h3"); h.textContent = s[1]; sec.appendChild(h);
+    var g = document.createElement("div"); g.className = "vp-grid";
+    var curId = d.equippedIds[slot];
+    list.forEach(function (it) {
+      var b = document.createElement("button"); b.type = "button";
+      b.className = "vp-item" + (it.id === curId ? " on" : "") + (it.unlocked ? "" : " lock");
+      var pv = document.createElement("div"); pv.className = "vp-prev"; preview(pv, slot, it); b.appendChild(pv);
+      var n = document.createElement("b"); n.textContent = it.name; b.appendChild(n);
+      var sm = document.createElement("small"); sm.textContent = it.unlocked ? (it.id === curId ? "Equipped" : "Tap to equip") : "🔒 " + it.requirement; b.appendChild(sm);
+      b.onclick = function () { if (!it.unlocked) { say("Locked: needs " + it.requirement + ".", true); return; } equip(slot, it.id === curId ? null : it.id); };
+      g.appendChild(b);
+    });
+    sec.appendChild(g);
+    if (curId) { var rm = document.createElement("button"); rm.className = "v-btn ghost sm vp-none"; rm.textContent = "Remove " + s[1].toLowerCase(); rm.onclick = function () { equip(slot, null); }; sec.appendChild(rm); }
+    host.appendChild(sec);
+  });
+}
+
+function preview(el, slot, it) {
+  if (slot === "badge") { el.appendChild(VicoVIP.badge(it)); return; }
+  if (slot === "frame") {
+    var im = document.createElement("img"); im.width = 40; im.height = 40; im.alt = "";
+    im.src = "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' fill='#9ec9f5'/></svg>");
+    VicoVIP.frame(im, { frame: { style: it.style, color1: it.color1, color2: it.color2, animated: it.animated } }, 48); 
+    el.appendChild(im.parentNode); return;
+  }
+  if (slot === "name_color") { var s = document.createElement("span"); s.textContent = "Name"; VicoVIP.decorateName(s, { nameColor: it.value }); el.appendChild(s); return; }
+  if (slot === "crown") { el.textContent = it.value; return; }
+  if (slot === "title") { var t = document.createElement("span"); t.className = "vip-title"; t.textContent = it.value; el.appendChild(t); return; }
+  if (slot === "background") { var b = VicoVIP.bg(it.value); if (b) el.style.background = b; return; }
+  if (slot === "card") { el.textContent = "🪪"; }
+}
+
+async function equip(slot, id) {
+  say("Saving…");
+  var r = await fetch("/api/vip/equip", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot: slot, id: id }) });
+  var d = await r.json().catch(function () { return {}; });
+  if (!d.success) { say(d.message || "Could not save.", true); return; }
+  say("Saved ✔"); load();
+}
+load();
+</script>
+</body></html>

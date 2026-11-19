@@ -1,0 +1,32 @@
+/* VicoPay Watch discovery: one doorway to live, VIP, competitions, videos, pictures and marketplace. */
+(() => {
+  const css = `
+  .vwd-dock{position:fixed;z-index:80;top:0;left:0;right:0;display:flex;gap:7px;overflow-x:auto;padding:calc(7px + env(safe-area-inset-top)) 10px 7px;background:linear-gradient(180deg,rgba(2,10,31,.97),rgba(2,10,31,.82));backdrop-filter:blur(12px);scrollbar-width:none;white-space:nowrap}
+  .vwd-dock::-webkit-scrollbar{display:none}.vwd-dock a{flex:none;text-decoration:none;color:#fff;font:800 12px Arial,sans-serif;border:1px solid #ffffff30;border-radius:20px;padding:9px 13px;background:#09275b}.vwd-dock a.primary{background:linear-gradient(90deg,#0787ed,#4c5cff);border-color:#73c9ff}
+  .vwd-feed-card{min-height:100dvh;box-sizing:border-box;padding:82px 14px 24px;background:radial-gradient(circle at 50% 15%,#0a347c,#020a1f 65%);color:#fff;display:flex;flex-direction:column;gap:14px;scroll-snap-align:start}
+  .vwd-feed-card h2{font:900 24px Arial;margin:0}.vwd-feed-card p{color:#c6d9f2;margin:0;line-height:1.45}.vwd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.vwd-tile{display:block;min-width:0;text-decoration:none;color:#fff;background:#0a2250;border:1px solid #ffffff22;border-radius:16px;overflow:hidden}.vwd-tile img,.vwd-tile video{width:100%;height:132px;object-fit:cover;display:block;background:#061633}.vwd-tile b{display:block;padding:9px 10px 3px;font:800 13px Arial;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vwd-tile small{display:block;padding:0 10px 10px;color:#b9d4f5;font:12px Arial}.vwd-links{display:flex;flex-wrap:wrap;gap:8px}.vwd-links a{color:#fff;text-decoration:none;background:#087fe8;border-radius:12px;padding:11px 13px;font:800 12px Arial}.vwd-section{display:flex;flex-direction:column;gap:9px}.vwd-section h3{margin:0;font:900 16px Arial;color:#8bd8ff}
+  `;
+  function el(tag, cls, html) { const n=document.createElement(tag); if(cls)n.className=cls; if(html!==undefined)n.innerHTML=html; return n; }
+  async function json(url){ try { const r=await fetch(url,{credentials:'include'}); return r.ok?await r.json():{}; } catch(_){return{};} }
+  function tile(href,img,title,sub){ return `<a class="vwd-tile" href="${href}">${img?`<img loading="lazy" src="${img}" alt="">`:`<div style="height:132px;display:grid;place-items:center;font-size:42px;background:linear-gradient(135deg,#063b87,#7c2df0)">✨</div>`}<b>${esc(title)}</b><small>${esc(sub||'Explore on VicoPay')}</small></a>`; }
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  async function mount(){
+    const feed=document.querySelector('#feed'); if(!feed||document.querySelector('.vwd-dock'))return;
+    const style=el('style'); style.textContent=css; document.head.appendChild(style);
+    const dock=el('nav','vwd-dock',`<a href="live-feed.html">🔴 All Live</a><a href="live-room.html">🔥 Trending</a><a href="live-room.html">👥 Followers</a><a href="live-room.html">💃 Dancers</a><a href="vip-live-feed.html">👑 VIP Live</a><a href="vico-videos.html">🎬 Short Videos</a><a href="vico-marketplace.html">🖼️ Pictures</a><a href="vico-marketplace.html">🛍️ Marketplace</a><a href="campaigns.html">🏆 Competitions</a><a href="campaign-apply.html">📝 Apply for Competition</a><a href="company-ads.html">🏢 Company Products</a><a href="national-ads.html">🇳🇬 National Products</a><a href="big-business-ads.html">🏬 Big Business Ads</a><a href="global-enquiry.html">✉️ Customer Enquiry</a><a href="global-market-community.html">🌐 Global Market</a><a class="primary" href="vico-studio.html">＋ Vico Studio</a>`);
+    document.body.appendChild(dock);
+    feed.style.paddingTop='52px'; feed.style.boxSizing='border-box';
+    const [events,videos,market]=await Promise.all([json('/api/campaigns'),json('/api/videos?tab=trending'),json('/api/market/listings?sort=newest')]);
+    const card=el('section','vwd-feed-card');
+    const eventItems=(events.events||[]).filter(e=>['published','live'].includes(String(e.status||'').toLowerCase())).slice(0,4).map(e=>tile(`campaign-event.html?id=${encodeURIComponent(e.id)}`,'',e.title||'VicoPay Competition',`${e.status||'Open'} · ${Number(e.participants||0)} participants`)).join('');
+    const videoItems=(videos.videos||[]).slice(0,4).map(v=>tile(`vico-videos.html?id=${v.id}`,v.thumbUrl,v.title||'Short video',`${v.creator?.displayName||v.creator?.handle||'Creator'} · ${Number(v.views||0)} views`)).join('');
+    const marketItems=(market.listings||[]).slice(0,4).map(p=>tile(`vico-product.html?id=${p.id}`,p.imageUrl,p.title,`₦${Number(p.price||0).toLocaleString('en-NG')} · ${p.category||'Product'}`)).join('');
+    card.innerHTML=`<h2>Discover everything on VicoPay</h2><p>Keep watching live streams, or explore creator competitions, product adverts, short videos, pictures and the marketplace.</p><div class="vwd-links"><a href="vico-studio.html">🎥 Advertise in Vico Studio</a><a href="campaigns.html">🏆 Enter a competition</a><a href="vico-marketplace.html?sell=1">＋ Upload product pictures</a></div>
+      <div class="vwd-section"><h3>🏆 Competitions & challenges</h3><div class="vwd-grid">${eventItems||tile('campaigns.html','', 'Explore competitions','Join a VicoPay event')}</div></div>
+      <div class="vwd-section"><h3>🎬 Short videos & product adverts</h3><div class="vwd-grid">${videoItems||tile('vico-videos.html','','Watch short videos','Discover creator videos')}</div></div>
+      <div class="vwd-section"><h3>🖼️ Product pictures & marketplace</h3><div class="vwd-grid">${marketItems||tile('vico-marketplace.html','','Browse marketplace','Shop products and pictures')}</div></div>
+      <div class="vwd-links"><a href="vico-videos.html">Open all short videos →</a><a href="vico-marketplace.html">Open Vico Marketplace →</a><a href="campaigns.html">See all competitions →</a></div>`;
+    feed.appendChild(card); const empty=document.querySelector('.empty'); if(empty) empty.classList.remove('on'); let tries=0; const placeCard=setInterval(()=>{const slides=[...feed.querySelectorAll('.slide')]; if(slides.length>=3){feed.insertBefore(card,slides[2].nextSibling);clearInterval(placeCard);} else if(++tries>=30){if(slides.length)feed.insertBefore(card,slides[slides.length-1].nextSibling);clearInterval(placeCard);}},300);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+})();

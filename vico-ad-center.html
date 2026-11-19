@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vico Ad Center - Vico Pay Live</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;align-items:center;padding:22px;border-radius:26px;background:linear-gradient(120deg,#bfe0ff,#c9b8ff);margin-bottom:14px}
+.hero h1{margin:0;font-size:clamp(28px,6vw,44px);color:#12275c}.hero p{margin:4px 0 12px;font-weight:700;color:#1b2f66}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}.k{padding:14px;text-align:center}.k b{display:block;font-size:26px;color:var(--gm-purple)}.k small{color:var(--gm-muted);font-weight:800}
+.note{padding:12px 16px;border-radius:16px;background:#eef6ff;border:1px solid var(--gm-line);font-weight:700;font-size:14px;margin-bottom:12px;color:#1b3a8a}
+.warn{background:#fff4d6;border-color:#f3d98a;color:#7a5200}
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.qa button{border:1px solid var(--gm-line);background:#fff;border-radius:18px;padding:16px 8px;font-weight:800;cursor:pointer;color:var(--gm-ink);display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--gm-shadow)}.qa span{font-size:28px}
+h2.s{margin:18px 0 8px;font-size:20px;color:var(--gm-purple)}
+.cp{padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.cp .th{width:72px;height:72px;border-radius:14px;object-fit:cover;background:linear-gradient(135deg,#e3f1ff,#eee6ff);display:flex;align-items:center;justify-content:center;font-size:28px;flex:0 0 72px}
+.cp .t{flex:1;min-width:200px}.cp b{font-size:16px}.cp small{display:block;color:var(--gm-muted);font-weight:700;margin-top:2px}.cp .ac{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.st{display:inline-block;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:900;color:#fff;background:#64748b}.st.under_review{background:#d97706}.st.approved{background:#16a34a}.st.rejected{background:#dc2626}.st.draft{background:#64748b}.st.cancelled{background:#94a3b8}
+.rj{margin-top:6px;padding:8px 12px;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:700;font-size:13.5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chips{display:flex;gap:8px;flex-wrap:wrap}.chips button{border:1px solid var(--gm-line);background:#fff;border-radius:16px;padding:9px 14px;font-weight:800;cursor:pointer}.chips button.on{background:var(--gm-purple);color:#fff}
+.prev{padding:14px;border-radius:18px;background:#f1f6ff;border:1px dashed #9cc0ee;font-weight:700;font-size:14px;line-height:1.7}
+.err{color:#dc2626;font-weight:700;font-size:13.5px;min-height:18px;margin-top:8px}.fine{color:var(--gm-muted);font-size:12.5px;font-weight:600}
+.sp{display:inline-block;background:#fef3c7;color:#92400e;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:900}
+.steps{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 2px}.steps span{font-size:11.5px;font-weight:800;border-radius:10px;padding:3px 9px;background:#e3eefc;color:#5d7096}.steps span.done{background:#dcfce7;color:#166534}.steps span.now{background:#4c1d95;color:#fff}
+.found{border:1px solid var(--gm-line);border-radius:14px;padding:10px 12px;margin-top:8px;cursor:pointer;display:flex;gap:10px;align-items:center;font-weight:700}.found:hover{background:#eaf3ff}.found img{width:44px;height:44px;border-radius:10px;object-fit:cover}
+.ck{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--gm-line);border-radius:14px;margin-top:8px;font-weight:800}.ck small{display:block;color:var(--gm-muted);font-weight:600}.ck.off{opacity:.5}
+@media(max-width:680px){.hero,.g2{grid-template-columns:1fr}}
+</style></head>
+<body class="gm" data-gm="ads" data-title="Vico Ad Center" data-ai="ads" data-ai-img="vico-ai-guide.gif">
+<div class="gm-wrap">
+  <div class="hero"><div><h1>Vico Ad Center</h1><p>Advertisers reach Vico users<br><span style="font-size:14px">Views · Clicks · Product visits · Conversions</span></p><button class="gm-btn" id="newAd" type="button">＋ Create New Ad</button> <a class="gm-btn blue" href="product-live.html" style="text-decoration:none;margin-left:6px">🔴 Go Live with a product</a></div><div style="font-size:90px;text-align:center">🎯</div></div>
+  <div class="note" id="levelsNote" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between"><span><b>🎯 Advertising levels:</b> choose Personal, Small business, Big business, Company or National, pick a job and its price, then pay, add your business information and verify your identity.</span><span style="display:flex;gap:8px;flex-wrap:wrap"><a class="gm-btn" href="ad-sense-home.html" style="text-decoration:none">Choose level &amp; job</a><a class="gm-btn" id="levelsResume" href="ad-business-information.html" style="text-decoration:none;display:none">Continue my order</a></span></div>
+  <div id="needLogin" class="note warn" style="display:none">Please <a href="join-now.html" style="text-decoration:underline">log in</a> to use the Ad Center.</div>
+
+  <div id="regBox" style="display:none" class="gm-card"><div style="padding:18px">
+    <h2 style="margin:0 0 4px">Set up your advertiser account</h2><div class="fine">You use your normal Vico Pay Live login.</div>
+    <div class="g2"><div><label class="gm-lab">I am a…</label><select class="gm-in" id="rT"></select></div><div><label class="gm-lab">Advertiser name (your real name or business)</label><input class="gm-in" id="rN" maxlength="80"></div>
+    <div><label class="gm-lab">Business name (optional)</label><input class="gm-in" id="rB" maxlength="80"></div><div><label class="gm-lab">Business category</label><select class="gm-in" id="rC"></select></div>
+    <div><label class="gm-lab">Country</label><input class="gm-in" id="rCo" value="Nigeria"></div><div><label class="gm-lab">State</label><select class="gm-in" id="rS"></select></div></div>
+    <label class="gm-lab">Website (optional, https://…)</label><input class="gm-in" id="rW" maxlength="200">
+    <div class="err" id="rE"></div><button class="gm-btn" id="rSave" type="button" style="margin-top:8px">Create advertiser account</button></div></div>
+
+  <div id="dash" style="display:none">
+    <div id="verifyNote" class="note warn" style="display:none">Please verify your email before submitting an ad. <a href="verify-email.html?auto=1&next=vico-ad-center.html" style="text-decoration:underline">Verify now</a></div>
+    <div class="note"><b>Pay once:</b> you pay for your ad one time. After that, keeping your product in Vico Marketplace (and wherever else your ad appears) costs just <b id="keepNote">$2</b> every 2 months. The first 2 months are covered by your ad payment. Use the ₦ / $ button at the top to see every price in Naira or Dollars.</div>
+    <div class="note"><b>How it works:</b> 1 Choose what to advertise → 2 Your details → 3 Pay → 4 Verify your identity → 5 Choose where it appears → 6 Vico reviews → 7 Live in Vico Marketplace.</div>
+    <div class="kp" id="kp"></div>
+    <div class="note" id="deliv"></div>
+    <h2 class="s">Where ads appear</h2><div class="note" id="plNote"></div><div class="kp" id="plGrid"></div>
+    <h2 class="s">My Campaigns</h2><div id="list"></div>
+  </div>
+</div>
+
+<!-- STEP 1 + 2: what to advertise, details, content -->
+<div class="gm-modal" id="mAd"><div class="box">
+  <h2 style="margin:0 0 4px" id="adH">Create an ad</h2><div class="fine">Step 1 and 2. You pay in the next step. You can save a draft and come back.</div>
+  <div id="s1">
+    <h3 style="margin:14px 0 6px;color:var(--gm-purple)">1. What do you want to advertise?</h3>
+    <div style="display:flex;gap:8px"><input class="gm-in" id="sq" placeholder="Search your Marketplace items (e.g. shoes)"><button class="gm-btn sm" id="sbtn" type="button">Search</button></div>
+    <div id="sres"></div>
+    <button class="gm-btn sm blue" id="sNew" type="button" style="margin-top:10px">Advertise something else</button>
+  </div>
+  <div id="s2" style="display:none">
+    <div class="note" id="chosen" style="margin-top:12px"></div>
+    <h3 style="margin:10px 0 0;color:var(--gm-purple)">2. Your details</h3><div class="fine">Vico checks these against your ID. They must be correct.</div>
+    <div class="g2"><div><label class="gm-lab">Phone number</label><input class="gm-in" id="kP" inputmode="tel" maxlength="20"></div><div><label class="gm-lab">Age</label><input class="gm-in" id="kA" type="number" min="18" max="99"></div>
+    <div><label class="gm-lab">Country</label><input class="gm-in" id="kCo" value="Nigeria"></div><div><label class="gm-lab">State</label><select class="gm-in" id="kS"></select></div>
+    <div><label class="gm-lab">City or area</label><input class="gm-in" id="kCi" maxlength="60"></div><div><label class="gm-lab">Market or shop address</label><input class="gm-in" id="kAd" maxlength="200"></div></div>
+    <label class="gm-lab">Anything else buyers or Vico should know (optional)</label><input class="gm-in" id="kEx" maxlength="300">
+    <h3 style="margin:16px 0 0;color:var(--gm-purple)">What people will see</h3>
+    <label class="gm-lab">Campaign name (only you see it)</label><input class="gm-in" id="aN" maxlength="80">
+    <div class="g2"><div><label class="gm-lab">Type of ad</label><select class="gm-in" id="aT"></select></div><div><label class="gm-lab">Goal</label><select class="gm-in" id="aO"></select></div></div>
+    <label class="gm-lab">Headline</label><input class="gm-in" id="aH" maxlength="60" placeholder="e.g. Fresh sneakers, delivered in Lagos">
+    <label class="gm-lab">Description</label><textarea class="gm-in" id="aB" rows="3" maxlength="400"></textarea>
+    <div class="g2"><div><label class="gm-lab">Button text</label><input class="gm-in" id="aCta" maxlength="30" placeholder="Shop now"></div><div><label class="gm-lab">Price (optional)</label><input class="gm-in" id="aPr" maxlength="40" placeholder="₦35,000"></div></div>
+    <label class="gm-lab">Link (optional, must start with https://)</label><input class="gm-in" id="aL" maxlength="300">
+    <label class="gm-lab">Category</label><select class="gm-in" id="aCat"></select>
+    <label class="gm-lab">Picture (JPG, PNG or WebP)</label><input type="file" id="aI" accept="image/*"><div id="aPrev" style="margin-top:8px"></div>
+    <h3 style="margin:16px 0 0;color:var(--gm-purple)">Audience</h3><div class="chips" id="aAud"></div>
+    <div class="g2"><div><label class="gm-lab">Target state</label><select class="gm-in" id="aS"></select></div><div><label class="gm-lab">Target city (optional)</label><input class="gm-in" id="aCi" maxlength="60"></div>
+    <div><label class="gm-lab">Language</label><select class="gm-in" id="aLg"></select></div><div><label class="gm-lab">Age range</label><div style="display:flex;gap:6px"><input class="gm-in" id="aA1" type="number" min="18" max="99" value="18"><input class="gm-in" id="aA2" type="number" min="18" max="99" value="65"></div></div></div>
+    <div class="fine" style="margin-top:6px">We never allow targeting by sensitive personal details. Every paid placement is labelled “Sponsored”.</div>
+    <h3 style="margin:16px 0 0;color:var(--gm-purple)">Budget and dates</h3><div class="chips" id="aBud"></div>
+    <div class="g2"><div><label class="gm-lab">Budget (<span class="curSym">₦</span>)</label><input class="gm-in" id="aBg" type="number" min="0.01" step="any" inputmode="decimal"><div class="fine" id="aBgN"></div></div><div></div><div><label class="gm-lab">Start date</label><input class="gm-in" id="aD1" type="date"></div><div><label class="gm-lab">End date</label><input class="gm-in" id="aD2" type="date"></div></div>
+    <div style="margin-top:10px"><button class="gm-btn sm blue" id="aEst" type="button">Show full cost</button></div><div class="prev" id="aPv" style="display:none;margin-top:10px"></div>
+    <div class="err" id="aE"></div>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="gm-btn" id="aSave" type="button">Save and continue to payment</button></div>
+  </div>
+  <div style="margin-top:10px"><button class="gm-btn sm blue" id="aClose" type="button">Close</button></div>
+</div></div>
+
+<!-- STEP 4: identity -->
+<div class="gm-modal" id="mId"><div class="box">
+  <h2 style="margin:0 0 4px">Verify your identity</h2><div class="note" style="margin-top:8px">Upload ONE document. The name and details on it must match what you entered. Only the Vico team can see it, it is stored encrypted, and the photo is deleted as soon as we decide.</div>
+  <div id="idState"></div>
+  <label class="gm-lab">Document</label><select class="gm-in" id="iT"></select>
+  <label class="gm-lab">Full name exactly as on the document</label><input class="gm-in" id="iN" maxlength="80">
+  <label class="gm-lab">Clear photo of the document (JPG, PNG or WebP)</label><input type="file" id="iF" accept="image/*"><div id="iPrev" style="margin-top:8px"></div>
+  <div class="err" id="iE"></div><div style="display:flex;gap:10px;margin-top:12px"><button class="gm-btn" id="iGo" type="button">Send for verification</button><button class="gm-btn blue" id="iX" type="button">Close</button></div>
+</div></div>
+
+<!-- STEP 5: placements, how it is sold, product page, upload the advert -->
+<div class="gm-modal" id="mPl"><div class="box">
+  <h2 style="margin:0 0 4px">Where will your ad appear?</h2><div class="fine">Your ad always appears in Vico Marketplace. You can add more places, like Short Videos.</div>
+  <div class="prev" id="aRec" style="margin-top:10px"></div>
+  <div id="plList"></div>
+
+  <h3 style="margin:18px 0 4px;color:var(--gm-purple)">How should this product be sold?</h3>
+  <div class="fine">Choose one: sell it through Vico Marketplace (buyers tap Buy Now and pay on Vico), or let you and the buyer do the business directly through your phone number or WhatsApp.</div>
+  <div class="chips" style="margin-top:8px" id="sellQ"><button type="button" data-v="vico">Sell it on Vico Marketplace</button><button type="button" data-v="direct">Between me and the buyer (phone / WhatsApp)</button></div>
+  <div id="vicoBox" class="note" style="display:none;margin-top:10px">Buyers pay on Vico (Paystack). The money goes into your seller wallet. You and the buyer arrange delivery yourselves; Vico does not deliver.
+    <label class="gm-lab">How should buyers receive it?</label><select class="gm-in" id="sDel"><option value="address">Send to the buyer's address</option><option value="contact">Buyer contacts me to arrange</option><option value="both">Either way</option></select></div>
+  <div id="directBox" class="note" style="display:none;margin-top:10px">Buyers who tap Buy Now will be taken to your WhatsApp chat or phone call. Vico does not hold money for direct deals.
+    <div class="chips" style="margin-top:8px" id="cmQ"><button type="button" data-v="whatsapp">WhatsApp</button><button type="button" data-v="phone">Phone call</button></div>
+    <label class="gm-lab">Your phone / WhatsApp number</label><input class="gm-in" id="pNum" inputmode="tel" maxlength="20" placeholder="0803 000 0000"></div>
+
+  <h3 style="margin:18px 0 4px;color:var(--gm-purple)">Your product page</h3>
+  <div class="fine">Every product shows its price and a Buy Now button.</div>
+  <div class="g2"><div><label class="gm-lab">Price (<span class="curSym">₦</span>)</label><input class="gm-in" id="pPr" type="number" min="0.01" step="any" inputmode="decimal"></div><div><label class="gm-lab">Old price (optional, shows a discount)</label><input class="gm-in" id="pOld" type="number" min="0.01" step="any" inputmode="decimal"></div></div>
+  <label class="gm-lab">Product category</label><select class="gm-in" id="pCat"></select>
+  <label class="gm-lab">Is this one of your existing Marketplace items? (optional)</label><select class="gm-in" id="sItem"></select>
+
+  <h3 style="margin:18px 0 4px;color:var(--gm-purple)">Upload your advert</h3>
+  <div class="fine">Add a short video ad and/or pictures of the product. Buyers see the big pictures on the product page, with similar products below.</div>
+  <label class="gm-lab">Short video ad (MP4, MOV or WebM · up to 90 seconds · up to 30 MB)</label><input type="file" id="vF" accept="video/mp4,video/quicktime,video/webm"><div id="vPrev" class="fine" style="margin-top:6px"></div>
+  <label class="gm-lab">Pictures of the product (up to 4 more, JPG / PNG / WebP)</label><input type="file" id="pF" accept="image/*" multiple><div id="pPrev" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"></div>
+  <div id="mediaNow" class="fine"></div>
+  <div id="pBar" style="display:none;margin-top:10px;height:8px;border-radius:8px;background:#e3eefc;overflow:hidden"><i id="pBarI" style="display:block;height:100%;width:0;background:#6d28d9"></i></div>
+  <div class="err" id="pE"></div><div style="display:flex;gap:10px;margin-top:12px"><button class="gm-btn" id="pGo" type="button">Save my choices</button><button class="gm-btn blue" id="pX" type="button">Close</button></div>
+</div></div>
+
+<script src="auth.js"></script><script src="gm-nav.js"></script>
+<script>
+var L=null,S=null,editId=null,aud="auto",img="",keepImg=false,listingId=null,CAMPS=[],curC=null,pls={},sell=null;
+var ST={draft:"Draft",paid:"Paid",under_review:"Under Review",approved:"Approved",active:"Live",rejected:"Rejected",cancelled:"Cancelled",paused:"Paused",completed:"Completed"};
+var STEPS=[["details","Details"],["payment","Pay"],["identity","ID check"],["placements","Placements"],["review","Review"],["live","Live"]];
+function $(i){return document.getElementById(i);}
+function opts(sel,arr,withBlank){$(sel).innerHTML=(withBlank?'<option value="">Any</option>':"")+arr.map(function(x){return '<option>'+gmEsc(x)+'</option>';}).join("");}
+function today(){return new Date(Date.now()+3600000).toISOString().slice(0,10);}
+function typeKey(){var v=$("aT").value;return Object.keys(L.adTypes).filter(function(k){return L.adTypes[k]===v;})[0];}
+function drawAud(){$("aAud").innerHTML=Object.keys(L.audiences).map(function(k){return '<button type="button" data-k="'+k+'" class="'+(aud===k?"on":"")+'">'+gmEsc(L.audiences[k])+'</button>';}).join("");}
+$("aAud").onclick=function(e){var b=e.target.closest("button");if(b){aud=b.dataset.k;drawAud();}};
+var budNgn=0;
+function disp(n){n=Number(n)||0;return gmIsUsd()?String(Math.round(n/gmRate()*100)/100):String(Math.round(n));}
+function budNote(){var n=gmToNgn($("aBg").value);$("aBgN").textContent=n>0?"You are charged in Naira: ₦"+n.toLocaleString()+(gmIsUsd()?" (at ₦"+Number(gmRate()).toLocaleString()+" = $1)":""):"";}
+function setBud(ngn){budNgn=Math.round(ngn)||0;$("aBg").value=budNgn?disp(budNgn):"";budNote();}
+$("aBg").oninput=function(){budNgn=gmToNgn(this.value);budNote();};
+$("aBud").onclick=function(e){var b=e.target.closest("button");if(b)setBud(Number(b.dataset.v));};
+function symb(){[].forEach.call(document.querySelectorAll(".curSym"),function(e){e.textContent=gmIsUsd()?"$":"₦";});}
+window.gmOnCurrency=function(){symb();if(budNgn)$("aBg").value=disp(budNgn);budNote();if(CAMPS&&CAMPS.length)drawList();if($("aPv").style.display==="block")$("aEst").click();if(KEEP)$("keepNote").textContent="$"+KEEP.usd;};
+var KEEP=null;gmApi("/api/keep/info").then(function(d){if(d.success){KEEP=d;$("keepNote").textContent="$"+d.usd;}});
+$("aT").onchange=function(){var ev=typeKey()==="event",cur=$("aCat").value;opts("aCat",ev?L.eventKinds:L.categories);if([].some.call($("aCat").options,function(o){return o.value===cur;}))$("aCat").value=cur;};
+
+function load(){
+  if(!gmSignedIn()){$("needLogin").style.display="block";return;}
+  Promise.all([gmApi("/api/ads/settings"),gmApi("/api/ads/advertisers/me")]).then(function(r){
+    if(!r[0].success){gmToast(r[0].message||"Could not load.");return;}S=r[0].settings;L=r[0].lists;L.placements=r[0].placements;L.eventKinds=r[0].eventKinds;
+    opts("rT",L.advertiserTypes);opts("rC",L.categories);opts("rS",L.states,true);opts("kS",L.states);opts("aT",Object.keys(L.adTypes).map(function(k){return L.adTypes[k];}));opts("aO",L.objectives);opts("aCat",L.categories);opts("aS",L.states,true);opts("aLg",L.languages);
+    $("aBud").innerHTML=S.budgets.map(function(b){return '<button type="button" data-v="'+b+'">'+gmM(b)+'</button>';}).join("");
+    if(!r[1].advertiser){$("regBox").style.display="block";return;}
+    $("dash").style.display="block";$("verifyNote").style.display=r[1].emailVerified?"none":"block";loadDash();});}
+$("rSave").onclick=function(){$("rE").textContent="";gmApi("/api/ads/advertisers",{body:{type:$("rT").value,advertiserName:$("rN").value,businessName:$("rB").value,category:$("rC").value,country:$("rCo").value,state:$("rS").value,website:$("rW").value}}).then(function(d){if(d.success){$("regBox").style.display="none";load();}else $("rE").textContent=d.message||"Could not save.";});};
+
+function drawPlGrid(){$("plNote").textContent="Marketplace is always included. Other places open in stages; places outside Vico (TikTok, Facebook, Instagram, other websites) are requests that the Vico team sets up after approval.";
+  $("plGrid").innerHTML=L.placements.map(function(p){return '<div class="gm-card k"><div style="font-size:26px">'+p.icon+'</div><b style="font-size:15px;color:var(--gm-ink)">'+gmEsc(p.label)+'</b><small>'+(p.active?'<span style="color:#16a34a">● Open'+(p.external?" (request)":"")+'</span>':(p.version?"Opens in Version "+p.version:"Later"))+'</small></div>';}).join("");}
+function stepsHtml(c){var order=["details","payment","identity","placements","review","live"],cur=c.stage==="submit"?"placements":c.stage,ci=order.indexOf(cur);
+  return '<div class="steps">'+STEPS.map(function(x,i){var done=i<ci||(x[0]==="details")||(c.stage==="live"),now=i===ci&&c.stage!=="live";return '<span class="'+(done&&!now?"done":now?"now":"")+'">'+(done&&!now?"✓ ":"")+x[1]+'</span>';}).join("")+'</div>';}
+function nextBtn(c){var id=c.id;
+  if(c.status==="cancelled")return c.flow.refundDue?'<span class="gm-pill">Refund on the way</span>':"";
+  switch(c.stage){case"payment":return '<button class="gm-btn sm" data-a="edit" data-id="'+id+'">Edit</button><button class="gm-btn sm blue" data-a="pay" data-id="'+id+'">Pay '+gmM(c.totalToPay||c.budget)+' →</button>';
+   case"identity":return c.identity.status==="pending"?'<span class="gm-pill">ID waiting for Vico to check</span>':'<button class="gm-btn sm blue" data-a="id" data-id="'+id+'">Verify identity →</button>';
+   case"placements":return '<button class="gm-btn sm blue" data-a="pl" data-id="'+id+'">Choose where it appears →</button>';
+   case"submit":return '<button class="gm-btn sm blue" data-a="submit" data-id="'+id+'">Submit for review →</button><button class="gm-btn sm" data-a="pl" data-id="'+id+'">Change placements</button>';
+   case"review":return '<span class="gm-pill">Vico is reviewing your ad</span>';
+   case"live":return '<span class="gm-pill" style="background:#dcfce7;color:#166534">Live in Marketplace on its dates</span>';}return "";}
+function loadDash(){drawPlGrid();
+  gmApi("/api/ads/overview").then(function(d){var c=d.counts||{};$("kp").innerHTML=[["Live",c.active||0],["Under review",c.under_review||0],["Paid, finishing steps",c.paid||0],["Drafts",c.draft||0],["Rejected",c.rejected||0]].map(function(x){return '<div class="gm-card k"><b>'+x[1]+'</b><small>'+x[0]+'</small></div>';}).join("");$("deliv").textContent=d.delivery?d.delivery.note:"";});
+  gmApi("/api/ads/campaigns").then(function(d){CAMPS=d.campaigns||[];drawList();});}
+function keepHtml(c){var p=c.product;if(!p||!p.keepUntil||c.status==="cancelled"||c.status==="rejected")return "";
+  var txt=p.expired?'<span class="st rejected">Not shown in Marketplace: time ended</span>':'<span class="st '+(p.daysLeft<=7?"under_review":"approved")+'">In Marketplace: '+p.daysLeft+' day(s) left</span>';
+  var btn=(p.expired||p.daysLeft<=30)&&p.status==="active"?' <button class="gm-btn sm" data-a="keep" data-lid="'+p.id+'" type="button">Keep 2 more months · '+(KEEP?gmM(KEEP.ngn):"$2")+'</button>':"";
+  return '<div style="margin-top:8px">'+txt+btn+'</div>';}
+function drawList(){
+    $("list").innerHTML=CAMPS.map(function(c){return '<div class="gm-card cp">'+(c.imageUrl?'<img class="th" alt="" src="'+c.imageUrl+'">':'<div class="th">📢</div>')+'<div class="t"><b>'+gmEsc(c.name)+'</b> <span class="st '+c.status+'">'+(ST[c.status]||c.status)+'</span><small>'+gmEsc(c.headline||"No headline yet")+'</small><small>'+gmM(c.budget)+' · '+gmEsc(c.start)+' → '+gmEsc(c.end)+'</small>'+stepsHtml(c)+
+      keepHtml(c)+(c.rejectReason?'<div class="rj">Needs changes: '+gmEsc(c.rejectReason)+'</div>':"")+(c.identity.status==="rejected"?'<div class="rj">ID not accepted: '+gmEsc(c.identity.reason)+'</div>':"")+
+      '<div class="ac">'+nextBtn(c)+(c.editable&&c.stage!=="payment"?'<button class="gm-btn sm" data-a="edit" data-id="'+c.id+'">Edit</button>':"")+'<button class="gm-btn sm blue" data-a="dup" data-id="'+c.id+'">Duplicate</button>'+((c.status==="draft"||c.status==="rejected")&&!c.flow.paid?'<button class="gm-btn sm" style="background:#64748b" data-a="cancel" data-id="'+c.id+'">Cancel</button>':"")+'</div></div></div>';}).join("")||'<div class="note">No campaigns yet. Tap “Create New Ad” to start.</div>';}
+function byId(id){return CAMPS.filter(function(c){return c.id==id;})[0];}
+$("list").onclick=function(e){var b=e.target.closest("button[data-a]");if(!b)return;var id=b.dataset.id,a=b.dataset.a,c=byId(id);
+  if(a==="keep")return gmApi("/api/market/listings/"+b.dataset.lid+"/renew",{method:"POST",body:{}}).then(function(d){if(d.success&&d.url)location.href=d.url;else gmToast(d.message||"Could not start the payment.");});
+  if(a==="edit")return openAd(c);
+  if(a==="pay"){b.disabled=true;return gmApi("/api/ads/campaigns/"+id+"/pay",{method:"POST"}).then(function(d){b.disabled=false;if(d.success&&d.url)location.href=d.url;else gmToast(d.message||"Could not start the payment.");});}
+  if(a==="id")return openId();
+  if(a==="pl")return openPl(c);
+  if(a==="submit"){if(!confirm("Send this ad to the Vico team for review?"))return;return gmApi("/api/ads/campaigns/"+id+"/submit",{method:"POST"}).then(function(d){gmToast(d.success?"Sent for review.":d.message);loadDash();});}
+  if(a==="dup")return gmApi("/api/ads/campaigns/"+id+"/duplicate",{method:"POST"}).then(function(d){gmToast(d.success?"Copy created as a draft.":d.message);loadDash();});
+  if(a==="cancel"){if(!confirm("Cancel this campaign?"))return;gmApi("/api/ads/campaigns/"+id+"/cancel",{method:"POST"}).then(function(d){gmToast(d.success?"Cancelled.":d.message);loadDash();});}};
+
+/* ---- step 1 + 2 ---- */
+function showS(n){$("s1").style.display=n===1?"block":"none";$("s2").style.display=n===2?"block":"none";}
+function openAd(c){editId=c?c.id:null;img="";keepImg=!!(c&&c.imageUrl);listingId=c&&c.flow?c.flow.listingId:null;$("aE").textContent="";$("aPv").style.display="none";$("adH").textContent=c?"Edit your ad":"Create an ad";$("sres").innerHTML="";$("sq").value="";
+  var f=c?c.flow:{};$("kP").value=f.phone||"";$("kA").value=f.age||"";$("kCo").value=f.cCountry||"Nigeria";$("kS").value=f.cState||L.states[0];$("kCi").value=f.cCity||"";$("kAd").value=f.marketAddress||"";$("kEx").value=f.extra||"";
+  $("aN").value=c?c.name:"";$("aT").value=L.adTypes[c?c.adType:"product"];$("aO").value=c&&c.objective?c.objective:L.objectives[0];$("aH").value=c?c.headline:"";$("aB").value=c?c.body:"";$("aCta").value=c?c.cta:"";$("aPr").value=c?c.priceText:"";$("aL").value=c?c.link:"";
+  $("aT").onchange();$("aCat").value=c&&c.category?c.category:$("aCat").options[0].value;$("aS").value=c?c.state:"";$("aCi").value=c?c.city:"";$("aLg").value=c&&c.language?c.language:"Any";$("aA1").value=c?c.ageMin:18;$("aA2").value=c?c.ageMax:65;
+  aud=c?c.audienceMode:"auto";drawAud();setBud(c?c.budget:S.budgets[0]||0);$("aD1").value=c?c.start:today();$("aD2").value=c?c.end:new Date(Date.now()+3600000+6*86400000).toISOString().slice(0,10);
+  var locked=c&&c.flow&&c.flow.paid;$("aBg").disabled=!!locked;$("aD1").disabled=!!locked;$("aD2").disabled=!!locked;
+  $("aPrev").innerHTML=keepImg?'<img alt="" src="'+c.imageUrl+'" style="max-width:160px;border-radius:12px">':"";$("aI").value="";showS(c?2:1);$("chosen").textContent=c?"Editing: "+c.name:"";$("mAd").classList.add("on");}
+function searchItems(){gmApi("/api/market/mine?q="+encodeURIComponent($("sq").value.trim())).then(function(d){var a=(d.listings||[]).filter(function(x){return x.status==="active"||x.status==="sold";});
+  $("sres").innerHTML=a.map(function(x){return '<div class="found" data-id="'+x.id+'">'+(x.imageUrl?'<img alt="" src="'+x.imageUrl+'">':"<span style='font-size:30px'>🛍️</span>")+'<div><b>'+gmEsc(x.title)+'</b><div style="color:var(--gm-muted)">'+gmM(x.price)+'</div></div></div>';}).join("")||'<div class="note" style="margin-top:8px">No items found in your Marketplace items. You can post one in <a href="vico-marketplace.html" style="text-decoration:underline">Marketplace</a> or tap “Advertise something else”.</div>';window._found=a;});}
+$("sbtn").onclick=searchItems;$("sq").onkeydown=function(e){if(e.key==="Enter")searchItems();};
+$("sres").onclick=function(e){var f=e.target.closest(".found");if(!f)return;var x=window._found.filter(function(i){return i.id==f.dataset.id;})[0];if(!x)return;listingId=x.id;
+  $("aN").value=x.title;$("aH").value=x.title;$("aB").value=x.description||x.title;$("aPr").value="₦"+Number(x.price).toLocaleString();$("aT").value=L.adTypes.product;$("aT").onchange();
+  if(L.categories.indexOf(x.category)>=0)$("aCat").value=x.category;$("chosen").textContent="Advertising: "+x.title;showS(2);
+  if(x.imageUrl)fetch(x.imageUrl).then(function(r){return r.blob();}).then(function(bl){var r=new FileReader();r.onload=function(){img=r.result;$("aPrev").innerHTML='<img alt="" src="'+img+'" style="max-width:160px;border-radius:12px">';};r.readAsDataURL(bl);}).catch(function(){});};
+$("sNew").onclick=function(){listingId=null;$("chosen").textContent="Advertising something new";showS(2);};
+function body(){return{listingId:listingId,phone:$("kP").value,age:$("kA").value,cCountry:$("kCo").value,cState:$("kS").value,cCity:$("kCi").value,marketAddress:$("kAd").value,extra:$("kEx").value,
+  name:$("aN").value,adType:typeKey(),objective:$("aO").value,headline:$("aH").value,body:$("aB").value,cta:$("aCta").value,link:$("aL").value,priceText:$("aPr").value,category:$("aCat").value,state:$("aS").value,city:$("aCi").value,language:$("aLg").value,audienceMode:aud,ageMin:$("aA1").value,ageMax:$("aA2").value,
+  placementMode:"custom",placements:[],budget:gmToNgn($("aBg").value),start:$("aD1").value,end:$("aD2").value,image:img,keepImage:keepImg&&!img};}
+$("aI").onchange=function(){var f=this.files[0];img="";if(!f)return;squash(f,380000,function(d,err){if(err){$("aE").textContent=err;return;}img=d;$("aPrev").innerHTML='<img alt="" src="'+d+'" style="max-width:160px;border-radius:12px">';});};
+function squash(f,max,cb){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,1100/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);var q=.85,d=c.toDataURL("image/jpeg",q);while(d.length>max&&q>.3){q-=.1;d=c.toDataURL("image/jpeg",q);}d.length>max?cb(null,"That picture is too big."):cb(d);};im.onerror=function(){cb(null,"That file is not a picture.");};im.src=r.result;};r.readAsDataURL(f);}
+$("aEst").onclick=function(){$("aE").textContent="";gmApi("/api/ads/estimate",{body:{budget:gmToNgn($("aBg").value),start:$("aD1").value,end:$("aD2").value}}).then(function(d){
+  if(!d.success){$("aE").textContent=d.message;return;}var p=d.preview;$("aPv").style.display="block";
+  $("aPv").innerHTML='Campaign length: <b>'+p.days+' day(s)</b><br>Daily budget: <b>'+gmM(p.dailyBudget)+'</b><br>Budget: <b>'+gmM(p.budget)+'</b><br>Fees and taxes: <b>'+gmM(p.fee)+'</b><br>Total to pay: <b>'+gmM(p.total)+'</b> <span class="fine">(charged in Naira: ₦'+p.total.toLocaleString()+(gmIsUsd()?" at today's rate":"")+')</span><br>Estimated views: <b>'+(p.estimatedImpressions===null?"not shown yet":"about "+p.estimatedImpressions.toLocaleString())+'</b><div class="fine" style="margin-top:6px">'+d.notes.map(gmEsc).join("<br>")+'</div>';});};
+$("aSave").onclick=function(){$("aE").textContent="";var u=editId?"/api/ads/campaigns/"+editId:"/api/ads/campaigns";gmApi(u,{method:editId?"PATCH":"POST",body:body()}).then(function(d){if(d.success){$("mAd").classList.remove("on");gmToast("Saved. Next step: pay.");loadDash();}else $("aE").textContent=d.message||"Could not save.";});};
+$("aClose").onclick=function(){$("mAd").classList.remove("on");};
+$("newAd").onclick=function(){if(!gmSignedIn()){gmNeedLogin();return;}if(!L||$("dash").style.display==="none"){gmToast("Set up your advertiser account first.");return;}openAd(null);};
+
+/* ---- step 4: identity ---- */
+var idImg="";
+function openId(){$("iE").textContent="";$("iPrev").innerHTML="";idImg="";$("iF").value="";
+  gmApi("/api/ads/identity/me").then(function(d){opts("iT",Object.keys(d.types).map(function(k){return d.types[k];}));window._idTypes=d.types;
+    $("idState").innerHTML=d.identity.status==="rejected"?'<div class="rj">Not accepted: '+gmEsc(d.identity.reason)+'. Please upload again.</div>':d.identity.status==="pending"?'<div class="note">Your document is waiting for the Vico team.</div>':"";
+    if(!d.secure)$("iE").textContent="Identity checks are not switched on yet. Please try again soon.";$("mId").classList.add("on");});}
+$("iF").onchange=function(){var f=this.files[0];idImg="";if(!f)return;squash(f,420000,function(d,err){if(err){$("iE").textContent=err;return;}idImg=d;$("iPrev").innerHTML='<img alt="" src="'+d+'" style="max-width:200px;border-radius:12px">';});};
+$("iGo").onclick=function(){$("iE").textContent="";var t=$("iT").value,key=Object.keys(window._idTypes).filter(function(k){return window._idTypes[k]===t;})[0];
+  gmApi("/api/ads/identity",{body:{docType:key,fullName:$("iN").value,image:idImg}}).then(function(d){if(d.success){$("mId").classList.remove("on");gmToast("Sent. We will check it and tell you.");loadDash();}else $("iE").textContent=d.message||"Could not send.";});};
+$("iX").onclick=function(){$("mId").classList.remove("on");};
+
+/* ---- step 5: placements, how it is sold, product page, upload the advert ---- */
+var psale=null,pcm="whatsapp",pimgs=[],pvid=null,pvdur=0,pvthumb="",MCATS=[];
+gmApi("/api/market/categories").then(function(d){MCATS=d.categories||[];});
+function openPl(c){curC=c;$("pE").textContent="";pls={marketplace:true};(c.placements||[]).forEach(function(p){pls[p]=true;});var p=c.product||{};
+  psale=p.saleMode||null;pcm=p.contactMode||"whatsapp";pimgs=[];pvid=null;pvdur=0;pvthumb="";$("pF").value="";$("vF").value="";$("pPrev").innerHTML="";$("vPrev").textContent="";
+  $("plList").innerHTML=L.placements.map(function(p){var lock=p.id==="marketplace",off=!p.active;return '<label class="ck'+(off?" off":"")+'"><input type="checkbox" data-p="'+p.id+'" '+(lock||pls[p.id]?"checked":"")+(lock||off?" disabled":"")+'><span>'+p.icon+' '+gmEsc(p.label)+'<small>'+(lock?"Always included":off?(p.version?"Opens in Version "+p.version:"Not open yet"):p.external?"Vico team sets this up after approval":"Open")+'</small></span></label>';}).join("");
+  gmApi("/api/ads/placements/recommend",{body:{adType:c.adType,objective:c.objective}}).then(function(d){if(!d.success)return;$("aRec").innerHTML='<img src="vico-ai-guide.gif" alt="Vico AI" style="width:30px;height:26px;object-fit:contain;vertical-align:middle"> <b>Vico recommends:</b> '+gmEsc(d.placements.map(function(id){var p=L.placements.filter(function(x){return x.id===id;})[0];return p.icon+" "+p.label;}).join(", "))+'<div style="margin-top:8px"><button type="button" class="gm-btn sm blue" id="askAi">Ask Vico AI why</button></div>';
+    $("askAi").onclick=function(){var b=document.getElementById("gmAiBtn");if(b)b.click();var i=document.getElementById("gmAiIn");if(i){i.value="Where should I advertise my "+c.adType+" ad and why? Goal: "+c.objective+".";i.focus();}};});
+  $("pCat").innerHTML=MCATS.map(function(x){return '<option>'+gmEsc(x)+'</option>';}).join("");if(p.category)$("pCat").value=p.category;
+  $("pPr").value=p.price?disp(p.price):"";$("pOld").value=p.oldPrice?disp(p.oldPrice):"";$("pNum").value=p.contactNumber||"";$("sDel").value=c.flow.deliveryPref||"address";
+  $("mediaNow").textContent=p.id?"Already saved: "+(c.hasImage?"main picture, ":"")+p.extraPictures+" extra picture(s)"+(p.hasVideo?", 1 video":"")+".":(c.hasImage?"Your campaign picture will be the main picture.":"");
+  drawSale();symb();
+  gmApi("/api/market/mine").then(function(d){var a=(d.listings||[]).filter(function(x){return x.status==="active"||x.status==="sold"||x.id===p.id;});$("sItem").innerHTML='<option value="">No, make a new product from this ad</option>'+a.map(function(x){return '<option value="'+x.id+'"'+(x.id===p.id?" selected":"")+'>'+gmEsc(x.title)+'</option>';}).join("");});
+  $("mPl").classList.add("on");}
+function drawSale(){[].forEach.call($("sellQ").children,function(b){b.classList.toggle("on",b.dataset.v===psale);});[].forEach.call($("cmQ").children,function(b){b.classList.toggle("on",b.dataset.v===pcm);});$("vicoBox").style.display=psale==="vico"?"block":"none";$("directBox").style.display=psale==="direct"?"block":"none";}
+$("sellQ").onclick=function(e){var b=e.target.closest("button");if(b){psale=b.dataset.v;drawSale();}};
+$("cmQ").onclick=function(e){var b=e.target.closest("button");if(b){pcm=b.dataset.v;drawSale();}};
+$("pX").onclick=function(){$("mPl").classList.remove("on");};
+$("pF").onchange=function(){var fs=[].slice.call(this.files,0,4);pimgs=[];$("pPrev").innerHTML="";$("pE").textContent="";fs.forEach(function(f){squash(f,380000,function(d,err){if(err){$("pE").textContent=err;return;}pimgs.push(d);$("pPrev").insertAdjacentHTML("beforeend",'<img alt="" src="'+d+'" style="width:72px;height:72px;object-fit:cover;border-radius:12px">');});});};
+$("vF").onchange=function(){var f=this.files[0];pvid=null;pvthumb="";$("vPrev").textContent="";$("pE").textContent="";if(!f)return;
+  if(f.size>30*1024*1024){$("pE").textContent="That video is too big (30 MB at most).";return;}
+  var v=document.createElement("video"),url=URL.createObjectURL(f);v.preload="metadata";v.muted=true;v.playsInline=true;
+  v.onloadedmetadata=function(){pvdur=Math.round(v.duration);if(!(pvdur>=1&&pvdur<=90)){$("pE").textContent="The video must be between 1 and 90 seconds (yours is "+pvdur+").";URL.revokeObjectURL(url);return;}v.currentTime=Math.min(1,v.duration/2);};
+  v.onseeked=function(){try{var c=document.createElement("canvas"),s=Math.min(1,480/Math.max(v.videoWidth,v.videoHeight));c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);c.getContext("2d").drawImage(v,0,0,c.width,c.height);var q=.8,d=c.toDataURL("image/jpeg",q);while(d.length>140000&&q>.3){q-=.1;d=c.toDataURL("image/jpeg",q);}pvthumb=d.length>140000?"":d;}catch(x){pvthumb="";}
+    pvid=f;$("vPrev").textContent="Video ready: "+pvdur+" seconds, "+(f.size/1048576).toFixed(1)+" MB";URL.revokeObjectURL(url);};
+  v.onerror=function(){$("pE").textContent="This browser cannot read that video. Try an MP4.";};v.src=url;};
+function bar(p){$("pBar").style.display=p===null?"none":"block";$("pBarI").style.width=(p||0)+"%";}
+function sendVideo(c,done){gmApi("/api/videos",{body:{title:c.headline||c.name,hashtags:"",category:"Shopping",durationSec:pvdur,thumb:pvthumb,campaignId:c.id}}).then(function(d){
+  if(!d.success)return done(d.message||"Could not start the video upload.");
+  var x=new XMLHttpRequest();x.open("PUT","/api/videos/"+d.id+"/file");x.setRequestHeader("Authorization","Bearer "+(window.VicoAuth?VicoAuth.getToken():""));x.setRequestHeader("Content-Type",pvid.type||"video/mp4");
+  x.upload.onprogress=function(p){if(p.lengthComputable)bar(Math.round(p.loaded/p.total*100));};
+  x.onload=function(){var r={};try{r=JSON.parse(x.responseText);}catch(z){}done(r.success?"":(r.message||"The video upload failed."));};x.onerror=function(){done("The video upload failed. Check your connection.");};x.send(pvid);});}
+function sendImages(lid,i,done){if(i>=pimgs.length)return done("");gmApi("/api/market/listings/"+lid+"/images",{body:{image:pimgs[i]}}).then(function(d){if(!d.success)return done(d.message||"A picture could not be saved.");sendImages(lid,i+1,done);});}
+$("pGo").onclick=function(){$("pE").textContent="";var go=this,list=[].filter.call($("plList").querySelectorAll("input:checked"),function(i){return !i.disabled;}).map(function(i){return i.dataset.p;});
+  if(!psale){$("pE").textContent="Choose how this product is sold: through Vico Marketplace, or directly with the buyer.";return;}
+  var c=curC;go.disabled=true;
+  gmApi("/api/ads/campaigns/"+c.id+"/placements",{body:{placements:list,saleMode:psale,delivery:$("sDel").value,contactMode:pcm,contactNumber:$("pNum").value,price:gmToNgn($("pPr").value),oldPrice:$("pOld").value?gmToNgn($("pOld").value):0,productCategory:$("pCat").value,listingId:$("sItem").value||null}}).then(function(d){
+    if(!d.success){go.disabled=false;$("pE").textContent=d.message||"Could not save.";return;}
+    sendImages(d.listingId,0,function(err1){
+      var fin=function(err2){go.disabled=false;bar(null);var err=err1||err2;if(err){$("pE").textContent="Saved, but: "+err;loadDash();return;}$("mPl").classList.remove("on");gmToast("Saved. You can submit for review now.");loadDash();};
+      if(pvid)sendVideo(c,fin);else fin("");});});};
+load();
+
+fetch("/api/ads/orders/current").then(function(r){return r.json()}).then(function(d){if(!d||!d.order)return;var a=document.getElementById("levelsResume");a.style.display="";a.textContent="Continue my order ("+d.order.job+")";a.href=({identity:"ad-identity-verification.html",review:"ad-identity-verification.html",verified:"ad-identity-verification.html"})[d.stage]||"ad-business-information.html";}).catch(function(){});
+</script></body></html>

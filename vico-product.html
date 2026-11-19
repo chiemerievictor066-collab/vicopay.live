@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Product - Vico Pay Marketplace</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+body.gm.vs-page{background:#f6f8ff;min-height:100vh;padding-bottom:170px}
+.pp{width:min(1100px,100%);margin:0 auto;padding:10px 14px}
+.pp-top{display:flex;align-items:center;gap:10px;padding:6px 0 10px}.pp-back{width:44px;height:44px;border-radius:50%;background:#eaf0ff;border:0;font-size:22px;color:#2b2a8c;cursor:pointer}
+.pp-top b{font-size:18px;color:#1b1b6b;flex:1}
+.pp-main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+.pp-view{background:#fff;border:1px solid #e2e8f8;border-radius:24px;overflow:hidden;box-shadow:0 8px 22px rgba(60,60,160,.08)}
+.pp-big{position:relative;background:#f1f4ff;display:flex;align-items:center;justify-content:center;min-height:320px;max-height:78vh}
+.pp-big img{width:100%;max-height:78vh;object-fit:contain;display:block;cursor:zoom-in}.pp-big video{width:100%;max-height:78vh;background:#000;display:block}
+.pp-big .ph{font-size:90px}
+.pp-thumbs{display:flex;gap:8px;padding:10px;overflow-x:auto}.pp-thumbs button{flex:0 0 74px;height:74px;border-radius:14px;border:2px solid transparent;padding:0;background:#eef2ff;overflow:hidden;cursor:pointer;font-size:26px}.pp-thumbs button.on{border-color:#6d28d9}.pp-thumbs img{width:100%;height:100%;object-fit:cover}
+.pp-info h1{margin:0 0 6px;font-size:clamp(22px,4vw,32px);line-height:1.15;color:#14224d}
+.pp-price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0}.pp-price b{font-size:clamp(30px,6vw,42px);font-weight:900;color:#4318b8}.pp-price s{font-size:18px;color:#8a94b3;font-weight:700}.pp-price i{background:#e11d2e;color:#fff;font-style:normal;font-weight:800;border-radius:12px;padding:3px 10px;font-size:14px}
+.pp-pills{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pp-desc{font-weight:600;white-space:pre-wrap;line-height:1.5;color:#2b3a67}
+.pp-sel{display:flex;align-items:center;gap:10px;margin:14px 0;padding:12px;background:#fff;border:1px solid #e2e8f8;border-radius:18px}.pp-sel .av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#1d6fe8,#6d28d9);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
+.pp-act{position:fixed;left:0;right:0;bottom:78px;z-index:55;background:#fff;border-top:1px solid #e2e8f8;box-shadow:0 -8px 22px rgba(60,60,160,.12);padding:10px 14px}.pp-act div{max-width:1100px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.pp-act .pr{font-size:22px;font-weight:900;color:#4318b8;flex:1}.pp-act .vs-btn{flex:1.2;justify-content:center}
+.pp-more{margin-top:26px}.pp-more h2{margin:0 0 12px;font-size:22px;color:#1b1b6b}
+.pp-soc{display:flex;justify-content:space-around;gap:6px;padding:10px 8px 14px;border-top:1px solid #eef2ff;color:#14224d}
+.pp-sel .fol{border:0;border-radius:20px;padding:9px 18px;background:linear-gradient(135deg,#7c2df0,#5b21b6);color:#fff;font:800 14px system-ui,Arial;cursor:pointer;white-space:nowrap}.pp-sel .fol.on{background:#e3eefc;color:#2b2a8c}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(10,10,30,.92);display:none;align-items:center;justify-content:center}.lb.on{display:flex}.lb img{max-width:96vw;max-height:94vh;object-fit:contain}
+@media(max-width:760px){.pp-main{grid-template-columns:1fr}.pp-big{min-height:260px}}
+</style></head>
+<body class="gm vs-page" data-gm-bar="none">
+<div class="pp">
+  <div class="pp-top"><button class="pp-back" id="back" type="button" aria-label="Back">‹</button><b>Vico Pay Marketplace</b><span data-cur-slot></span></div>
+  <div id="main"><div class="vs-empty" style="padding:60px">Loading…</div></div>
+  <section id="reviewPanel" style="display:none;margin-top:22px;background:#fff;border:1px solid #dce7fb;border-radius:20px;padding:16px"><h2 style="margin:0 0 10px;color:#14224d">Customer reviews</h2><div id="reviewList" style="display:grid;gap:8px"></div><div style="margin-top:14px;display:grid;gap:8px"><b>Share your experience</b><select id="reviewRating" style="padding:10px;border:1px solid #cbd8ef;border-radius:10px"><option value="5">★★★★★ — Excellent</option><option value="4">★★★★ — Good</option><option value="3">★★★ — Average</option><option value="2">★★ — Poor</option><option value="1">★ — Very poor</option></select><textarea id="reviewComment" rows="3" maxlength="1000" placeholder="Write a genuine review about your experience…" style="padding:12px;border:1px solid #cbd8ef;border-radius:10px;font:inherit"></textarea><button id="reviewSubmit" type="button" class="gm-btn blue">Submit review</button><small style="color:#64748b">Reviews are checked by Vico moderators before they appear publicly. Only genuine customer feedback should be submitted.</small></div></section>
+  <section id="liveRecordingsPanel" style="display:none;margin-top:22px;background:#fff;border:1px solid #dce7fb;border-radius:20px;padding:16px">
+    <h2 style="margin:0 0 6px;color:#14224d">Seller livestream videos</h2>
+    <p style="margin:0 0 12px;color:#64748b;font-weight:650">Real recordings from this product's completed VicoPay live demonstrations.</p>
+    <div id="liveRecordingsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px"></div>
+  </section>
+  <div class="pp-more" id="moreBox" style="display:none"><h2>More like this</h2><div class="vs-grid" id="more"></div></div>
+</div>
+<div class="pp-act" id="act" style="display:none"><div><span class="pr" id="actP"></span><button class="vs-btn lg" id="actB" type="button"></button></div></div>
+<div class="lb" id="lb"><img alt="" id="lbI"></div>
+<script src="auth.js"></script><script src="gm-nav.js"></script><script src="vico-shell.js"></script><script src="vico-buy.js"></script><script src="vico-social.js"></script>
+<script>
+var S=VicoShell,id=new URLSearchParams(location.search).get("id"),cur=null,pics=[],video=null,rel=[],soc={},shown=0;
+function $(i){return document.getElementById(i);}
+S.nav("market","market");
+$("back").onclick=function(){if(history.length>1)history.back();else location.href="vico-marketplace.html";};
+function show(i){shown=i;var big=$("big");if(video&&i===pics.length){big.innerHTML='<video controls playsinline poster="'+gmEsc(video.thumb)+'" src="'+gmEsc(video.url)+'"></video>';}
+ else big.innerHTML=pics.length?'<img alt="" data-z="1" src="'+gmEsc(pics[i])+'">':'<div class="ph">🛍️</div>';
+ [].forEach.call(document.querySelectorAll(".pp-thumbs button"),function(b,k){b.classList.toggle("on",k===i);});}
+function page(){var it=cur,s=it.seller,r=it.rating;
+ $("main").innerHTML='<div class="pp-main"><div><div class="pp-view"><div class="pp-big" id="big"></div>'+((pics.length+(video?1:0))>1?'<div class="pp-thumbs">'+pics.map(function(p,k){return '<button type="button" data-i="'+k+'"><img alt="" src="'+gmEsc(p)+'"></button>';}).join("")+(video?'<button type="button" data-i="'+pics.length+'">▶</button>':"")+'</div>':"")+'<div class="pp-soc" id="soc"></div></div></div>'+
+ '<div class="pp-info"><h1>'+gmEsc(it.title)+'</h1><div class="vs-rate">'+(r.count?S.stars(r.avg)+" <b>"+r.avg.toFixed(1)+"</b> ("+r.count+")":"No ratings yet")+(it.sales?" · "+it.sales+" sold":"")+'</div>'+
+ '<div class="pp-price"><b>'+gmM(it.price)+'</b>'+(it.oldPrice?'<s>'+gmM(it.oldPrice)+'</s><i>-'+it.discount+'%</i>':"")+'</div>'+
+ '<div class="pp-pills"><span class="gm-pill">'+gmEsc(it.category)+'</span>'+(it.location?'<span class="gm-pill">📍 '+gmEsc(it.location)+'</span>':"")+(it.badge?'<span class="gm-pill" style="background:#ede9fe;color:#4c1d95">'+gmEsc(it.badge)+'</span>':"")+'<span class="gm-pill">'+(it.saleMode==="direct"?"Deal directly with the seller":"Pay safely on Vico")+'</span></div>'+
+ '<p class="pp-desc">'+gmEsc(it.description)+'</p>'+
+ (s?'<div class="pp-sel">'+(s.avatar?'<img class="av" src="'+gmEsc(s.avatar)+'" alt="">':'<div class="av">'+gmEsc((s.displayName||"?").charAt(0).toUpperCase())+'</div>')+'<div style="flex:1"><b>'+gmEsc(s.displayName)+'</b><div style="color:#5d7096;font-weight:700">@'+gmEsc(s.handle)+(soc.followers!=null?' · '+soc.followers.toLocaleString()+' follower'+(soc.followers===1?'':'s'):'')+'</div></div>'+(soc.mine?'':'<button class="fol'+(soc.following?' on':'')+'" id="folB" type="button">'+(soc.following?'✓ Following':'+ Follow')+'</button>')+'<a class="gm-btn blue sm" href="vico-messages.html?to='+encodeURIComponent(s.handle)+'&t='+encodeURIComponent(it.title)+'">💬 Message</a>'+(it.callEnabled!==false?'<button class="gm-btn sm" id="sellerCall" type="button" style="background:linear-gradient(135deg,#087fe8,#4f46e5);color:#fff;border:0">📹 Video call</button>':"")+'</div>':"")+
+ '<button class="gm-btn sm" style="background:#64748b" id="rep" type="button">Report this item</button></div></div>';
+ show(0);drawSoc();
+ var sellerCall=it.callEnabled===false?null:$('sellerCall'); if(sellerCall && s){ sellerCall.onclick=function(){ if(!gmSignedIn()){gmNeedLogin();return;} sellerCall.disabled=true; gmApi("/api/calls/live/"+encodeURIComponent(s.handle)).then(function(d){ sellerCall.disabled=false; if(d.success&&d.isLive&&d.roomId){ location.href="live-feed.html?room="+encodeURIComponent(d.roomId); } else gmToast("This seller is not live right now. You can message the seller or use the contact details they chose to share."); }).catch(function(){sellerCall.disabled=false;gmToast("Could not check seller availability.");}); }; }
+ var sold=it.status==="sold";$("act").style.display="block";$("actP").innerHTML=gmM(it.price);$("actB").innerHTML=sold?"Sold":S.icon("cart",20)+" Buy Now";$("actB").disabled=sold;
+ $("actB").onclick=function(){VicoBuy.open(it);};
+ $("rep").onclick=function(){if(!gmSignedIn()){gmNeedLogin();return;}var why=prompt("What is wrong with this item?");if(why===null)return;gmApi("/api/market/listings/"+it.id+"/report",{body:{reason:why}}).then(function(d){gmToast(d.success?"Thank you. We will look at it.":d.message);});};}
+function drawSoc(){var b=$("soc");if(!b)return;
+ b.innerHTML='<button class="vsoc-c'+(soc.liked?" liked":"")+'" id="sLike" type="button"><i>'+(soc.liked?"❤️":"🤍")+'</i>'+(soc.likes||0)+'</button>'+
+  '<button class="vsoc-c'+(soc.saved?" on":"")+'" id="sSave" type="button"><i>'+(soc.saved?"🔖":"🏷️")+'</i>'+(soc.saved?"Saved":"Save")+'</button>'+
+  '<button class="vsoc-c" id="sViews" type="button" disabled><i>👁</i>'+(soc.views||0)+' views</button>'+
+  '<button class="vsoc-c" id="sShare" type="button"><i>↗️</i>Share</button>'+
+  '<button class="vsoc-c" id="sDl" type="button"><i>⬇️</i>Download</button>'+
+  '<button class="vsoc-c'+(soc.website?" on":"")+'" id="sMore" type="button" aria-label="Open linked website"><i style="font-size:26px;font-weight:900;padding-bottom:6px">⋯</i>'+(soc.website?"Website":"Link")+'</button>';
+ $("sLike").onclick=function(){VicoSocial.likeProduct(cur.id).then(function(d){if(d.success){soc.liked=d.liked;soc.likes=d.likes;drawSoc();}else if(d.message)gmToast(d.message);});};
+ $("sSave").onclick=function(){VicoSocial.save("product",cur.id).then(function(d){if(d.success){soc.saved=d.saved;drawSoc();gmToast(d.saved?"Saved to your list.":"Removed from Saved.");}else if(d.message)gmToast(d.message);});};
+ $("sShare").onclick=function(){VicoSocial.share(cur.title,location.origin+"/vico-product.html?id="+cur.id);};
+ $("sMore").onclick=function(){if(soc.website)window.open(soc.website,"_blank","noopener,noreferrer");else gmToast("This seller has not linked another website.");};
+ $("sDl").onclick=function(){var onVid=video&&shown===pics.length,u=onVid?"/api/videos/"+video.id+"/download":(pics[shown]||"");if(!u)return;VicoSocial.download(u,onVid?"vico-product-video.mp4":"vico-product-"+cur.id+"-"+(shown+1)+".jpg",!!onVid);};}
+function loadSoc(){VicoSocial.state("product",id).then(function(d){if(d&&d.success){soc=d;if(cur){page();}}});}
+function loadLiveRecordings(){
+  gmApi("/api/market/listings/"+encodeURIComponent(id)+"/live-recordings").then(function(d){
+    var rows=(d&&d.recordings)||[],box=$("liveRecordingsPanel"),list=$("liveRecordingsList");
+    if(!rows.length){box.style.display="none";return;}
+    box.style.display="block";
+    list.innerHTML=rows.map(function(r){
+      var date=new Date(Number(r.createdAt)).toLocaleString();
+      var duration=Math.max(0,Number(r.durationSec)||0),mins=Math.floor(duration/60),secs=duration%60;
+      return '<article style="border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#0b1020;color:#fff">'+
+        '<video controls playsinline preload="metadata" style="display:block;width:100%;max-height:360px;background:#000" src="'+gmEsc(r.url)+'"></video>'+
+        '<div style="padding:10px 12px"><b>'+gmEsc(r.title||"Product livestream")+'</b><div style="font-size:12px;color:#cbd5e1;margin-top:4px">'+gmEsc(date)+' · '+mins+':'+String(secs).padStart(2,"0")+'</div></div></article>';
+    }).join("");
+  }).catch(function(){});
+}
+function loadReviews(){var box=$("reviewPanel");if(!box)return;box.style.display="block";gmApi("/api/business/products/"+encodeURIComponent(id)+"/reviews").then(function(d){var a=(d&&d.reviews)||[];$("reviewList").innerHTML=a.length?a.map(function(x){return '<div style="padding:10px;border:1px solid #e5ebf7;border-radius:12px"><b style="color:#b77900">'+"★".repeat(Number(x.rating))+'</b><p style="margin:5px 0;color:#334155;white-space:pre-wrap">'+gmEsc(x.comment)+'</p></div>';}).join(""):'<p style="color:#64748b">No approved customer reviews yet.</p>';}).catch(function(){});}
+$("reviewSubmit").onclick=function(){if(!gmSignedIn()){gmNeedLogin();return;}var comment=$("reviewComment").value.trim();gmApi("/api/business/products/"+encodeURIComponent(id)+"/reviews",{body:{rating:Number($("reviewRating").value),comment:comment}}).then(function(d){gmToast(d.message|| (d.success?"Review submitted.":"Could not submit review."));if(d.success){$("reviewComment").value="";loadReviews();}});};
+window.gmOnCurrency=function(){if(cur){page();drawMore();}};
+$("main").onclick=function(e){var fb=e.target.closest("#folB");if(fb){if(!gmSignedIn()){gmNeedLogin();return;}var on=!!soc.following;VicoSocial.follow(cur.seller.handle,on).then(function(d){if(d.success!==false){soc.following=!on;soc.followers=d.followers!=null?d.followers:Math.max(0,(soc.followers||0)+(on?-1:1));page();gmToast(on?"Unfollowed":"Following @"+cur.seller.handle);}else if(d.message)gmToast(d.message);});return;}var t=e.target.closest(".pp-thumbs button");if(t)return show(+t.dataset.i);var z=e.target.closest("[data-z]");if(z){$("lbI").src=z.src;$("lb").classList.add("on");}};
+$("lb").onclick=function(){this.classList.remove("on");};
+function drawMore(){$("moreBox").style.display=rel.length?"block":"none";$("more").innerHTML=rel.map(function(x){return S.card(x);}).join("");}
+$("more").onclick=function(e){var b=e.target.closest(".vs-buy");if(b){var it=rel.filter(function(x){return x.id==b.dataset.id;})[0];if(it)VicoBuy.open(it);return;}var c=e.target.closest(".vs-card");if(c)location.href="vico-product.html?id="+c.dataset.id;};
+if(!id)$("main").innerHTML='<div class="vs-empty">No product chosen. <a href="vico-marketplace.html" style="text-decoration:underline">Back to the Marketplace</a></div>';
+else gmApi("/api/market/listings/"+encodeURIComponent(id)).then(function(d){
+  if(!d.success){$("main").innerHTML='<div class="vs-empty">'+gmEsc(d.message||"This item is no longer available.")+'<br><a href="vico-marketplace.html" style="text-decoration:underline">Back to the Marketplace</a></div>';return;}
+  cur=d.listing;pics=d.pictures||[];video=d.video;document.title=cur.title+" - Vico Pay Marketplace";page();loadSoc();loadReviews();loadLiveRecordings();gmApi("/api/business/products/"+encodeURIComponent(id)+"/view",{body:{}}).then(function(v){if(v&&v.success){soc.views=v.views;drawSoc();}}).catch(function(){});
+  gmApi("/api/market/listings/"+encodeURIComponent(id)+"/related").then(function(r){rel=r.listings||[];drawMore();});});
+</script></body></html>

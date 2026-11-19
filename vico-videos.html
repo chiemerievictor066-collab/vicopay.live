@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vico Pay Videos</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+body.gm.vs-page{background:#eef0ff;min-height:100vh;padding-bottom:84px}
+.vv{width:min(1180px,100%);margin:0 auto;padding:10px;display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:16px;align-items:start}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}.logo svg{width:44px;height:44px}.logo div{font-style:italic;font-weight:900;line-height:1;font-size:25px}.logo div span{display:block;font-size:22px;margin-top:2px}
+/* ---- For You player (dark) ---- */
+.pl{position:relative;height:calc(100vh - 110px);min-height:560px;max-height:860px;border-radius:26px;overflow:hidden;background:#120a2e;color:#fff;box-shadow:0 14px 34px rgba(40,20,120,.35)}
+.pl video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#120a2e}
+.pl:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,5,35,.55) 0,rgba(10,5,35,0) 22%,rgba(10,5,35,0) 55%,rgba(10,5,35,.85) 100%);pointer-events:none}
+.pl-top{position:absolute;z-index:3;left:0;right:0;top:0;display:flex;align-items:center;gap:12px;padding:14px 14px 0}
+.pl-top .logo div{color:#fff;font-size:17px}.pl-top .logo div span{color:#f0a8ff;font-size:15px}.pl-top .logo svg{width:30px;height:30px}.pl-top{gap:8px}
+.tabs{display:flex;gap:12px;flex:1;min-width:0;justify-content:flex-start;overflow-x:auto;scrollbar-width:none}.tabs button{background:none;border:0;color:#d8d0ff;font:700 15px system-ui,Arial;padding:6px 0;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent}.tabs button.on{color:#fff;border-bottom-color:#c26bff}
+.bellv{position:relative;background:none;border:0;color:#fff;cursor:pointer}.bellv em{position:absolute;top:-4px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#ef4444;font:800 11px/18px Arial;text-align:center;font-style:normal;padding:0 4px;display:none}
+.rail{position:absolute;z-index:3;right:10px;bottom:120px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.rail button{background:none;border:0;color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px;font:800 15px system-ui,Arial;cursor:pointer;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.rail .av{position:relative;width:62px;height:62px;border-radius:50%;border:3px solid #fff;background:linear-gradient(135deg,#6d28d9,#d946ef);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:26px;overflow:hidden}.rail .av img{width:100%;height:100%;object-fit:cover}
+.rail .plus{position:absolute;z-index:4;right:-4px;bottom:-8px;width:24px;height:24px;border-radius:50%;background:#ef2b5b;color:#fff;font:900 18px/24px Arial;text-align:center;border:2px solid #fff}
+.rail .liked svg{fill:#ff3b6b;color:#ff3b6b}
+.pl-info{position:absolute;z-index:3;left:14px;right:96px;bottom:74px;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+.pl-info .h{font-weight:900;font-size:22px;display:flex;align-items:center;gap:6px}.pl-info .h i{background:#2b8cff;color:#fff;border-radius:50%;width:20px;height:20px;font-style:normal;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+.pl-info p{margin:4px 0;font-weight:700;font-size:16px;line-height:1.3}.pl-info small{display:block;font-weight:700;font-size:15px}
+.fol{display:inline-flex;align-items:center;gap:8px;margin-top:8px;border:0;border-radius:22px;padding:9px 26px;background:linear-gradient(135deg,#7c2df0,#5b21b6);color:#fff;font:800 18px system-ui,Arial;cursor:pointer}
+.sp{display:inline-block;background:#fef3c7;color:#92400e;border-radius:8px;padding:2px 9px;font:900 12px Arial;margin-bottom:4px}
+.prod{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);color:#14224d;border-radius:16px;padding:8px 10px;margin-bottom:8px;text-shadow:none}.prod b{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prod .vs-btn{padding:8px 12px;font-size:13px}
+.pl-bar{position:absolute;z-index:3;left:12px;right:12px;bottom:14px;display:flex;align-items:center;gap:10px;font:700 15px system-ui,Arial}
+.pl-bar button{background:none;border:0;color:#fff;cursor:pointer;display:flex}.prog{flex:1;height:5px;border-radius:5px;background:rgba(255,255,255,.3);position:relative;cursor:pointer}.prog i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:#4aa3ff;width:0}.prog i:after{content:"";position:absolute;right:-6px;top:-4px;width:13px;height:13px;border-radius:50%;background:#4aa3ff}
+.rail{gap:9px;bottom:92px}.rail .av{width:56px;height:56px}
+.rail .cb{width:50px;height:50px;border-radius:50%;background:rgba(20,10,60,.45);border:1.5px solid rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;backdrop-filter:blur(6px)}
+.rail .saved .cb{background:#7c2df0;border-color:#fff}.rail .liked .cb{background:rgba(255,59,107,.9)}
+.crow{display:flex;align-items:center;gap:9px;margin-bottom:8px}.crow .ca{width:42px;height:42px;border-radius:50%;border:2px solid #fff;background:linear-gradient(135deg,#6d28d9,#d946ef);display:flex;align-items:center;justify-content:center;font-weight:900;overflow:hidden;flex:none;cursor:pointer}.crow .ca img{width:100%;height:100%;object-fit:cover}
+.crow .cn{min-width:0;flex:0 1 auto}.crow .cn b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.crow .cn small{display:block;font-weight:700;font-size:12.5px;opacity:.9}
+.crow .fol{margin:0 0 0 4px;padding:7px 16px;font-size:14px;flex:none}.crow .fol.on{background:rgba(255,255,255,.25)}
+.pl-empty{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:30px;font-weight:700;color:#d8d0ff}
+.pl-close{display:none}
+/* ---- browse panel ---- */
+.br{background:#fff;border-radius:26px;padding:12px 14px 16px;box-shadow:0 10px 28px rgba(60,60,160,.12)}
+.br-top{display:flex;align-items:center;gap:10px}.br .logo div{color:#1b1b6b}.br .logo div span{color:#6d28d9}
+.br-top .sb{margin-left:auto;width:50px;height:50px;border-radius:50%;background:#eaf0ff;border:0;color:#2b2a8c;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.up{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:26px;padding:13px 22px;background:linear-gradient(135deg,#6d28d9,#4c1d95);color:#fff;font:800 17px system-ui,Arial;cursor:pointer;box-shadow:0 8px 18px rgba(76,29,149,.3)}
+.srch{display:none;margin:10px 0 0}.srch.on{display:block}.srch input{width:100%;height:46px;border-radius:24px;border:0;background:#eaf0ff;padding:0 18px;font:600 16px system-ui,Arial;outline:0}
+.ban{display:flex;align-items:center;gap:14px;margin:12px 0;border-radius:22px;padding:16px 18px;color:#fff;background:linear-gradient(100deg,#2a8cff,#6d5cff 60%,#8a4dff)}
+.ban .cl{font-size:56px;line-height:1}.ban h2{margin:0;white-space:nowrap;font-size:clamp(19px,2.7vw,34px);font-style:italic;font-weight:900}.ban p{margin:2px 0 0;font-weight:700;font-size:clamp(14px,2vw,19px)}
+.ban .wn{margin-left:auto;border:0;border-radius:22px;padding:12px 22px;background:#5b21b6;color:#fff;font:800 clamp(14px,2vw,19px) system-ui,Arial;cursor:pointer;white-space:nowrap}
+.chips{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 0 12px}.chips::-webkit-scrollbar{display:none}.chips button{flex:0 0 auto;white-space:nowrap;border:0;border-radius:20px;padding:11px 22px;background:#eaf0ff;color:#14224d;font:800 17px system-ui,Arial;cursor:pointer}.chips button.on{background:linear-gradient(135deg,#6d28d9,#4c1d95);color:#fff}
+.mm{position:relative}.mm .mk-menu{position:absolute;left:0;top:100%;background:#fff;border:1px solid #e2e8f8;border-radius:16px;box-shadow:0 14px 30px rgba(40,40,120,.2);z-index:30;display:none;min-width:170px;overflow:hidden}.mm .mk-menu.on{display:block}.mm .mk-menu button{display:block;width:100%;text-align:left;border-radius:0;background:none;padding:12px 16px;font:700 15px system-ui,Arial}
+.vg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.th{position:relative;aspect-ratio:3/4;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#3b1d8f,#7c2df0);cursor:pointer;color:#fff}
+.th img{width:100%;height:100%;object-fit:cover}.th .vw{position:absolute;left:8px;top:8px;display:flex;align-items:center;gap:5px;background:rgba(20,10,60,.55);border-radius:14px;padding:4px 10px;font:800 14px system-ui,Arial}
+.th .ov{position:absolute;left:0;right:0;bottom:0;padding:26px 10px 8px;background:linear-gradient(180deg,rgba(60,20,160,0),rgba(60,20,160,.92));font-weight:800;font-size:14px;line-height:1.25}.th .ov small{display:flex;justify-content:space-between;gap:6px;font-weight:700;font-size:12.5px;opacity:.95;margin-top:2px}
+.th .sp{position:absolute;right:8px;top:8px;margin:0}
+.th.on{outline:3px solid #c26bff}
+.vs-empty{grid-column:1/-1}
+@media(max-width:899px){
+ .vv{grid-template-columns:minmax(0,1fr);padding:8px}.br{min-width:0}.br-top{flex-wrap:wrap}.up{padding:11px 16px;font-size:15px}.br-top .sb{margin-left:0}
+ .pl{position:fixed;inset:0;z-index:70;height:auto;max-height:none;border-radius:0;display:none}.pl.open{display:block}.pl-close{display:block;position:absolute;z-index:6;left:10px;top:60px;background:rgba(0,0,0,.4);border:0;color:#fff;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
+ .vg{grid-template-columns:repeat(3,1fr);gap:8px}.th .vw{font-size:12px;padding:3px 7px}.th .ov{font-size:12px}
+ .ban .cl{font-size:38px}.ban .wn{padding:10px 14px;font-size:14px}.ban{padding:14px}
+ body.pl-open .vs-nav{display:none}
+}
+</style></head>
+<body class="gm vs-page" data-gm-bar="none">
+<div class="vv">
+  <!-- LEFT: For You player -->
+  <section class="pl" id="pl" aria-label="For You">
+    <video id="vid" playsinline loop preload="metadata"></video>
+    <div class="pl-top">
+      <a class="logo" href="home.html"><svg viewBox="0 0 48 48"><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#18a0ff"/><stop offset=".55" stop-color="#7c2df0"/><stop offset="1" stop-color="#d946ef"/></linearGradient></defs><path d="M4 6l12 0 8 6 8-6 12 0-20 14z" fill="none"/><path d="M4 8h10l10 22L34 8h10L28 42H20z" fill="url(#lg2)"/></svg><div>Vico Pay<span>Videos</span></div></a>
+      <div class="tabs" id="tabs"><button class="on" data-t="foryou">For You</button><button data-t="following">Following</button><button data-t="trending">Trending</button><button data-t="shop">Shop</button><button data-t="saved">Saved</button></div>
+      <button class="bellv" id="bellB" type="button" aria-label="Notifications"></button>
+    </div>
+    <button class="pl-close" id="plX" type="button" aria-label="Close">✕</button>
+    <div class="pl-empty" id="plEmpty"><div style="font-size:54px">▶️</div><div id="plMsg">Loading videos…</div></div>
+    <div class="rail" id="rail" style="display:none">
+      <button type="button" id="rAv"><span class="av" id="rAvI"></span></button>
+      <button type="button" id="rLike"></button><button type="button" id="rCom"></button><button type="button" id="rSave"></button><button type="button" id="rShare"></button><button type="button" id="rGift"></button><button type="button" id="rDl" aria-label="Save to device"></button><button type="button" id="rMore" aria-label="Open linked website"></button>
+    </div>
+    <div class="pl-info" id="info" style="display:none"></div>
+    <div class="pl-bar" id="bar" style="display:none"><button id="pp" type="button" aria-label="Pause"></button><div class="prog" id="prog"><i id="progI"></i></div><span id="tm">00:00 / 00:00</span><button id="mute" type="button" aria-label="Sound"></button><button id="fs" type="button" aria-label="Full screen"></button></div>
+  </section>
+
+  <!-- RIGHT: Videos browse -->
+  <section class="br" aria-label="Videos">
+    <div class="br-top"><a class="logo" href="home.html"><svg viewBox="0 0 48 48"><path d="M4 8h10l10 22L34 8h10L28 42H20z" fill="url(#lg2)"/></svg><div>Vico Pay<span>Videos</span></div></a>
+      <span data-cur-slot style="margin-left:auto"></span><button class="sb" id="sB" type="button" aria-label="Search"></button><button class="up" id="upB" type="button"></button></div>
+    <div class="srch" id="srch"><input id="q" type="search" placeholder="Search videos or #hashtags"></div>
+    <div class="ban"><div class="cl">🎬</div><div><h2>Create • Share • Earn</h2><p>Grow your business with Vico Pay Videos</p></div><button class="wn" id="wn" type="button">Watch Now ›</button></div>
+    <div class="chips" id="chips"></div>
+    <div class="vg" id="grid"></div>
+  </section>
+</div>
+
+<div class="gm-modal" id="mUp"><div class="box">
+  <h2 style="margin:0 0 4px">Upload a short video</h2><div style="color:#5d7096;font-weight:600;font-size:13.5px">MP4, MOV or WebM · up to 90 seconds · up to 30 MB. Selling a product? Use the Ad Center so it appears with a Buy Now button.</div>
+  <label class="gm-lab">Video</label><input type="file" id="uF" accept="video/mp4,video/quicktime,video/webm"><div id="uPrev" style="margin-top:8px"></div>
+  <label class="gm-lab">Title</label><input class="gm-in" id="uT" maxlength="80">
+  <label class="gm-lab">Hashtags</label><input class="gm-in" id="uH" maxlength="200" placeholder="#VicoPay #GreatDeals">
+  <label class="gm-lab">Category</label><select class="gm-in" id="uC"></select>
+  <div id="uBar" style="display:none;margin-top:10px;height:8px;border-radius:8px;background:#e3eefc;overflow:hidden"><i id="uBarI" style="display:block;height:100%;width:0;background:#6d28d9"></i></div>
+  <div class="err" id="uE" style="color:#dc2626;font-weight:700;font-size:13.5px;min-height:18px;margin-top:8px"></div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="gm-btn" id="uGo" type="button">Upload</button><button class="gm-btn blue" id="uX" type="button">Cancel</button></div>
+</div></div>
+<div class="gm-modal" id="mCom"><div class="box"><h3 style="margin:0 0 8px">Comments</h3><div id="cList" style="max-height:45vh;overflow:auto"></div><div style="display:flex;gap:8px;margin-top:10px"><input class="gm-in" id="cIn" maxlength="300" placeholder="Add a comment…"><button class="gm-btn sm" id="cGo" type="button">Send</button></div><div style="margin-top:10px"><button class="gm-btn sm blue" id="cX" type="button">Close</button></div></div></div>
+
+<script src="auth.js"></script><script src="gm-nav.js"></script><script src="vico-shell.js"></script><script src="vico-buy.js"></script><script src="vico-social.js"></script>
+<script>
+var S=VicoShell,tab="foryou",cat="",feed=[],grid=[],cur=-1,MAXS=90,CATS=["Shopping","Business","Lifestyle","Entertainment"],MORE=["Tech","Earn","Deals","Community","Other"],wasPlaying=true;
+function $(i){return document.getElementById(i);}
+function fmtN(n){n=Number(n)||0;return n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"K":String(n);}
+function fmtT(s){s=Math.max(0,Math.floor(s||0));return ("0"+Math.floor(s/60)).slice(-2)+":"+("0"+s%60).slice(-2);}
+var vid=$("vid"),narrow=function(){return window.matchMedia("(max-width:899px)").matches;};
+$("bellB").innerHTML=S.icon("bell",30);$("sB").innerHTML=S.icon("search",24);$("upB").innerHTML=S.icon("cam",22)+" Upload Video";
+$("pp").innerHTML=S.icon("play",30);$("mute").innerHTML="🔊";$("fs").innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+S.nav("video","videos");S.headerBadges(null,$("bellB"));
+/* ---- browse grid ---- */
+function drawChips(){$("chips").innerHTML='<button type="button" data-c=""'+(cat===""?' class="on"':"")+'>All</button>'+CATS.map(function(c){return '<button type="button" data-c="'+c+'"'+(cat===c?' class="on"':"")+'>'+c+'</button>';}).join("")+
+ '<div class="mm"><button type="button" id="moreB"'+(MORE.indexOf(cat)>=0?' class="on"':"")+'>More ⌄</button><div class="mk-menu" id="moreM">'+MORE.map(function(c){return '<button type="button" data-c="'+c+'">'+c+'</button>';}).join("")+'</div></div>';}
+drawChips();
+$("chips").onclick=function(e){if(e.target.closest("#moreB")){$("moreM").classList.toggle("on");return;}var b=e.target.closest("[data-c]");if(!b)return;cat=b.dataset.c;drawChips();loadGrid();};
+function thumb(v,i){return '<div class="th'+(i===cur&&sameList()?" on":"")+'" data-i="'+i+'">'+(v.thumbUrl?'<img loading="lazy" alt="" src="'+v.thumbUrl+'">':'<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:40px">▶</div>')+'<span class="vw">▶ '+fmtN(v.views)+'</span>'+(v.sponsored?'<span class="sp">Sponsored</span>':"")+'<div class="ov">'+S.esc(v.title)+'<small><span>'+(v.hashtags[0]?"#"+S.esc(v.hashtags[0]):"")+'</span><span>'+fmtT(v.duration)+'</span></small></div></div>';}
+function sameList(){return feed===grid;}
+function drawGrid(){$("grid").innerHTML=grid.map(thumb).join("")||'<div class="vs-empty">No videos here yet. Tap “Upload Video” to be the first!</div>';}
+function loadGrid(){var u="/api/videos?tab=foryou&category="+encodeURIComponent(cat)+"&q="+encodeURIComponent($("q").value.trim());gmApi(u).then(function(d){grid=d.videos||[];drawGrid();if(!feed.length){feed=grid;if(grid.length)select(0,false);else empty("No videos yet.");}});}
+$("grid").onclick=function(e){var t=e.target.closest(".th");if(!t)return;feed=grid;select(+t.dataset.i,true);};
+$("sB").onclick=function(){$("srch").classList.toggle("on");if($("srch").classList.contains("on"))$("q").focus();};
+$("q").onkeydown=function(e){if(e.key==="Enter")loadGrid();};
+$("wn").onclick=function(){if(grid.length){feed=grid;select(0,true);}else gmToast("No videos to watch yet.");};
+/* ---- player ---- */
+function empty(msg){cur=-1;vid.pause();vid.removeAttribute("src");$("plEmpty").style.display="flex";$("plMsg").textContent=msg;["rail","info","bar"].forEach(function(i){$(i).style.display="none";});}
+function select(i,open){if(!feed.length){empty("No videos yet.");return;}i=(i+feed.length)%feed.length;cur=i;var v=feed[i];
+ $("plEmpty").style.display="none";["rail","info","bar"].forEach(function(x){$(x).style.display=x==="rail"?"flex":"block";});$("bar").style.display="flex";
+ vid.poster=v.thumbUrl||"";vid.src=v.videoUrl;vid.muted=false;$("mute").innerHTML="🔊";
+ var p=vid.play();if(p&&p.catch)p.catch(function(){vid.muted=true;$("mute").innerHTML="🔇";vid.play().catch(function(){});});
+ gmApi("/api/videos/"+v.id+"/view",{method:"POST",body:{}});
+ info(v);loadState(v);drawGrid();if(open&&narrow()){$("pl").classList.add("open");document.body.classList.add("pl-open");}}
+function info(v){var c=v.creator,st=v._s||{},fo=v.mine||v.following||st.following,fc=st.followers;
+ $("rAvI").innerHTML=(c.avatar?'<img alt="" src="'+S.esc(c.avatar)+'">':S.esc((c.displayName||"?").charAt(0).toUpperCase()))+(fo||v.mine?"":'<span class="plus">+</span>');
+ $("rLike").className=v.liked?"liked":"";$("rLike").innerHTML='<span class="cb">'+S.icon("heart",30)+'</span><span>'+fmtN(v.likes)+'</span>';
+ $("rCom").innerHTML='<span class="cb">'+S.icon("chat",28)+'</span><span>'+fmtN(v.comments)+'</span>';
+ $("rSave").className=st.saved?"saved":"";$("rSave").innerHTML='<span class="cb">'+(st.saved?"🔖":"🏷️")+'</span><span>'+(st.saved?"Saved":"Save")+'</span>';
+ $("rShare").innerHTML='<span class="cb">'+S.icon("share",28)+'</span><span>'+fmtN(v.shares)+'</span>';$("rGift").innerHTML='<span class="cb">'+S.icon("gift",30)+'</span>';
+ $("rDl").innerHTML='<span class="cb">⬇️</span><span>Download</span>';
+ $("rMore").innerHTML='<span class="cb" style="font-size:28px;font-weight:900;letter-spacing:1px;padding-bottom:7px'+(st.website?';background:#2b8cff;border-color:#fff':'')+'">⋯</span><span>'+(st.website?"Website":"Link")+'</span>';
+ var pr=v.product?'<div class="prod"><b>'+S.esc(v.product.title)+' · '+gmM(v.product.price)+'</b><button class="vs-btn" id="pBuy" type="button">Buy Now</button></div>':"";
+ var row='<div class="crow"><span class="ca" id="cAv">'+(c.avatar?'<img alt="" src="'+S.esc(c.avatar)+'">':S.esc((c.displayName||"?").charAt(0).toUpperCase()))+'</span><div class="cn"><b>@'+S.esc(c.handle)+'</b><small>'+(fc!=null?fmtN(fc)+" follower"+(fc===1?"":"s"):"&nbsp;")+'</small></div>'+(v.mine?"":'<button class="fol'+(fo?" on":"")+'" id="folB" type="button">'+(fo?"✓ Following":"+ Follow")+'</button><button class="fol on" id="repB" type="button" title="Report this video" aria-label="Report this video" style="padding:7px 11px">🚩</button>')+'</div>';
+ $("info").innerHTML=pr+(v.sponsored?'<span class="sp">Sponsored</span>':"")+row+'<p>'+S.esc(v.title)+" "+v.hashtags.map(function(t){return "#"+S.esc(t);}).join(" ")+'</p><small>♫ Original Sound - '+S.esc(c.displayName)+'</small>';
+ var b=$("pBuy");if(b)b.onclick=function(){VicoBuy.open({id:v.product.id,title:v.product.title,price:v.product.price,saleMode:v.product.saleMode});};
+ var f=$("folB");if(f)f.onclick=follow;var rb=$("repB");if(rb)rb.onclick=report;var av=$("cAv");if(av)av.onclick=function(){location.href="profile.html?u="+encodeURIComponent(c.handle);};}
+function report(){if(!gmSignedIn()){gmNeedLogin();return;}var v=feed[cur];var why=prompt("What is wrong with this video?");if(why===null)return;gmApi("/api/videos/"+v.id+"/report",{body:{reason:why}}).then(function(d){gmToast(d.success?(d.message||"Thank you. Our team will look at it."):(d.message||"Could not send your report."));});}
+function loadState(v){VicoSocial.state("video",v.id).then(function(d){if(!d||!d.success)return;v._s=d;if(feed[cur]===v)info(v);});}
+function follow(){if(!gmSignedIn()){gmNeedLogin();return;}var v=feed[cur],on=!!(v.following||(v._s&&v._s.following));VicoSocial.follow(v.creator.handle,on).then(function(d){if(d.success!==false){var now=!on;feed.forEach(function(x){if(x.creator.handle===v.creator.handle){x.following=now;if(x._s){x._s.following=now;x._s.followers=d.followers!=null?d.followers:Math.max(0,(x._s.followers||0)+(now?1:-1));}}});info(v);gmToast(now?"Following @"+v.creator.handle:"Unfollowed @"+v.creator.handle);}else if(d.message)gmToast(d.message);});}
+$("rAv").onclick=function(){var v=feed[cur];if(v&&!v.mine&&!(v.following||(v._s&&v._s.following)))follow();};
+$("rSave").onclick=function(){var v=feed[cur];if(!v)return;VicoSocial.save("video",v.id).then(function(d){if(d.success){v._s=v._s||{};v._s.saved=d.saved;info(v);gmToast(d.saved?"Saved to your list (Saved tab).":"Removed from Saved.");}else if(d.message)gmToast(d.message);});};
+$("rMore").onclick=function(){var v=feed[cur];if(!v)return;var w=(v._s||{}).website;if(w)window.open(w,"_blank","noopener,noreferrer");else gmToast("This creator has not linked another website.");};
+$("rDl").onclick=function(){var v=feed[cur];if(!v)return;VicoSocial.download("/api/videos/"+v.id+"/download","vico-video-"+v.id+".mp4",true);};
+$("rLike").onclick=function(){if(!gmSignedIn()){gmNeedLogin();return;}var v=feed[cur];gmApi("/api/videos/"+v.id+"/like",{method:"POST",body:{}}).then(function(d){if(d.success){v.liked=d.liked;v.likes=d.likes;info(v);}else gmToast(d.message);});};
+$("rShare").onclick=function(){var v=feed[cur];gmApi("/api/videos/"+v.id+"/share",{method:"POST",body:{}});v.shares++;info(v);VicoSocial.share(v.title,location.origin+"/vico-videos.html?v="+v.id);};
+$("rGift").onclick=function(){location.href="gift-shop.html";};
+$("rCom").onclick=function(){var v=feed[cur];$("cList").innerHTML="Loading…";$("mCom").classList.add("on");gmApi("/api/videos/"+v.id+"/comments").then(function(d){$("cList").innerHTML=(d.comments||[]).map(function(c){return '<div style="padding:8px 0;border-bottom:1px solid #eef2ff"><b>@'+S.esc(c.author.handle)+'</b> <span style="font-weight:600">'+S.esc(c.body)+'</span></div>';}).join("")||'<div style="color:#5d7096;font-weight:700;padding:8px 0">No comments yet.</div>';});};
+$("cGo").onclick=function(){if(!gmSignedIn()){gmNeedLogin();return;}var v=feed[cur];gmApi("/api/videos/"+v.id+"/comments",{body:{body:$("cIn").value}}).then(function(d){if(d.success){$("cIn").value="";v.comments++;info(v);$("rCom").click();}else gmToast(d.message);});};
+$("cX").onclick=function(){$("mCom").classList.remove("on");};
+$("tabs").onclick=function(e){var b=e.target.closest("button");if(!b)return;tab=b.dataset.t;[].forEach.call(this.children,function(c){c.classList.toggle("on",c===b);});
+ gmApi("/api/videos?tab="+tab).then(function(d){if(d.needLogin){feed=[];empty(tab==="saved"?"Log in to see your saved videos.":"Log in to see videos from creators you follow.");return;}feed=d.videos||[];if(feed.length)select(0,false);else empty(tab==="following"?"Follow creators to see their videos here.":tab==="shop"?"No shopping videos yet.":tab==="saved"?"Nothing saved yet. Tap Save on a video to keep it here.":"No videos yet.");drawGrid();});};
+vid.onclick=function(){if(vid.paused)vid.play();else vid.pause();};$("pp").onclick=function(){vid.onclick();};
+vid.onplay=function(){$("pp").innerHTML='<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';};vid.onpause=function(){$("pp").innerHTML=S.icon("play",30);};
+vid.ontimeupdate=function(){var d=vid.duration||feed[cur]&&feed[cur].duration||0;$("progI").style.width=d?Math.min(100,vid.currentTime/d*100)+"%":"0";$("tm").textContent=fmtT(vid.currentTime)+" / "+fmtT(d);};
+$("prog").onclick=function(e){var r=this.getBoundingClientRect();if(vid.duration)vid.currentTime=(e.clientX-r.left)/r.width*vid.duration;};
+$("mute").onclick=function(){vid.muted=!vid.muted;this.innerHTML=vid.muted?"🔇":"🔊";};
+$("fs").onclick=function(){var p=$("pl");if(document.fullscreenElement)document.exitFullscreen();else if(p.requestFullscreen)p.requestFullscreen();};
+$("plX").onclick=function(){$("pl").classList.remove("open");document.body.classList.remove("pl-open");vid.pause();};
+/* next / previous: swipe up/down, arrow keys, mouse wheel */
+var ty=null;$("pl").addEventListener("touchstart",function(e){ty=e.touches[0].clientY;},{passive:true});$("pl").addEventListener("touchend",function(e){if(ty===null)return;var dy=e.changedTouches[0].clientY-ty;ty=null;if(Math.abs(dy)>70&&feed.length)select(cur+(dy<0?1:-1),false);});
+var wl=0;$("pl").addEventListener("wheel",function(e){var t=Date.now();if(t-wl<700||!feed.length)return;wl=t;e.preventDefault();select(cur+(e.deltaY>0?1:-1),false);},{passive:false});
+document.addEventListener("keydown",function(e){if(!feed.length||/input|textarea/i.test(e.target.tagName))return;if(e.key==="ArrowDown")select(cur+1,false);if(e.key==="ArrowUp")select(cur-1,false);});
+/* ---- upload ---- */
+var upFile=null,upThumb="",upDur=0;
+gmApi("/api/videos/categories").then(function(d){$("uC").innerHTML=(d.categories||[]).map(function(c){return "<option>"+c+"</option>";}).join("");});
+$("upB").onclick=function(){if(!gmSignedIn()){gmNeedLogin();return;}$("uE").textContent="";$("mUp").classList.add("on");};
+$("uX").onclick=function(){$("mUp").classList.remove("on");};
+$("uF").onchange=function(){var f=this.files[0];upFile=null;upThumb="";$("uPrev").innerHTML="";$("uE").textContent="";if(!f)return;
+ if(f.size>30*1024*1024){$("uE").textContent="That video is too big (30 MB at most).";return;}
+ var v=document.createElement("video"),url=URL.createObjectURL(f);v.preload="metadata";v.muted=true;v.playsInline=true;
+ v.onloadedmetadata=function(){upDur=Math.round(v.duration);if(!(upDur>=1&&upDur<=MAXS)){$("uE").textContent="Videos must be between 1 and "+MAXS+" seconds (yours is "+upDur+").";URL.revokeObjectURL(url);return;}v.currentTime=Math.min(1,v.duration/2);};
+ v.onseeked=function(){try{var c=document.createElement("canvas"),s=Math.min(1,480/Math.max(v.videoWidth,v.videoHeight));c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);c.getContext("2d").drawImage(v,0,0,c.width,c.height);var q=.8,d=c.toDataURL("image/jpeg",q);while(d.length>140000&&q>.3){q-=.1;d=c.toDataURL("image/jpeg",q);}upThumb=d.length>140000?"":d;}catch(x){upThumb="";}
+  upFile=f;$("uPrev").innerHTML=(upThumb?'<img alt="" src="'+upThumb+'" style="max-width:120px;border-radius:12px"> ':"")+'<span class="gm-pill">'+fmtT(upDur)+" · "+(f.size/1048576).toFixed(1)+" MB</span>";URL.revokeObjectURL(url);};
+ v.onerror=function(){$("uE").textContent="This browser cannot read that video. Try an MP4.";};v.src=url;};
+$("uGo").onclick=function(){var e=$("uE");e.textContent="";if(!upFile){e.textContent="Choose a video first.";return;}var go=this;go.disabled=true;
+ gmApi("/api/videos",{body:{title:$("uT").value,hashtags:$("uH").value,category:$("uC").value,durationSec:upDur,thumb:upThumb}}).then(function(d){
+  if(!d.success){go.disabled=false;e.textContent=d.message||"Could not start the upload.";return;}
+  $("uBar").style.display="block";var x=new XMLHttpRequest();x.open("PUT","/api/videos/"+d.id+"/file");x.setRequestHeader("Authorization","Bearer "+(window.VicoAuth?VicoAuth.getToken():""));x.setRequestHeader("Content-Type",upFile.type||"video/mp4");
+  x.upload.onprogress=function(p){if(p.lengthComputable)$("uBarI").style.width=Math.round(p.loaded/p.total*100)+"%";};
+  x.onload=function(){go.disabled=false;var r={};try{r=JSON.parse(x.responseText);}catch(z){}if(r.success){$("mUp").classList.remove("on");$("uBar").style.display="none";$("uBarI").style.width="0";gmToast("Your video is live.");["uT","uH","uF"].forEach(function(i){$(i).value="";});$("uPrev").innerHTML="";upFile=null;loadGrid();}else e.textContent=r.message||"Upload failed. Please try again.";};
+  x.onerror=function(){go.disabled=false;e.textContent="Upload failed. Check your connection.";};x.send(upFile);});};
+window.gmOnCurrency=function(){if(cur>=0)info(feed[cur]);};
+loadGrid();
+(function(){var w=new URLSearchParams(location.search).get("v");if(!w)return;gmApi("/api/videos?id="+encodeURIComponent(w)).then(function(d){if(d.videos&&d.videos.length){feed=d.videos.concat(grid.filter(function(x){return x.id!==d.videos[0].id;}));select(0,true);}});})();
+if(/[?&]upload=1/.test(location.search))setTimeout(function(){var b=$("upB");if(b)b.click();},500);
+</script></body></html>

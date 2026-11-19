@@ -14,7 +14,11 @@
     Like: { d: 2.8 }, "Power Bike": { d: 3.8, t: "POWER BIKE" }, Rose: { d: 4.2, t: "ROSE OF LOVE" }, Fire: { d: 3.4 }, Strawberry: { d: 3.6 }, Star: { d: 3.8 },
     Trophy: { d: 4.4, t: "CHAMPION" }, Car: { d: 4.2, t: "SUPERCAR" }, Silver: { d: 3.8, t: "SILVER MEDAL" },
     Diamond: { d: 4.4, t: "DIAMOND EXPLOSION" }, Gold: { d: 4.2, t: "GOLD RAIN" }, Eagle: { d: 4.6, t: "GOLDEN EAGLE" },
-    Lion: { d: 5, t: "MEGA LION" }, Dragon: { d: 5.4, t: "MEGA DRAGON" }, Elephant: { d: 5.4, t: "MIGHTY ELEPHANT" }, Whale: { d: 5.8, t: "GIANT WHALE" }
+    Lion: { d: 5, t: "MEGA LION" }, Dragon: { d: 5.4, t: "MEGA DRAGON" }, Elephant: { d: 5.4, t: "MIGHTY ELEPHANT" }, Whale: { d: 5.8, t: "GIANT WHALE" },
+    /* VIP gifts (videos gift-vip-*.mp4; prices live in the database, see vip.js) */
+    "Diamond Butterfly": { d: 4.4, t: "DIAMOND BUTTERFLY" }, "Golden Rose": { d: 4.4, t: "GOLDEN ROSE" }, "Diamond Heart": { d: 4.4, t: "DIAMOND HEART" }, "Diamond Crown": { d: 4.4, t: "DIAMOND CROWN" },
+    "Royal Throne": { d: 4.4, t: "ROYAL THRONE" }, "Luxury Car": { d: 4.4, t: "LUXURY CAR" }, "Golden Lion": { d: 4.4, t: "GOLDEN LION" }, "Royal Dragon": { d: 4.4, t: "ROYAL DRAGON" },
+    "Golden Palace": { d: 4.4, t: "GOLDEN PALACE" }, "Royal Airplane": { d: 4.4, t: "ROYAL AIRPLANE" }, "Luxury Yacht": { d: 4.4, t: "LUXURY YACHT" }, "Golden Galaxy": { d: 4.4, t: "GOLDEN GALAXY" }
   };
 
   /* -------------------------------- sound -------------------------------- */
@@ -335,7 +339,9 @@
       "@media(prefers-reduced-motion:reduce){.vgx-ban{animation-duration:.01s}}";
     document.head.appendChild(s);
   }
-  var VID = { Like: "like", Rose: "rose", Fire: "fire", Strawberry: "strawberry", "Power Bike": "power-bike", Star: "power-bike", Trophy: "trophy", Car: "car", Silver: "silver", Diamond: "diamond", Gold: "gold", Eagle: "eagle", Lion: "lion", Dragon: "dragon", Elephant: "elephant", Whale: "whale" };
+  var VID = { Like: "like", Rose: "rose", Fire: "fire", Strawberry: "strawberry", "Power Bike": "power-bike", Star: "power-bike", Trophy: "trophy", Car: "car", Silver: "silver", Diamond: "diamond", Gold: "gold", Eagle: "eagle", Lion: "lion", Dragon: "dragon", Elephant: "elephant", Whale: "whale",
+    "Diamond Butterfly": "vip-diamond-butterfly", "Golden Rose": "vip-golden-rose", "Diamond Heart": "vip-diamond-heart", "Diamond Crown": "vip-diamond-crown", "Royal Throne": "vip-royal-throne", "Luxury Car": "vip-luxury-car",
+    "Golden Lion": "vip-golden-lion", "Royal Dragon": "vip-royal-dragon", "Golden Palace": "vip-golden-palace", "Royal Airplane": "vip-royal-airplane", "Luxury Yacht": "vip-luxury-yacht", "Golden Galaxy": "vip-golden-galaxy" };
   var SMALL = { Like: 1, Rose: 1, Fire: 1, Strawberry: 1 };
   function videoUrl(name) { return VID[name] ? "/gift-" + VID[name] + ".mp4" : null; }  // gift-<name>.mp4 sits beside the HTML files (no gifts folder)
   var active = new Map(), waiting = [];

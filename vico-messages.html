@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vico Messages - Vico Pay Live</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+.hero{padding:18px 22px;border-radius:24px;background:linear-gradient(120deg,#bfe0ff,#c9b8ff);margin-bottom:12px}.hero h1{margin:0;font-size:28px;color:#12275c}.hero p{margin:2px 0 0;font-weight:700;color:#1b2f66}
+.pane{display:grid;grid-template-columns:340px 1fr;gap:12px;height:min(620px,calc(100vh - 290px));min-height:420px}
+.side,.main{overflow:hidden;display:flex;flex-direction:column}
+.find{display:flex;gap:6px;padding:10px;border-bottom:1px solid #c5dcf7}.find input{flex:1;min-width:0;border:1px solid #c5dcf7;border-radius:14px;padding:10px 12px;font:inherit}
+#threads{flex:1;overflow:auto}.th{display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #e3eefc;cursor:pointer}.th:hover,.th.on{background:#eaf3ff}
+.av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#1d6fe8,#6d28d9);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 44px}
+.th .t{flex:1;min-width:0}.th b{display:block;font-size:14.5px}.th small{display:block;color:#5d7096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.th em{background:#ef4444;color:#fff;border-radius:10px;font:800 11px Arial;padding:2px 7px;font-style:normal}
+.mh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #c5dcf7;background:#fff;font-weight:900}.mh button{display:none;border:0;background:#eaf3ff;border-radius:12px;padding:7px 12px;font-weight:800;cursor:pointer}
+#msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:#f3f8ff}
+.m{max-width:80%;padding:9px 13px;border-radius:16px;font-size:15px;line-height:1.4;word-break:break-word;white-space:pre-wrap}.m.me{align-self:flex-end;background:#4c1d95;color:#fff;border-bottom-right-radius:4px}.m.th2{align-self:flex-start;background:#fff;border:1px solid #c5dcf7;border-bottom-left-radius:4px}
+.m small{display:block;opacity:.65;font-size:10.5px;margin-top:3px}
+#f{display:flex;gap:8px;padding:10px;border-top:1px solid #c5dcf7;background:#fff}#f input{flex:1;min-width:0;border:1px solid #c5dcf7;border-radius:18px;padding:12px 16px;font:inherit}
+.empty{margin:auto;color:#5d7096;font-weight:700;text-align:center;padding:20px}
+@media(max-width:760px){.pane{grid-template-columns:1fr}.pane.chat .side{display:none}.pane:not(.chat) .main{display:none}.mh button{display:inline-block}}
+</style></head>
+<body class="gm" data-gm="messages" data-title="Vico Messages">
+<div class="gm-wrap">
+  <div class="hero"><h1>Vico Messages</h1><p>Chat · Connect · Share with your friends, buyers and sellers.</p></div>
+  <div class="pane" id="pane">
+    <div class="gm-card side"><div class="find"><input id="who" placeholder="Start a chat: type a username"><button class="gm-btn sm" id="go" type="button">Chat</button></div><div id="threads"></div></div>
+    <div class="gm-card main"><div class="mh" id="mh"><button id="back" type="button">‹</button><span id="mt">Choose a chat</span></div><div id="msgs"><div class="empty">Pick a chat on the left, or start a new one with a username.</div></div>
+      <form id="f" style="display:none"><input id="in" maxlength="1000" placeholder="Write a message…" autocomplete="off"><button class="gm-btn" style="padding:0 20px">Send</button></form></div>
+  </div>
+</div>
+<script src="auth.js"></script><script src="gm-nav.js"></script>
+<script>
+var cur=null,lastId=0,timer=null;
+function av(p){return p.avatar?'<img class="av" src="'+gmEsc(p.avatar)+'" alt="">':'<div class="av">'+gmEsc((p.displayName||"?").charAt(0).toUpperCase())+'</div>';}
+function ago(t){var s=(Date.now()-t)/1000;if(s<60)return"now";if(s<3600)return Math.floor(s/60)+"m";if(s<86400)return Math.floor(s/3600)+"h";return new Date(t).toLocaleDateString();}
+function loadThreads(){gmApi("/api/dm/threads").then(function(d){var el=document.getElementById("threads");if(!d.success){el.innerHTML='<div class="empty">'+gmEsc(d.message||"Log in to see your chats.")+'</div>';return;}
+  el.innerHTML=d.threads.map(function(t){return '<div class="th'+(cur===t.handle?' on':'')+'" data-h="'+gmEsc(t.handle)+'">'+av(t)+'<div class="t"><b>'+gmEsc(t.displayName)+'</b><small>'+gmEsc(t.preview)+'</small></div><div style="text-align:right"><small>'+ago(t.lastAt)+'</small>'+(t.unread?'<em>'+t.unread+'</em>':'')+'</div></div>';}).join("")||'<div class="empty">No chats yet.</div>';});}
+document.getElementById("threads").onclick=function(e){var t=e.target.closest(".th");if(t)openChat(t.dataset.h);};
+function draw(list,mine){var el=document.getElementById("msgs");list.forEach(function(m){var d=document.createElement("div");d.className="m "+(m.mine?"me":"th2");d.innerHTML=gmEsc(m.body)+"<small>"+new Date(m.at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+"</small>";el.appendChild(d);lastId=Math.max(lastId,m.id);});el.scrollTop=el.scrollHeight;}
+function openChat(h){if(!gmSignedIn()){gmNeedLogin();return;}cur=h;lastId=0;document.getElementById("pane").classList.add("chat");
+  gmApi("/api/dm/with/"+encodeURIComponent(h)).then(function(d){if(!d.success){gmToast(d.message||"Could not open the chat.");document.getElementById("pane").classList.remove("chat");return;}
+    document.getElementById("mt").textContent=d.with.displayName+" (@"+d.with.handle+")";document.getElementById("f").style.display="flex";
+    var el=document.getElementById("msgs");el.innerHTML="";if(!d.messages.length)el.innerHTML='<div class="empty">Say hello 👋</div>';else draw(d.messages);loadThreads();clearInterval(timer);timer=setInterval(poll,5000);});}
+function poll(){if(!cur||document.hidden)return;gmApi("/api/dm/with/"+encodeURIComponent(cur)+"?after="+lastId).then(function(d){if(d.success&&d.messages.length){var e=document.querySelector("#msgs .empty");if(e)e.remove();draw(d.messages);loadThreads();}});}
+document.getElementById("f").onsubmit=function(e){e.preventDefault();var i=document.getElementById("in"),b=i.value.trim();if(!b||!cur)return;i.value="";
+  gmApi("/api/dm/with/"+encodeURIComponent(cur),{body:{body:b}}).then(function(d){if(d.success){var e2=document.querySelector("#msgs .empty");if(e2)e2.remove();draw([d.message]);loadThreads();}else{gmToast(d.message||"Could not send.");i.value=b;}});};
+document.getElementById("go").onclick=function(){var v=document.getElementById("who").value.trim().replace(/^@/,"");if(v)openChat(v);};
+document.getElementById("who").onkeydown=function(e){if(e.key==="Enter")document.getElementById("go").click();};
+document.getElementById("back").onclick=function(){document.getElementById("pane").classList.remove("chat");cur=null;clearInterval(timer);loadThreads();};
+if(gmSignedIn()){loadThreads();var qs=new URLSearchParams(location.search),to=qs.get("to");if(to){openChat(to);if(qs.get("t"))setTimeout(function(){var i=document.getElementById("in");if(i&&!i.value)i.value="Hi, I am interested in “"+qs.get("t")+"”. Is it still available?";},900);}}else{document.getElementById("threads").innerHTML='<div class="empty">Log in to see your chats.</div>';}
+</script></body></html>

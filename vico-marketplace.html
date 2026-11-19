@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vico Pay Marketplace</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+body.gm.vs-page{background:#f6f8ff;min-height:100vh}
+.mk{width:min(1180px,100%);margin:0 auto;padding:10px 14px}
+.mk-head{position:relative;display:flex;align-items:center;gap:12px;padding:6px 0 10px}
+.mk-logo{display:flex;align-items:center;gap:8px;text-decoration:none;flex:0 0 auto}
+.mk-logo svg{width:46px;height:46px}
+.mk-logo div{font-style:italic;font-weight:900;line-height:1;font-size:26px;color:#1b1b6b}.mk-logo div span{display:block;color:#6d28d9;font-size:22px;margin-top:2px}
+.mk-search{flex:1;position:relative;min-width:0}.mk-search input{width:100%;height:50px;border-radius:26px;border:0;background:#eaf0ff;padding:0 20px 0 52px;font:600 16px system-ui,Arial;color:#14224d;outline:0}
+.mk-search svg{position:absolute;left:16px;top:12px;color:#2b2a8c}
+.mk-ic{position:relative;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#2b2a8c;background:none;border:0;cursor:pointer;flex:0 0 auto}
+.mk-ic em{position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;border-radius:10px;background:#ef4444;color:#fff;font:800 11px Arial;align-items:center;justify-content:center;padding:0 5px;font-style:normal;display:none}
+.mk-av{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#8b3fd0,#4c1469);color:#ffd45e;display:flex;align-items:center;justify-content:center;border:0;cursor:pointer;flex:0 0 auto}
+.mk-banner{position:relative;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;border-radius:28px;overflow:hidden;min-height:210px;background:linear-gradient(100deg,#1b3fd6 0%,#2a52e6 45%,#3a73ff 100%);color:#fff;margin:4px 0 14px}
+.mk-ban-l{display:flex;align-items:center;gap:14px;padding:18px 22px;position:relative;z-index:2}
+.mk-cart{font-size:64px;line-height:1;filter:drop-shadow(0 8px 10px rgba(0,0,40,.3));flex:0 0 auto}
+.mk-ban-l h1{margin:0;font-size:clamp(24px,4.4vw,44px);line-height:1.05;font-weight:900;font-style:italic}.mk-ban-l h1 span{display:block;color:#ffe53b}
+.mk-ban-l p{margin:6px 0 12px;font-size:clamp(15px,2.4vw,22px);font-weight:800}
+.mk-start{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:20px;padding:10px 20px;background:#7c2df0;color:#fff;font:800 clamp(15px,2vw,20px) system-ui,Arial;cursor:pointer;text-decoration:none}
+.mk-ban-r{position:relative;height:100%;min-height:210px;background:url(vico-art-banner.jpg) right center/cover no-repeat}
+.mk-ban-r:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#2a52e6 0%,rgba(42,82,230,0) 38%)}
+.mk-bub{position:absolute;right:14px;top:26px;background:#ffe53b;color:#14224d;font-weight:900;font-style:italic;font-size:clamp(15px,2.4vw,26px);line-height:1.1;padding:12px 18px;border-radius:18px;transform:rotate(-4deg);box-shadow:0 8px 18px rgba(0,0,50,.25)}
+.mk-bub:after{content:"";position:absolute;left:-12px;bottom:10px;border:10px solid transparent;border-right-color:#ffe53b;border-left:0}
+.mk-bub u{display:block;height:4px;background:#6d28d9;border-radius:4px;margin-top:4px;text-decoration:none}
+.mk-cats{display:flex;gap:10px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}.mk-cats::-webkit-scrollbar{display:none}
+.mk-cat{flex:0 0 auto;min-width:92px;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;border-radius:20px;padding:12px 18px;background:#eaf0ff;color:#14224d;font:800 16px system-ui,Arial;cursor:pointer}
+.mk-cat span{font-size:28px;line-height:1}.mk-cat.on{background:linear-gradient(135deg,#6d28d9,#4c1d95);color:#fff;box-shadow:0 8px 18px rgba(76,29,149,.3)}
+.mk-more{position:relative}.mk-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f8;border-radius:16px;box-shadow:0 14px 30px rgba(40,40,120,.2);z-index:30;display:none;min-width:190px;overflow:hidden}.mk-menu.on{display:block}
+.mk-menu button,.mk-menu a{display:block;width:100%;text-align:left;border:0;background:none;padding:12px 16px;font:700 15px system-ui,Arial;color:#14224d;cursor:pointer;text-decoration:none}.mk-menu button:hover,.mk-menu a:hover{background:#eef2ff}
+.mk-sec{display:flex;justify-content:space-between;align-items:center;margin:4px 0 10px}.mk-sec h2{margin:0;font-size:20px;color:#1b1b6b}
+.mk-mine{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.mk-own{font-size:12.5px;font-weight:700;color:#5d7096}.mk-own b{color:#b45309}
+.mk-pill{display:inline-block;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:900;background:#e3eefc;color:#1b3a8a}
+.mk-pill.warn{background:#fef3c7;color:#92400e}.mk-pill.bad{background:#fee2e2;color:#991b1b}.mk-pill.ok{background:#dcfce7;color:#166534}
+.mk-wrap{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+@media(max-width:700px){.mk-banner{grid-template-columns:1fr;min-height:0}.mk-ban-r{min-height:150px}.mk-cart{font-size:44px}.mk-logo div{font-size:20px}.mk-logo div span{font-size:17px}.mk-logo svg{width:38px;height:38px}.mk-av{width:44px;height:44px}.mk-ic{width:38px;height:38px}}
+</style></head>
+<body class="gm vs-page" data-gm-bar="none">
+<div class="mk">
+  <div class="mk-head">
+    <a class="mk-logo" href="home.html" aria-label="Vico Pay Marketplace"><svg viewBox="0 0 48 48"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#18a0ff"/><stop offset=".55" stop-color="#7c2df0"/><stop offset="1" stop-color="#d946ef"/></linearGradient></defs><path d="M4 8h10l10 22L34 8h10L28 42H20z" fill="url(#lg)"/></svg><div>Vico Pay<span>Marketplace</span></div></a>
+    <div class="mk-search"><span id="icS"></span><input id="q" type="search" placeholder="Search for products, shops..." autocomplete="off"></div>
+    <span data-cur-slot></span>
+    <button class="mk-ic" id="cartB" type="button" aria-label="My purchases"></button>
+    <button class="mk-ic" id="bellB" type="button" aria-label="Notifications"></button>
+    <button class="mk-av" id="avB" type="button" aria-label="My account" style="position:relative"></button>
+    <div class="mk-menu" id="avM" style="right:14px;top:70px;position:absolute"><button id="mSell" type="button">＋ Sell an item</button><button id="mMine" type="button">My items</button><a href="vico-studio.html">🖥️ Vico Studio</a><a href="vico-wallet.html#purchases">My orders &amp; wallet</a></div>
+  </div>
+
+  <div class="mk-banner">
+    <div class="mk-ban-l"><div class="mk-cart">🛒</div><div><h1>Vico Pay<span>Global Marketplace</span></h1><p>Shop • Sell • Advertise • Grow</p><a class="mk-start" href="#list" id="startB">Start Shopping ›</a></div></div>
+    <div class="mk-ban-r"><div class="mk-bub">Great Deals!<br>Best Prices!<u></u></div></div>
+  </div>
+
+  <section id="creatorShowcase" style="margin:16px 0 20px;padding:16px;border:1px solid #dbe6ff;border-radius:20px;background:linear-gradient(120deg,#eef5ff,#f5efff)">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h2 style="margin:0;color:#172e73">Creator Video Marketplace</h2><p style="margin:4px 0 0;color:#5d7096;font-weight:650">Promotional videos published by VicoPay creators and their business partners.</p></div><a href="creator-partnership.html" style="background:linear-gradient(120deg,#1677f8,#702be5);color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:850">Join Creator Partnership</a></div>
+    <div id="creatorVideoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px"><div style="color:#64748b;font-weight:700">Loading creator videos…</div></div>
+  </section>
+  <div class="mk-cats" id="cats"></div>
+  <div class="mk-sec" id="list"><h2 id="secT">All products</h2><span class="mk-pill" id="cnt" style="display:none"></span></div>
+  <div class="vs-grid" id="grid"></div>
+</div>
+
+<div class="gm-modal" id="mSellBox"><div class="box">
+  <h2 style="margin:0 0 4px">Sell an item</h2><div style="color:#5d7096;font-weight:600;font-size:13.5px">Your item stays in the Marketplace for 2 months. To keep it longer, pay <b id="keepUsd">$2</b> for every 2 more months. (If you advertise it in the Ad Center, the ad payment covers the first 2 months.)</div>
+  <label class="gm-lab">Item name</label><input class="gm-in" id="fT" maxlength="80">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label class="gm-lab">Price (<span class="curSym">₦</span>)</label><input class="gm-in" id="fP" type="number" min="0.01" step="any" inputmode="decimal"></div><div><label class="gm-lab">Old price (optional)</label><input class="gm-in" id="fO" type="number" min="0.01" step="any" inputmode="decimal"></div></div>
+  <label class="gm-lab">Category</label><select class="gm-in" id="fC"></select>
+  <label class="gm-lab">Where (city or area, optional)</label><input class="gm-in" id="fL" maxlength="60">
+  <label class="gm-lab">Description</label><textarea class="gm-in" id="fD" rows="3" maxlength="1000"></textarea>
+  <label class="gm-lab">How will buyers get it?</label>
+  <div class="mk-wrap" id="fMode"><button type="button" class="vb-chip on" data-v="vico">Buy Now on Vico (Paystack)</button><button type="button" class="vb-chip" data-v="direct">Directly with me (phone / WhatsApp)</button></div>
+  <div id="fDirect" style="display:none"><div class="mk-wrap" style="margin-top:8px" id="fCm"><button type="button" class="vb-chip on" data-v="whatsapp">WhatsApp</button><button type="button" class="vb-chip" data-v="phone">Phone call</button></div><label class="gm-lab">Your number</label><input class="gm-in" id="fN" inputmode="tel" maxlength="20" placeholder="0803 000 0000"></div>
+  <label class="gm-lab" style="display:flex;align-items:center;gap:9px;margin-top:12px"><input id="fCall" type="checkbox" checked style="width:18px;height:18px"> Allow buyers to request a video call when I am live</label><div style="font-size:12px;color:#64748b">The video-call button appears on this product page while you are livestreaming.</div><label class="gm-lab">Photo</label><input type="file" id="fI" accept="image/*"><div id="fPrev" style="margin-top:8px"></div>
+  <div class="err" id="fE" style="color:#dc2626;font-weight:700;font-size:13.5px;min-height:18px;margin-top:8px"></div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="gm-btn" id="fSave" type="button">Post item</button><button class="gm-btn blue" id="fCancel" type="button">Cancel</button></div>
+</div></div>
+
+<script src="auth.js"></script><script src="gm-nav.js"></script><script src="vico-shell.js"></script><script src="vico-buy.js"></script>
+<script>
+var S=VicoShell,cat="",mine=false,items=[],sp={},img="",CATS=[["","All","▦"],["Electronics","Electronics","💻"],["Fashion","Fashion","👗"],["Home & Living","Home & Living","🏠"],["Beauty,Health","Beauty & Health","💄"],["Sports","Sports","⚽"],["Books","Books","📚"]],MORE=["Food & Beverage","Vehicles","Services","Other"],mode="vico",cm="whatsapp";
+function $(i){return document.getElementById(i);}
+$("icS").innerHTML=S.icon("search",24);$("cartB").innerHTML=S.icon("cart",30);$("bellB").innerHTML=S.icon("bell",30);$("avB").innerHTML=S.icon("crown",30);
+S.nav("market","market");S.headerBadges($("cartB"),$("bellB"));
+function drawCats(){$("cats").innerHTML=CATS.map(function(c){return '<button type="button" class="mk-cat'+(cat===c[0]&&!mine?" on":"")+'" data-c="'+gmEsc(c[0])+'"><span>'+c[2]+'</span>'+gmEsc(c[1])+'</button>';}).join("")+
+ '<div class="mk-more"><button type="button" class="mk-cat'+(MORE.indexOf(cat)>=0?" on":"")+'" id="moreB"><span>•••</span>More ⌄</button><div class="mk-menu" id="moreM">'+MORE.map(function(m){return '<button type="button" data-c="'+gmEsc(m)+'">'+gmEsc(m)+'</button>';}).join("")+'</div></div>';}
+drawCats();
+$("cats").onclick=function(e){var m=e.target.closest("#moreB");if(m){$("moreM").classList.toggle("on");return;}var b=e.target.closest("[data-c]");if(!b)return;cat=b.dataset.c;mine=false;$("moreM")&&$("moreM").classList.remove("on");drawCats();load();};
+document.addEventListener("click",function(e){if(!e.target.closest("#avB,#avM"))$("avM").classList.remove("on");});
+$("avB").onclick=function(){$("avM").classList.toggle("on");};
+$("cartB").onclick=function(){location.href="vico-wallet.html#purchases";};$("bellB").onclick=function(){location.href="vico-messages.html";};
+function name(){var c=CATS.filter(function(x){return x[0]===cat;})[0];return mine?"My items":q().length?"Search results":c?(cat?c[1]:"All products"):cat;}
+function q(){return $("q").value.trim();}
+function pay(it){return !(it.status==="active"&&!it.expired);}
+function ownCard(it){var st=it.status==="pending"?'<span class="mk-pill warn">Waiting for your ad to be approved</span>':it.status==="hidden"?'<span class="mk-pill bad">Under review by Vico</span>':it.expired?'<span class="mk-pill bad">Not shown — time ended</span>':it.status==="sold"?'<span class="mk-pill">Sold</span>':it.daysLeft!==null?'<span class="mk-pill '+(it.daysLeft<=7?"warn":"ok")+'">'+it.daysLeft+' day(s) left</span>':'<span class="mk-pill ok">Live</span>';
+ var renew=(it.status==="active"&&it.daysLeft!==null&&(it.expired||it.daysLeft<=30))?'<button class="vs-btn" data-renew="'+it.id+'" type="button">Keep 2 more months · $'+(KEEP.usd)+'</button>':"";
+ var acts=it.status==="active"?'<button class="vs-btn" style="background:#64748b" data-st="sold" data-id="'+it.id+'" type="button">Mark sold</button>':it.status==="sold"?'<button class="vs-btn" style="background:#64748b" data-st="active" data-id="'+it.id+'" type="button">Back on sale</button>':"";
+ return '<div class="vs-card" data-id="'+it.id+'"><div class="vs-img">'+(it.imageUrl?'<img alt="" src="'+it.imageUrl+'">':"🛍️")+'</div><div class="vs-bd"><div class="vs-t">'+gmEsc(it.title)+'</div><div class="vs-price"><b>'+gmM(it.price)+'</b></div><div class="mk-wrap">'+st+'</div><div class="mk-wrap" style="margin-top:6px">'+renew+acts+'<button class="vs-btn" style="background:#b91c1c" data-st="removed" data-id="'+it.id+'" type="button">Remove</button></div></div></div>';}
+var KEEP={usd:2,ngn:3000};
+function draw(){$("secT").textContent=name();var c=$("cnt");c.style.display=items.length?"inline-block":"none";c.textContent=items.length+" item"+(items.length===1?"":"s");
+ $("grid").innerHTML=items.map(function(it){return mine?ownCard(it):S.card(it,{sponsored:!!sp[it.id]});}).join("")||'<div class="vs-empty">'+(mine?"You have not posted anything yet.":q()?"No products match your search.":"No products here yet. Be the first to sell something!")+'</div>';}
+function load(){if(mine&&!gmSignedIn()){gmNeedLogin();return;}
+ var u=mine?"/api/market/mine":"/api/market/listings?category="+encodeURIComponent(cat)+"&q="+encodeURIComponent(q());
+ gmApi(u).then(function(d){items=d.listings||[];if(!mine)items.sort(function(a,b){return (sp[b.id]?1:0)-(sp[a.id]?1:0);});draw();});}
+$("q").onkeydown=function(e){if(e.key==="Enter"){mine=false;drawCats();load();}};
+$("grid").onclick=function(e){var r=e.target.closest("[data-renew]");if(r){r.disabled=true;gmApi("/api/market/listings/"+r.dataset.renew+"/renew",{method:"POST",body:{}}).then(function(d){r.disabled=false;if(d.success&&d.url)location.href=d.url;else gmToast(d.message||"Could not start the payment.");});return;}
+ var s=e.target.closest("[data-st]");if(s){if(s.dataset.st==="removed"&&!confirm("Remove this item?"))return;gmApi("/api/market/listings/"+s.dataset.id+"/status",{body:{status:s.dataset.st}}).then(function(d){gmToast(d.success?"Updated.":d.message);load();});return;}
+ var b=e.target.closest(".vs-buy");var id=(e.target.closest(".vs-card")||{dataset:{}}).dataset.id;
+ if(b){var it=items.filter(function(x){return x.id==b.dataset.id;})[0];if(it)VicoBuy.open(it);return;}
+ if(id&&!mine)location.href="vico-product.html?id="+id;};
+gmApi("/api/market/categories").then(function(d){$("fC").innerHTML=(d.categories||[]).map(function(x){return '<option>'+gmEsc(x)+'</option>';}).join("");});
+gmApi("/api/keep/info").then(function(d){if(d.success){KEEP=d;$("keepUsd").textContent="$"+d.usd;}});
+/* menu + sell form */
+function openSell(){if(!gmSignedIn()){gmNeedLogin();return;}$("fE").textContent="";$("mSellBox").classList.add("on");}
+$("mSell").onclick=function(){$("avM").classList.remove("on");openSell();};
+$("mMine").onclick=function(){$("avM").classList.remove("on");if(!gmSignedIn()){gmNeedLogin();return;}mine=true;drawCats();load();};
+$("fCancel").onclick=function(){$("mSellBox").classList.remove("on");};
+function symb(){[].forEach.call(document.querySelectorAll(".curSym"),function(e){e.textContent=gmIsUsd()?"$":"₦";});}
+symb();window.gmOnCurrency=function(){symb();draw();};
+$("fMode").onclick=function(e){var b=e.target.closest("button");if(!b)return;mode=b.dataset.v;[].forEach.call(this.children,function(c){c.classList.toggle("on",c===b);});$("fDirect").style.display=mode==="direct"?"block":"none";};
+$("fCm").onclick=function(e){var b=e.target.closest("button");if(!b)return;cm=b.dataset.v;[].forEach.call(this.children,function(c){c.classList.toggle("on",c===b);});};
+$("fI").onchange=function(){var f=this.files[0];img="";$("fPrev").innerHTML="";if(!f)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+ var qq=.8,d=c.toDataURL("image/jpeg",qq);while(d.length>380000&&qq>.3){qq-=.1;d=c.toDataURL("image/jpeg",qq);}if(d.length>380000){$("fE").textContent="That photo is too big. Try another one.";return;}img=d;$("fPrev").innerHTML='<img alt="" src="'+d+'" style="max-width:160px;border-radius:12px">';};im.src=r.result;};r.readAsDataURL(f);};
+$("fSave").onclick=function(){$("fE").textContent="";
+ gmApi("/api/market/listings",{body:{title:$("fT").value,price:gmToNgn($("fP").value),oldPrice:$("fO").value?gmToNgn($("fO").value):0,category:$("fC").value,location:$("fL").value,description:$("fD").value,image:img,saleMode:mode,contactMode:cm,contactNumber:$("fN").value,callEnabled:$("fCall").checked}}).then(function(d){
+  if(d.success){$("mSellBox").classList.remove("on");["fT","fP","fO","fL","fD","fN"].forEach(function(i){$(i).value="";});img="";$("fPrev").innerHTML="";gmToast("Your item is posted.");mine=true;drawCats();load();}else $("fE").textContent=d.message||"Could not post.";});};
+$("startB").onclick=function(e){e.preventDefault();$("list").scrollIntoView({behavior:"smooth"});};
+if(new URLSearchParams(location.search).get("mine")==="1"&&gmSignedIn()){mine=true;drawCats();}
+if(new URLSearchParams(location.search).get("sell")==="1")openSell();
+gmApi("/api/market/sponsored").then(function(d){(d.ads||[]).forEach(function(a){if(a.listingId)sp[a.listingId]=1;});}).catch(function(){}).then(load);
+</script>
+<script>
+(function(){var host=document.getElementById("creatorVideoGrid");if(!host)return;function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}fetch("/api/creator-partnership/marketplace-videos",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(d){var a=d.videos||[];host.innerHTML=a.length?a.map(function(v){return '<article style="background:#fff;border:1px solid #dce7fb;border-radius:15px;padding:10px;overflow:hidden"><video controls preload="metadata" playsinline style="width:100%;aspect-ratio:9/16;max-height:280px;object-fit:cover;border-radius:10px;background:#101b42" src="'+esc(v.videoUrl)+'" '+(v.thumbUrl?'poster="'+esc(v.thumbUrl)+'"':'')+'></video><div style="font-weight:850;color:#172e73;margin:8px 0 3px">'+esc(v.title)+'</div><div style="font-size:12px;color:#64748b">Creator: '+esc(v.creator)+'</div></article>'}).join(""):'<div style="padding:16px;background:#fff;border:1px dashed #cbd8ee;border-radius:12px;color:#64748b">No creator partnership videos have been published yet.</div>'}).catch(function(){host.innerHTML='<div style="color:#64748b">Creator videos are temporarily unavailable.</div>'})})();
+</script></body></html>

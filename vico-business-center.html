@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0646b8">
+<title>Vico Pay High Business Center</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+body.gm.bc{background:linear-gradient(180deg,#dcecff 0,#eef5ff 380px,#f4f8ff 100%);min-height:100vh;color:#0a2260;font-family:system-ui,Arial,sans-serif}
+.bc-w{width:min(1180px,100%);margin:0 auto;padding:0 10px 24px}
+/* header */
+.bc-top{display:flex;align-items:center;gap:14px;padding:10px 18px;border-radius:0 0 26px 26px;background:linear-gradient(90deg,#0a2a9a,#1747d6 50%,#2a63f0);color:#fff;box-shadow:0 8px 22px rgba(10,40,160,.35)}
+.bc-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:#fff;flex:none}.bc-logo svg{width:44px;height:44px}.bc-logo b{display:block;font-style:italic;font-size:26px;line-height:1}.bc-logo b i{font-style:italic;background:#22a7ff;border-radius:8px;padding:0 7px;margin-left:5px;font-size:22px}.bc-logo small{display:block;font-size:12px;opacity:.9;margin-top:2px}
+.bc-nav{display:flex;margin-left:auto;gap:2px;align-items:stretch}
+.bc-nav a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:74px;padding:8px 12px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;border-radius:14px}
+.bc-nav a span{font-size:24px;line-height:1}.bc-nav a:hover{background:rgba(255,255,255,.15)}.bc-nav a.on{background:linear-gradient(180deg,#2c6dff,#1241c9);border:2px solid #cfe0ff;box-shadow:0 0 14px rgba(120,170,255,.8)}
+.bc-nav em{position:absolute;top:2px;right:14px;min-width:20px;height:20px;border-radius:10px;background:#ef4444;color:#fff;font:800 11px Arial;display:none;align-items:center;justify-content:center;padding:0 5px;font-style:normal}
+.bc-me{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;flex:none}.bc-me .av{width:46px;height:46px;border-radius:50%;background:#7c3aed;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:900;overflow:hidden}.bc-me .av img{width:100%;height:100%;object-fit:cover}
+/* hero */
+.bc-hero{position:relative;display:grid;grid-template-columns:minmax(120px,300px) 1fr minmax(120px,230px);align-items:center;gap:6px;margin:6px 0 0;min-height:250px;overflow:hidden}
+.bc-hero .hl{align-self:end;height:100%}.bc-hero .hl img{display:block;height:100%;max-height:270px;width:100%;object-fit:cover;object-position:left bottom;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}
+.bc-hero .hc{text-align:center;padding:12px 4px}.bc-hero h1{margin:0;font-size:clamp(28px,5vw,52px);line-height:1.02;font-weight:900;color:#0a1f5c}
+.bc-hero .tag{margin:8px 0;font-size:clamp(17px,2.6vw,26px);font-weight:900;font-style:italic;color:#5b1fc7}.bc-hero p{margin:4px auto;max-width:520px;font-weight:700;color:#1f356b;font-size:clamp(13px,1.8vw,17px)}
+.bc-hero .hr img{display:block;width:100%;max-height:260px;object-fit:cover;border-radius:22px;-webkit-mask-image:linear-gradient(270deg,#000 78%,transparent);mask-image:linear-gradient(270deg,#000 78%,transparent)}
+/* main panel */
+.bc-panel{background:rgba(255,255,255,.65);border:1px solid #c9dcff;border-radius:26px;padding:14px;box-shadow:0 10px 30px rgba(20,60,160,.14)}
+.bc-bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.bc-tabs{display:flex;flex:1 1 360px;background:#e8f0ff;border-radius:30px;padding:3px;gap:3px}
+.bc-tabs button{flex:1;border:0;border-radius:28px;padding:13px 10px;font:900 clamp(14px,2.2vw,20px) system-ui,Arial;color:#0a2a7a;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.bc-tabs button.on{background:linear-gradient(180deg,#2a63f0,#0b36b8);color:#fff;box-shadow:0 6px 14px rgba(20,60,200,.4)}
+.bc-search{flex:1 1 220px;position:relative}.bc-search input{width:100%;height:50px;border-radius:26px;border:1.5px solid #bcd3ff;background:#fff;padding:0 16px 0 46px;font:600 16px system-ui,Arial;color:#0a2260;outline:0}.bc-search span{position:absolute;left:16px;top:12px;font-size:20px}
+.bc-body{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px;align-items:start}
+.bc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.bc-card{position:relative;background:#fff;border:1px solid #d4e3ff;border-radius:20px;padding:10px 10px 12px;box-shadow:0 6px 16px rgba(20,60,160,.1);display:flex;flex-direction:column;text-align:center}
+.bc-card .bd{position:absolute;left:8px;top:8px;z-index:2;display:inline-flex;align-items:center;gap:5px;background:#1a52e8;color:#fff;border-radius:18px;padding:4px 10px 4px 6px;font-weight:800;font-size:13px}.bc-card .bd i{font-style:normal;width:18px;height:18px;border-radius:50%;background:#2cc4ff;display:flex;align-items:center;justify-content:center;font-size:11px}.bc-card .bd.un{background:#6b7fae}
+.bc-card .hb{position:absolute;right:8px;top:8px;z-index:2;width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.9);font-size:18px;cursor:pointer;color:#1a52e8}
+.bc-card .im{display:block;height:150px;margin:26px 0 6px;border-radius:12px;background:#eef4ff;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:54px;text-decoration:none}.bc-card .im img{width:100%;height:100%;object-fit:contain}
+.bc-card h3{margin:4px 0 0;font-size:clamp(15px,1.6vw,19px);font-weight:900;color:#0a1f5c;text-decoration:none}.bc-card h3 a{color:inherit;text-decoration:none}
+.bc-card .sb{font-size:13px;color:#3d5288;font-weight:600;min-height:18px;margin:2px 0}.bc-card .pr{font-size:clamp(20px,2.2vw,26px);font-weight:900;color:#0b36b8;margin:4px 0 8px}.bc-card .pr s{font-size:13px;color:#8a98b8;font-weight:700;margin-left:6px}
+.bc-card .by{margin-top:auto;border:0;border-radius:22px;padding:12px;background:linear-gradient(180deg,#2a63f0,#0b36b8);color:#fff;font:900 17px system-ui,Arial;cursor:pointer;box-shadow:0 6px 14px rgba(20,60,200,.35)}
+.bc-empty{grid-column:1/-1;text-align:center;padding:36px 14px;font-weight:700;color:#3d5288}.bc-empty b{display:block;font-size:20px;color:#0a1f5c;margin-bottom:6px}.bc-empty a{display:inline-block;margin-top:12px;border-radius:22px;padding:11px 22px;background:#1a52e8;color:#fff;text-decoration:none;font-weight:800}
+/* side */
+.bc-side{display:flex;flex-direction:column;gap:12px}
+.bc-box{background:#fff;border:1px solid #d4e3ff;border-radius:20px;overflow:hidden}
+.bc-box h4{margin:0;padding:12px 14px;display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,#1747d6,#2a63f0);color:#fff;font-size:19px;font-weight:900;line-height:1.05}
+.bc-feat a{display:flex;align-items:center;gap:10px;padding:10px 14px;color:#0a1f5c;text-decoration:none;font-weight:800;font-size:15px}.bc-feat a:hover{background:#eef4ff}.bc-feat i{font-style:normal;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex:none}
+.bc-sup{display:grid;grid-template-columns:1fr 96px;background:linear-gradient(135deg,#1747d6,#2a63f0);color:#fff;border-radius:20px;overflow:hidden;min-height:150px}.bc-sup>div{padding:14px}.bc-sup h4{background:none;padding:0;font-size:22px}.bc-sup p{margin:6px 0 10px;font-weight:700;font-size:14px}.bc-sup a{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#0a2a9a;border-radius:20px;padding:9px 16px;font-weight:900;text-decoration:none}.bc-sup img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.bc-ql a{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;color:#0a2a9a;text-decoration:none;font-weight:800;font-size:15px;border-top:1px solid #e3ecff}.bc-ql a:hover{background:#eef4ff}.bc-ql h4{background:none;color:#0a1f5c;font-size:19px}
+/* bottom banner */
+.bc-cta{display:flex;align-items:center;gap:16px;margin-top:14px;border-radius:28px;padding:14px 22px;background:linear-gradient(90deg,#0a2a9a,#1747d6 60%,#2a63f0);color:#fff;box-shadow:0 8px 22px rgba(10,40,160,.35);flex-wrap:wrap}
+.bc-cta .tr{font-size:52px}.bc-cta h3{margin:0;font-size:clamp(20px,3.2vw,34px);font-weight:900}.bc-cta h3 i{font-style:italic;background:#22a7ff;border-radius:8px;padding:0 8px;margin-left:6px}.bc-cta p{margin:2px 0 0;font-weight:700;font-size:clamp(13px,1.8vw,19px)}
+.bc-cta a{margin-left:auto;border-radius:26px;padding:13px 26px;background:linear-gradient(180deg,#2a63f0,#0b36b8);border:2px solid #cfe0ff;color:#fff;text-decoration:none;font-weight:900;font-size:18px}
+.bc-social{display:flex;gap:5px;justify-content:space-between;margin:8px 0 4px}.bc-social button{flex:1;min-width:0;border:1px solid #d7e5ff;background:#f2f7ff;border-radius:12px;padding:7px 3px;color:#1644a5;font:800 12px system-ui;cursor:pointer}.bc-social small{display:block;font-size:11px}.bc-stats{font-size:11px;color:#5d7096;margin:2px 0 8px}.bc-trusted{background:linear-gradient(90deg,#073eb7,#5a18cb);color:#fff;border-radius:12px;padding:7px;font-size:12px;font-weight:900;margin:4px 0 8px}.bc-tabs button{font-size:clamp(12px,1.8vw,17px);padding:11px 6px}@media(max-width:980px){.bc-body{grid-template-columns:1fr}.bc-side{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+@media(max-width:760px){.bc-top{padding:8px 10px;gap:6px 8px;flex-wrap:wrap}.bc-me{margin-left:auto}.bc-me span{display:none}.bc-logo small{display:none}.bc-nav{order:3;width:100%;margin-left:0;justify-content:space-around}.bc-nav a{min-width:0;flex:1;padding:6px 4px;font-size:11px}.bc-nav a span{font-size:20px}.bc-nav em{right:8px}.bc-hero{grid-template-columns:1fr;min-height:0}.bc-hero .hl,.bc-hero .hr{display:none}.bc-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.bc-card .im{height:112px}.bc-card .by{font-size:15px;padding:10px}.bc-cta a{margin-left:0}}
+@media(max-width:420px){.bc-nav a{font-size:10px}}
+</style></head>
+<body class="gm bc" data-gm-bar="none">
+<div class="bc-w">
+  <header class="bc-top">
+    <a class="bc-logo" href="home.html"><svg viewBox="0 0 48 48"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6df0ff"/><stop offset="1" stop-color="#2a63f0"/></linearGradient></defs><path d="M8 5l34 19L8 43z" fill="url(#g)"/><path d="M19 17l14 7-14 7z" fill="#0a2a9a"/></svg><div><b>Vico Pay <i>Live</i></b><small>Connect • Advertise • Shop • Grow</small></div></a>
+    <nav class="bc-nav" aria-label="Main">
+      <a href="home.html"><span>🏠</span>Home</a>
+      <a href="vico-marketplace.html"><span>🛍️</span>Marketplace</a>
+      <a class="on" href="vico-business-center.html"><span>💼</span>Business Center</a>
+      <a href="live-feed.html"><span>▶️</span>Live</a>
+      <a href="profile.html" id="alerts"><span>🔔</span>Alerts<em id="alN"></em></a>
+    </nav>
+    <a class="bc-me" id="me" href="profile.html"><div class="av" id="meAv">👤</div><span id="meName">My Account ▾</span></a>
+  </header>
+
+  <section class="bc-hero">
+    <div class="hl"><img alt="" src="vico-bc-hero.jpg"></div>
+    <div class="hc"><h1>Vico Pay<br>High Business Center</h1><div class="tag">Showcase Your Products • Grow Your Business</div><p>Discover amazing products from companies and nations, and buy with confidence.</p></div>
+    <div class="hr"><img alt="Buy, Advertise, Grow with Vico Pay" src="vico-bc-shield.jpg"></div>
+  </section>
+
+  <section class="bc-panel">
+    <div class="bc-bar">
+      <div class="bc-tabs" id="tabs"><button class="on" data-k="big-business" type="button">🏬 Big Business</button><button data-k="company" type="button">🏢 Company Products</button><button data-k="national" type="button">🚩 National Products</button></div>
+      <div class="bc-search"><span>🔍</span><input id="q" type="search" placeholder="Search products..." maxlength="60" autocomplete="off"></div>
+    </div>
+    <div class="bc-body">
+      <div class="bc-grid" id="grid"><div class="bc-empty">Loading…</div></div>
+      <aside class="bc-side">
+        <div class="bc-box bc-feat"><h4>⭐ Business Center Features</h4>
+          <a href="vico-ad-center.html"><i style="background:#22c55e">📣</i>Advertise Your Products</a>
+          <a href="vico-marketplace.html?mine=1"><i style="background:#f5b301">🏪</i>Create Your Store</a>
+          <a href="vico-wallet.html"><i style="background:#f97316">📈</i>Track Your Sales</a>
+          <a href="vico-ad-center.html"><i style="background:#2a8cff">👤</i>Get More Customers</a>
+          <a href="product-live.html"><i style="background:#7c3aed">🚀</i>Sell in a Live</a></div>
+        <div class="bc-sup"><div><h4>Need Support?</h4><p>Our Customer Care is here to help you.</p><a href="help-center.html">Contact Us →</a></div><img alt="" src="vico-bc-support.jpg"></div>
+        <div class="bc-box bc-ql"><h4>🔗 Quick Links</h4>
+          <a href="vico-ad-center.html">My Business Dashboard <span>→</span></a>
+          <a href="vico-marketplace.html?mine=1">My Products <span>→</span></a>
+          <a href="vico-wallet.html">Sales Report <span>→</span></a>
+          <a href="settings.html">Business Settings <span>→</span></a></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="bc-cta"><span class="tr">🏆</span><div><h3>Grow Your Business with Vico Pay <i>Live</i></h3><p>A Trusted Platform for Businesses and Nations</p></div><a id="join" href="join-now.html">Join Now →</a></section>
+</div>
+<script src="auth.js"></script><script src="gm-nav.js"></script><script src="vico-buy.js"></script><script src="vico-social.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i);},kind="big-business",items=[],saved={},social={},timer=null;
+function money(n){return "₦"+Number(n).toLocaleString();}
+function card(p){var tag=kind==="national"?"National":(kind==="big-business"?"Big Business":"Company");
+ return '<div class="bc-card" data-id="'+p.id+'"><span class="bd'+(p.verified?"":" un")+'"><i>'+(p.verified?"✔":"•")+'</i>'+tag+'</span>'+
+  '<button class="hb" type="button" data-h="'+p.id+'" aria-label="Save">'+(saved[p.id]?"❤️":"🤍")+'</button>'+
+  '<a class="im" href="vico-product.html?id='+p.id+'">'+(p.imageUrl?'<img alt="" loading="lazy" src="'+gmEsc(p.imageUrl)+'">':"🛍️")+'</a>'+
+  '<h3><a href="vico-product.html?id='+p.id+'">'+gmEsc(p.title)+'</a></h3><div class="sb">'+gmEsc(p.blurb||p.seller.displayName)+'</div>'+
+  '<div class="pr">'+money(p.price)+(p.oldPrice>p.price?'<s>'+money(p.oldPrice)+'</s>':"")+'</div>'+
+  '<div class="bc-social"><button type="button" data-follow="'+p.id+'">'+(social[p.id]&&social[p.id].following?'✓ Following':'+ Follow')+' <small>'+Number(p.followers||0).toLocaleString()+'</small></button><button type="button" data-like="'+p.id+'">'+(social[p.id]&&social[p.id].liked?'❤️':'🤍')+' <small>'+Number(p.likes||0).toLocaleString()+'</small></button><button type="button" data-share="'+p.id+'">↗ Share</button></div><div class="bc-stats">👁 '+Number(p.views||0).toLocaleString()+' views · ⭐ '+(Number(p.rating||0).toFixed(1))+'/5 · '+Number(p.reviews||0)+' reviews</div>'+(p.trusted?'<div class="bc-trusted">🏆 Vico Trusted Business</div>':'')+'<button class="by" type="button" data-b="'+p.id+'">🛒 Buy Now</button></div>';}
+function draw(){$("grid").innerHTML=items.map(card).join("")||'<div class="bc-empty"><b>No '+(kind==="national"?"national":(kind==="big-business"?"big business":"company"))+' products yet</b>'+($("q").value?"Try a different search.":"Advertisers appear here once their ads are active and eligible listings are available.")+'<br><a href="vico-ad-center.html">Advertise your products</a></div>';}
+function load(){$("grid").innerHTML='<div class="bc-empty">Loading…</div>';var k=kind;
+ gmApi("/api/business/products?kind="+k+"&q="+encodeURIComponent($("q").value.trim())).then(function(d){if(k!==kind)return;items=(d&&d.products)||[];if(d&&d.success===false){$("grid").innerHTML='<div class="bc-empty"><b>Could not load</b>'+gmEsc(d.message||"Please try again.")+'</div>';return;}social={};return Promise.all(items.map(function(p){return VicoSocial.state("product",p.id).then(function(x){if(x&&x.success)social[p.id]=x;}).catch(function(){});})).then(draw);}).catch(function(){$("grid").innerHTML='<div class="bc-empty"><b>Could not load</b>Check your connection and try again.</div>';});}
+$("tabs").onclick=function(e){var b=e.target.closest("button");if(!b||b.dataset.k===kind)return;kind=b.dataset.k;[].forEach.call(this.children,function(x){x.className=x===b?"on":"";});load();};
+$("q").oninput=function(){clearTimeout(timer);timer=setTimeout(load,300);};
+$("grid").onclick=function(e){
+ var f=e.target.closest("[data-follow]");if(f){var p=items.find(function(x){return x.id==f.dataset.follow;});if(!p)return;var st=social[p.id]||{};VicoSocial.follow(p.seller.handle,!!st.following).then(function(d){if(d&&d.success!==false){st.following=!st.following;st.followers=d.followers||st.followers;social[p.id]=st;load();}});return;}var l=e.target.closest("[data-like]");if(l){var pid=Number(l.dataset.like);VicoSocial.likeProduct(pid).then(function(d){if(d&&d.success){var st=social[pid]||{};st.liked=d.liked;st.likes=d.likes;social[pid]=st;var p=items.find(function(x){return x.id===pid;});if(p)p.likes=d.likes;draw();}});return;}var sh=e.target.closest("[data-share]");if(sh){var pp=items.find(function(x){return x.id==sh.dataset.share;});if(pp)VicoSocial.share(pp.title,location.origin+"/vico-product.html?id="+pp.id);return;}var b=e.target.closest("[data-b]");if(b){var p=items.filter(function(x){return x.id==b.dataset.b;})[0];if(p)VicoBuy.open({id:p.id,title:p.title,price:p.price,saleMode:p.saleMode});return;}
+ var h=e.target.closest("[data-h]");if(h){var id=Number(h.dataset.h);VicoSocial.save("product",id).then(function(d){if(d.success){saved[id]=d.saved;h.textContent=d.saved?"❤️":"🤍";gmToast(d.saved?"Saved to your list.":"Removed from Saved.");}else if(d.message)gmToast(d.message);});}};
+// who is signed in: avatar, alerts count, saved hearts, Join Now button
+if(window.VicoAuth&&VicoAuth.isSignedIn()){
+ $("join").textContent="Open Ad Center →";$("join").href="vico-ad-center.html";
+ gmApi("/api/me").then(function(m){if(!m||m.success===false)return;$("meName").textContent=(m.displayName||m.handle||"My Account")+" ▾";if(m.avatar){var i=document.createElement("img");i.alt="";i.src=m.avatar;$("meAv").replaceChildren(i);}else $("meAv").textContent=String(m.displayName||m.handle||"V").charAt(0).toUpperCase();}).catch(function(){});
+ gmApi("/api/notifications").then(function(n){if(n&&n.unread>0){var e=$("alN");e.textContent=n.unread>99?"99+":n.unread;e.style.display="flex";}}).catch(function(){});
+ gmApi("/api/saved?kind=product").then(function(d){((d&&d.items)||[]).forEach(function(x){saved[x.id]=true;});if(items.length)draw();}).catch(function(){});
+}
+load();
+})();
+</script></body></html>

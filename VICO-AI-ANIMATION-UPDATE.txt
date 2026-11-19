@@ -1,0 +1,16 @@
+VICO AI ANIMATION UPDATE
+========================
+
+The exact user-supplied animated file is installed as:
+  vico-ai-guide.gif
+
+Shared UI updates:
+- The floating Vico AI assistant uses this GIF instead of a robot emoji.
+- The Vico AI title in the assistant panel uses the same character.
+- The Vico AI bottom-navigation icon uses the same character.
+- The Global Market Community hero and Vico AI feature card use the same GIF.
+- The existing Ad Center and Wallet AI assistant entry points use the same asset.
+- The extra CSS bob animation was removed so the supplied GIF's own frame movement
+  and facial reactions remain the source of motion.
+
+Keep vico-ai-guide.gif beside the HTML and JavaScript files when deploying.

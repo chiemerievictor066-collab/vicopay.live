@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0f24">
+<title>VIP Gift Shop - VicoPay Live</title>
+<link rel="stylesheet" href="vico.css">
+<style>
+body.vgs{margin:0;background:radial-gradient(900px 500px at 50% -10%,#2b1d05,#0a0f24 60%);color:#fff;font-family:var(--font);min-height:100vh;padding-bottom:40px}
+.vgs-top{display:flex;align-items:center;gap:10px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));position:sticky;top:0;background:rgba(10,15,36,.9);backdrop-filter:blur(8px);z-index:5;border-bottom:1px solid #3a2c0b}
+.vgs-top a.back{color:#ffe27a;text-decoration:none;font-weight:800}
+.vgs-top h1{font-size:18px;margin:0;margin-right:auto;background:linear-gradient(90deg,#ffe27a,#e0a100);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.bal{background:#1b1405;border:1px solid #6b4d0e;border-radius:18px;padding:6px 12px;font-weight:800;font-size:13px;white-space:nowrap}
+.bal a{color:#ffc83d;margin-left:8px;text-decoration:none}
+.wrap{max-width:980px;margin:0 auto;padding:14px}
+.to{background:#141a35;border:1px solid #2c3766;border-radius:14px;padding:10px 14px;font-size:14px;margin-bottom:14px}
+.to b{color:#ffe27a}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tile{background:linear-gradient(180deg,#171d3d,#0e1330);border:1px solid #3a2c0b;border-radius:16px;padding:10px;text-align:center;cursor:pointer;color:#fff;font:inherit}
+.tile:active{transform:scale(.98)}
+.tile img{width:100%;aspect-ratio:9/16;max-height:210px;object-fit:cover;border-radius:12px;background:#050810;display:block}
+.tile b{display:block;margin-top:8px;font-size:14px}
+.tile .p{color:#ffc83d;font-weight:900;font-size:14px;margin-top:2px}
+.tile .n{color:#8fa0c8;font-size:11px}
+.modal{position:fixed;inset:0;background:rgba(2,5,15,.9);display:none;align-items:center;justify-content:center;z-index:20;padding:14px}
+.modal.on{display:flex}
+.card{background:#0e1330;border:1px solid #6b4d0e;border-radius:20px;padding:14px;width:min(380px,100%);max-height:100%;overflow:auto;text-align:center}
+.card video{width:100%;max-height:52vh;border-radius:14px;background:#000;object-fit:contain;mix-blend-mode:normal}
+.card h2{margin:10px 0 2px;font-size:20px}
+.row{display:flex;gap:8px;margin-top:12px}
+.btn{flex:1;border:0;border-radius:22px;padding:12px;font:inherit;font-weight:900;cursor:pointer}
+.btn.gold{background:linear-gradient(90deg,#ffe27a,#e0a100);color:#1b1300}
+.btn.ghost{background:#1c2450;color:#fff}
+.btn:disabled{opacity:.5}
+#msg{min-height:20px;font-size:13px;margin-top:8px}
+.hist{margin-top:22px}.hist h3{margin:0 0 8px;color:#ffe27a}
+.hist .r{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #1f2850;font-size:13px}
+.muted{color:#8fa0c8}
+.off{padding:60px 20px;text-align:center}
+</style></head>
+<body class="vgs">
+<div class="vgs-top"><a class="back" href="javascript:history.back()">←</a><h1>👑 VIP Gift Shop</h1>
+  <div class="bal">🪙 <span id="bal">…</span><a href="buy-coin.html">Buy coins</a></div></div>
+<div class="wrap">
+  <div id="to" class="to" style="display:none"></div>
+  <div id="off" class="off" style="display:none"><h2>VIP gifts are coming soon</h2><p class="muted">Everything else works as normal.</p></div>
+  <div id="grid" class="grid"></div>
+  <div id="hist" class="hist" style="display:none"><h3>My VIP gifts</h3><div id="hbody"></div></div>
+  <p class="muted" style="text-align:center;margin-top:20px"><a href="vip-live-feed.html" style="color:#ffc83d">👑 Watch VIP lives</a></p>
+</div>
+
+<div class="modal" id="modal"><div class="card">
+  <video id="pv" playsinline loop muted preload="none"></video>
+  <h2 id="pn"></h2><div id="pp" style="color:#ffc83d;font-weight:900"></div>
+  <div id="msg"></div>
+  <div class="row"><button class="btn ghost" id="snd">🔊 Sound</button><button class="btn gold" id="send">Send</button></div>
+  <div class="row"><button class="btn ghost" id="close">Close</button></div>
+</div></div>
+
+<script src="auth.js"></script><script>VicoAuth.requireLogin();</script>
+<script>
+var hostId = new URLSearchParams(location.search).get("hostId") || "";
+var GIFTS = [], cur = null, busy = false;
+var $ = function (id) { return document.getElementById(id); };
+function num(n) { return Number(n || 0).toLocaleString(); }
+function rid() { try { return crypto.randomUUID().replace(/-/g, ""); } catch (e) { return (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + "00000000").slice(0, 32); } }
+async function api(p, opt) { var r = await fetch(p, opt); var d = await r.json().catch(function () { return {}; }); d._ok = r.ok; return d; }
+
+async function wallet() { var d = await api("/api/wallet/me"); if (d._ok) $("bal").textContent = num(d.coins); }
+
+async function load() {
+  wallet();
+  if (hostId) { var t = $("to"); t.style.display = ""; t.textContent = ""; t.appendChild(document.createTextNode("Sending to ")); var b = document.createElement("b"); b.textContent = hostId.replace(/^@/, ""); t.appendChild(b); }
+  var d = await api("/api/vip/gifts");
+  if (!d.enabled || !(d.gifts || []).length) { $("off").style.display = ""; return; }
+  GIFTS = d.gifts;
+  var g = $("grid"); g.textContent = "";
+  GIFTS.forEach(function (x, i) {
+    var b = document.createElement("button"); b.className = "tile"; b.type = "button";
+    var im = document.createElement("img"); im.src = x.image; im.alt = ""; im.loading = "lazy"; b.appendChild(im);
+    var n = document.createElement("b"); n.textContent = x.name; b.appendChild(n);
+    var p = document.createElement("div"); p.className = "p"; p.textContent = "🪙 " + num(x.priceCoins); b.appendChild(p);
+    var nn = document.createElement("div"); nn.className = "n"; nn.textContent = "₦" + num(x.priceNgn); b.appendChild(nn);
+    b.onclick = function () { openGift(i); };
+    g.appendChild(b);
+  });
+  history_();
+}
+function openGift(i) {
+  cur = GIFTS[i]; $("msg").textContent = ""; $("pn").textContent = cur.name; $("pp").textContent = "🪙 " + num(cur.priceCoins) + "  •  ₦" + num(cur.priceNgn);
+  var v = $("pv"); v.muted = true; $("snd").textContent = "🔊 Sound"; v.src = cur.video; v.poster = cur.image;
+  $("send").textContent = hostId ? "Send gift" : "Open from a VIP live to send"; $("send").disabled = !hostId;
+  $("modal").classList.add("on"); var p = v.play(); if (p && p.catch) p.catch(function () { });
+}
+function closeM() { var v = $("pv"); v.pause(); v.removeAttribute("src"); v.load(); $("modal").classList.remove("on"); }
+$("close").onclick = closeM; $("modal").onclick = function (e) { if (e.target === $("modal")) closeM(); };
+$("snd").onclick = function () { var v = $("pv"); v.muted = !v.muted; $("snd").textContent = v.muted ? "🔊 Sound" : "🔇 Mute"; };
+$("send").onclick = async function () {
+  if (!cur || !hostId || busy) return; busy = true; $("send").disabled = true; $("msg").style.color = "#8fa0c8"; $("msg").textContent = "Sending…";
+  var d = await api("/api/gifts/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ gift: cur.name, hostId: hostId, requestId: rid() }) });
+  busy = false; $("send").disabled = false;
+  if (!d._ok || !d.success) { $("msg").style.color = "#ff8aa3"; $("msg").textContent = d.message || "Could not send the gift."; return; }
+  $("msg").style.color = "#7dffb0"; $("msg").textContent = d.duplicate ? "Already sent." : "Sent! 🎉";
+  if (d.sender && d.sender.remainingCoins !== undefined) $("bal").textContent = num(d.sender.remainingCoins); else wallet();
+  history_();
+};
+async function history_() {
+  var d = await api("/api/vip/gifts/history"); if (!d._ok) return;
+  var rows = (d.sent || []).slice(0, 10); var h = $("hbody"); h.textContent = "";
+  if (!rows.length) { $("hist").style.display = "none"; return; }
+  $("hist").style.display = "";
+  rows.forEach(function (r) {
+    var a = document.createElement("div"); a.className = "r";
+    var l = document.createElement("span"); l.textContent = r.gift + " → " + (r.otherName || r.otherHandle || "streamer");
+    var rr = document.createElement("span"); rr.className = "muted"; rr.textContent = "🪙 " + num(r.coins);
+    a.appendChild(l); a.appendChild(rr); h.appendChild(a);
+  });
+}
+load();
+</script>
+</body></html>
