@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VicoPay · Creator Performance & Earnings Intelligence</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--panel2:#17223a;--line:#263451;--muted:#9ba9c3;--text:#edf3ff;--cyan:#45d6d0;--purple:#a78bfa;--green:#4ade80;--amber:#fbbf24;--red:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,Segoe UI,Arial,sans-serif}
+header{padding:22px 28px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:19px;letter-spacing:.3px}.brand span{color:var(--cyan)}.sub{color:var(--muted);font-size:12px;margin-top:3px}
+.pill{border:1px solid #715b24;color:#ffd978;background:#332a16;padding:7px 11px;border-radius:30px;font-size:11px;font-weight:700}
+main{padding:24px 28px;max-width:1500px;margin:auto}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+input,select,button{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:9px;font:inherit}
+input{min-width:220px}button{cursor:pointer}button.primary{background:#087e83;border-color:#119da1}button:hover{filter:brightness(1.13)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.metric-label{color:var(--muted);font-size:12px}.metric{font-size:25px;font-weight:800;margin:7px 0 3px}.delta{font-size:11px;color:var(--green)}
+.two{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:16px}
+.panel h2{font-size:15px;margin:0 0 14px}.muted{color:var(--muted)}.chart{height:190px;display:flex;align-items:end;gap:12px;padding:12px 5px 0;border-bottom:1px solid var(--line)}
+.barwrap{flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;height:100%;gap:7px}.bar{width:min(35px,70%);border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--cyan),#167e92);min-height:5px}.bar.purple{background:linear-gradient(180deg,var(--purple),#5543a5)}.axis{font-size:10px;color:var(--muted)}
+.legend{display:flex;gap:15px;color:var(--muted);font-size:11px;margin-top:10px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);font-size:12px}th{color:var(--muted);font-weight:600}tr:hover td{background:#18243a}.rank{color:var(--cyan);font-weight:800}.status{padding:4px 8px;border-radius:20px;font-size:10px;background:#123d31;color:#7af0b2}.status.pending{background:#453719;color:#ffda7b}.status.hold{background:#48232d;color:#ff9aa9}
+.tablewrap{overflow:auto}.lower{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}.creator{display:flex;align-items:center;gap:10px}.avatar{width:32px;height:32px;border-radius:50%;background:#293e61;display:grid;place-items:center;color:#bfe8ff;font-weight:800}
+.detail{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail div{background:var(--panel2);padding:11px;border-radius:9px}.detail b{display:block;font-size:17px;margin-top:3px}
+.note{margin-top:16px;border:1px solid #594b27;background:#241f15;color:#e7d5a3;border-radius:12px;padding:13px;font-size:12px}
+@media(max-width:950px){.grid{grid-template-columns:repeat(2,1fr)}.two,.lower{grid-template-columns:1fr}}
+@media(max-width:560px){main{padding:15px}.grid{grid-template-columns:1fr 1fr}header{padding:17px}.metric{font-size:21px}}
+</style></head>
+<body>
+<header><div><div class="brand"><span>Vico</span>Pay · Creator Intelligence</div><div class="sub">Super Admin / Performance & Earnings Centre</div></div><div class="pill">DEMO DATA · NOT CONNECTED TO PRODUCTION</div></header>
+<main>
+<div class="toolbar">
+<input id="search" placeholder="Search creator or username…" aria-label="Search creator">
+<select id="period"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
+<select id="status"><option value="all">All payout statuses</option><option>Paid</option><option>Pending</option><option>On hold</option></select>
+<button class="primary" id="export">Export visible CSV</button>
+</div>
+<section class="grid">
+<div class="card"><div class="metric-label">Creator coin earnings</div><div class="metric" id="earnings">₦18.42m</div><div class="delta">↑ 12.8% vs previous period</div></div>
+<div class="card"><div class="metric-label">Gift transactions</div><div class="metric">48,291</div><div class="delta">↑ 8.4% vs previous period</div></div>
+<div class="card"><div class="metric-label">Live hours streamed</div><div class="metric">3,846 hrs</div><div class="delta">↑ 6.1% vs previous period</div></div>
+<div class="card"><div class="metric-label">Withdrawals awaiting review</div><div class="metric">₦2.16m</div><div class="delta" style="color:var(--amber)">14 requests · review queue</div></div>
+</section>
+<section class="two">
+<div class="panel"><h2>Creator earnings trend</h2><div class="muted">Illustrative weekly earnings · ₦ millions</div><div class="chart" id="earnChart"></div><div class="legend"><span><i class="dot" style="background:var(--cyan)"></i>Coin earnings</span><span><i class="dot" style="background:var(--purple)"></i>Previous period</span></div></div>
+<div class="panel"><h2>Live performance snapshot</h2><div class="detail">
+<div><span class="muted">Peak concurrent viewers</span><b>8,420</b></div><div><span class="muted">Average viewers / stream</span><b>184</b></div>
+<div><span class="muted">Completed live sessions</span><b>2,714</b></div><div><span class="muted">Avg. session duration</span><b>1h 24m</b></div>
+</div><p class="muted" style="font-size:11px;margin:13px 0 0">Viewer and stream metrics are sample aggregates, not live LiveKit readings.</p></div>
+</section>
+<section class="panel" style="margin-bottom:16px"><h2>Creator leaderboard</h2><div class="tablewrap"><table><thead><tr><th>Rank</th><th>Creator</th><th>Gift coins</th><th>Est. earnings</th><th>Live hours</th><th>Viewers</th><th>Growth</th></tr></thead><tbody id="leaderboard"></tbody></table></div></section>
+<section class="lower">
+<div class="panel"><h2>Withdrawal activity</h2><div class="tablewrap"><table><thead><tr><th>Creator</th><th>Amount</th><th>Requested</th><th>Status</th><th>Reference</th></tr></thead><tbody id="payouts"></tbody></table></div></div>
+<div class="panel"><h2>Selected creator overview</h2><div id="creatorDetail" class="muted">Select a creator in the leaderboard to inspect their sample performance.</div></div>
+</section>
+<div class="note"><b>Production integration boundary:</b> This is a standalone UI preview with fictional sample records. It does not read VicoPay's PostgreSQL database, LiveKit rooms, wallet ledger or Paystack, and it cannot approve withdrawals or change creator accounts. For production, calculate earnings from the immutable wallet/coin ledger, reconcile gift reversals and fees, use verified Paystack transfer webhooks/status before marking payouts paid, enforce admin RBAC/MFA, and audit every sensitive action.</div>
+</main>
+<script>
+const creators=[
+{name:"Amara Live",user:"@amara_live",coins:2840000,earn:1420000,hours:186,viewers:8420,growth:18.4,sessions:92,avg:"2h 01m",payout:"₦320,000"},
+{name:"King Tobi",user:"@kingtobi",coins:2310000,earn:1155000,hours:164,viewers:6930,growth:14.2,sessions:81,avg:"1h 58m",payout:"₦250,000"},
+{name:"Nneka Star",user:"@nnekastar",coins:1960000,earn:980000,hours:143,viewers:5180,growth:11.7,sessions:76,avg:"1h 53m",payout:"₦180,000"},
+{name:"DeeJay Max",user:"@deejaymax",coins:1520000,earn:760000,hours:121,viewers:4320,growth:8.9,sessions:64,avg:"1h 54m",payout:"₦150,000"},
+{name:"Zara Official",user:"@zaraofficial",coins:1190000,earn:595000,hours:98,viewers:3890,growth:6.1,sessions:51,avg:"1h 55m",payout:"₦95,000"},
+{name:"Musa Vibes",user:"@musavibes",coins:870000,earn:435000,hours:84,viewers:2740,growth:-2.3,sessions:43,avg:"1h 57m",payout:"₦75,000"},
+{name:"Lily Rose",user:"@lilyrose",coins:640000,earn:320000,hours:62,viewers:1910,growth:3.8,sessions:34,avg:"1h 49m",payout:"₦60,000"}
+];
+const payouts=[
+{n:"Amara Live",a:"₦320,000",d:"17 Nov 2026",s:"Pending",r:"WD-80412"},
+{n:"King Tobi",a:"₦250,000",d:"17 Nov 2026",s:"On hold",r:"WD-80408"},
+{n:"Nneka Star",a:"₦180,000",d:"16 Nov 2026",s:"Paid",r:"WD-80391"},
+{n:"DeeJay Max",a:"₦150,000",d:"16 Nov 2026",s:"Pending",r:"WD-80387"},
+{n:"Zara Official",a:"₦95,000",d:"15 Nov 2026",s:"Paid",r:"WD-80344"}
+];
+const fmt=n=>"₦"+n.toLocaleString("en-NG");
+function render(){
+ const q=document.getElementById("search").value.toLowerCase(), st=document.getElementById("status").value;
+ const rows=creators.filter(c=>(c.name+c.user).toLowerCase().includes(q));
+ document.getElementById("leaderboard").innerHTML=rows.map((c,i)=>`<tr data-user="${c.user}"><td class="rank">#${i+1}</td><td><div class="creator"><div class="avatar">${c.name[0]}</div><div><b>${c.name}</b><div class="muted">${c.user}</div></div></div></td><td>${c.coins.toLocaleString()}</td><td>${fmt(c.earn)}</td><td>${c.hours}h</td><td>${c.viewers.toLocaleString()}</td><td style="color:${c.growth>=0?'var(--green)':'var(--red)'}">${c.growth>0?'+':''}${c.growth}%</td></tr>`).join("")||'<tr><td colspan="7">No matching creators.</td></tr>';
+ document.querySelectorAll("#leaderboard tr[data-user]").forEach(tr=>tr.onclick=()=>detail(creators.find(c=>c.user===tr.dataset.user)));
+ const ps=payouts.filter(p=>(st==="all"||p.s===st)&&(p.n.toLowerCase().includes(q)||q===""));
+ document.getElementById("payouts").innerHTML=ps.map(p=>`<tr><td>${p.n}</td><td>${p.a}</td><td>${p.d}</td><td><span class="status ${p.s==='Pending'?'pending':p.s==='On hold'?'hold':''}">${p.s}</span></td><td>${p.r}</td></tr>`).join("")||'<tr><td colspan="5">No matching withdrawals.</td></tr>';
+}
+function detail(c){document.getElementById("creatorDetail").innerHTML=`<div class="creator" style="margin-bottom:13px"><div class="avatar" style="width:42px;height:42px">${c.name[0]}</div><div><b>${c.name}</b><div class="muted">${c.user}</div></div></div><div class="detail"><div><span class="muted">Coin earnings</span><b>${fmt(c.earn)}</b></div><div><span class="muted">Gift coins</span><b>${c.coins.toLocaleString()}</b></div><div><span class="muted">Live sessions</span><b>${c.sessions}</b></div><div><span class="muted">Avg. session</span><b>${c.avg}</b></div><div><span class="muted">Live hours</span><b>${c.hours}h</b></div><div><span class="muted">Peak viewers</span><b>${c.viewers.toLocaleString()}</b></div></div><p class="muted" style="font-size:11px">Sample withdrawal request: ${c.payout}. Select a period or search to update the tables.</p>`}
+function chart(){const vals=[1.7,2.1,1.9,2.8,2.4,3.1,3.8],prev=[1.4,1.8,1.6,2.1,2,2.4,2.7];const max=4;document.getElementById("earnChart").innerHTML=vals.map((v,i)=>`<div class="barwrap"><div style="display:flex;gap:3px;align-items:end;height:150px"><div class="bar" style="height:${v/max*145}px"></div><div class="bar purple" style="height:${prev[i]/max*145}px"></div></div><span class="axis">W${i+1}</span></div>`).join("")}
+document.getElementById("search").addEventListener("input",render);document.getElementById("status").addEventListener("change",render);
+document.getElementById("period").addEventListener("change",e=>{document.querySelector(".sub").textContent="Super Admin / Performance & Earnings Centre · "+e.target.options[e.target.selectedIndex].text+" (sample view)"});
+document.getElementById("export").onclick=()=>{const rows=[["Creator","Username","Gift coins","Estimated earnings NGN","Live hours","Peak viewers","Growth %"],...creators.filter(c=>(c.name+c.user).toLowerCase().includes(document.getElementById("search").value.toLowerCase())).map(c=>[c.name,c.user,c.coins,c.earn,c.hours,c.viewers,c.growth])];const csv=rows.map(r=>r.join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="vicopay-creator-performance-demo.csv";a.click();URL.revokeObjectURL(a.href)};
+chart();render();detail(creators[0]);
+</script></body></html>

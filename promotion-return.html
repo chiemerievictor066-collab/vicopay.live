@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0a1a8a"><title>Promotion Successful - Vico Pay Live</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0}
+body{min-height:100vh;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at 50% 0,#2a3df0 0,#0f1fb0 40%,#070f5e 100%)}
+.wait{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{width:min(420px,100%);text-align:center;border-radius:26px;padding:28px 22px;background:rgba(8,24,120,.85);border:2px solid #3b82ff;box-shadow:0 0 30px rgba(60,120,255,.5)}
+.card .ic{width:84px;height:84px;margin:0 auto 12px;border-radius:50%;background:#2a8cff;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900}.card .ic.x{background:#ef4444}
+.card h1{margin:6px 0;font-size:26px}.card p{margin:8px 0;font-weight:600;line-height:1.4;color:#d6e4ff}
+.btn{display:inline-block;margin-top:14px;border:0;border-radius:26px;padding:13px 26px;background:linear-gradient(180deg,#ffd84a,#f5a300);color:#13184a;font:900 17px system-ui,Arial,sans-serif;text-decoration:none;cursor:pointer}
+.cel{display:none;width:min(620px,100%);margin:0 auto;padding-bottom:calc(22px + env(safe-area-inset-bottom));overflow:hidden;position:relative}
+.cel.on{display:block}
+.cel .hero{display:block;width:100%;height:auto;animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+.cel .txt{text-align:center;padding:0 16px;margin-top:2px}
+.cel h2{margin:0;font-size:clamp(26px,7vw,42px);font-style:italic;font-weight:900}
+.cel p{margin:8px 0 0;font-size:clamp(16px,4.4vw,24px);font-weight:600;line-height:1.35}
+.cel p b{color:#ffe14a;font-size:1.35em}.cel p .v{color:#ffe14a;font-weight:900}.cel p .l{color:#5ee7ff;font-weight:800}
+.cel .warn{margin:12px 14px 0;padding:10px 14px;border-radius:14px;background:rgba(239,68,68,.25);border:1px solid #f87171;font-weight:700;display:none}
+.cel .ben{display:block;width:calc(100% - 28px);margin:16px 14px 0;height:auto}
+.next{display:flex;align-items:center;gap:10px;margin:18px 16px 12px;font-size:clamp(17px,4.6vw,26px);font-weight:800}.next:before,.next:after{content:"";flex:1;height:2px;background:linear-gradient(90deg,transparent,#6aa8ff)}.next:after{background:linear-gradient(270deg,transparent,#6aa8ff)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 14px}
+.act{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:34px;padding:14px 10px;border:3px solid;cursor:pointer;text-align:center;line-height:1.1;font-family:inherit;text-decoration:none;min-height:92px}
+.act .big{display:block;font-size:clamp(17px,4.8vw,28px);font-weight:900}.act .sm{display:block;font-size:clamp(11px,3vw,16px);font-weight:700;margin-top:3px}
+.act.blue{background:linear-gradient(180deg,#2a8cff,#0b4fd8);border-color:#8fc6ff;color:#fff;box-shadow:0 0 22px rgba(60,150,255,.6)}
+.act.gold{background:linear-gradient(180deg,#ffd84a,#f5a300);border-color:#fff3b0;color:#13184a;box-shadow:0 0 22px rgba(255,200,0,.55)}
+.act .pl{font-size:34px}.act .cr{font-size:34px}.act .go{width:34px;height:34px;border-radius:50%;background:#0d1b5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.thanks{text-align:center;margin:18px 14px 0;font-weight:800;font-size:clamp(14px,4vw,20px);font-style:italic}.thanks b{color:#ffe14a}
+.hint{text-align:center;margin:10px 14px 0;font-size:13px;font-weight:600;color:#bcd4ff;min-height:18px}
+.conf{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}.conf i{position:absolute;top:-20px;width:9px;height:16px;border-radius:2px;opacity:.9;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.2}}
+@media(max-width:480px){.acts{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.conf{display:none}.cel .hero{animation:none}}
+</style></head>
+<body>
+<div class="wait" id="wait"><div class="card"><div class="ic" id="ic">⏳</div><h1 id="h">Confirming your payment…</h1><p id="p">Please wait. Do not close this page.</p><div id="act"></div></div></div>
+
+<main class="cel" id="cel">
+  <div class="conf" id="conf" aria-hidden="true"></div>
+  <img class="hero" src="vico-promo-celebrate.jpg" alt="Promotion Successful! You are now a VIP member">
+  <div class="txt">
+    <p id="msg">Your payment of <b id="amt">$12</b> has been verified successfully.<br>You are now upgraded to <span class="v">VIP</span> and can enjoy all premium features on <span class="l">Vico Pay Live</span>!</p>
+  </div>
+  <div class="warn" id="warn"></div>
+  <img class="ben" src="vico-promo-benefits.jpg" alt="Your VIP benefits: VIP badge and frames, exclusive animated gifts, VIP rankings and achievements, VIP rooms, streamer analytics, more premium features">
+  <div class="next">What would you like to do next?</div>
+  <div class="acts">
+    <button class="act blue" id="bLive" type="button"><span class="pl">▶</span><span><span class="big">Go Back to Live Stream</span><span class="sm">Continue your live session</span></span></button>
+    <button class="act gold" id="bVip" type="button"><span class="cr">👑</span><span><span class="big">Start Your VIP Live Now</span><span class="sm">Enjoy your premium privileges</span></span><span class="go">›</span></button>
+  </div>
+  <div class="hint" id="hint"></div>
+  <div class="thanks">💗 Thank you for being a valued <b>VIP</b> member!</div>
+</main>
+
+<script src="auth.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i);},q=new URLSearchParams(location.search),ref=q.get("reference")||q.get("trxref"),tries=0;
+function liveTab(){try{return window.opener&&!window.opener.closed?window.opener:null;}catch(e){return null;}}
+// tell the live page right away (its Processing Promotion button turns green), before anyone taps anything
+function tellLive(){
+  try{var bc=new BroadcastChannel("vico-promo");bc.postMessage({type:"promoted"});bc.close();}catch(e){}
+  try{localStorage.setItem("vicoPromoOk",String(Date.now()));}catch(e){}
+  var o=liveTab();if(o){try{o.postMessage({type:"vico-promo-success"},location.origin);}catch(e){}}
+}
+function confetti(){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  var box=$("conf"),cols=["#ffd84a","#a855f7","#5ee7ff","#ff6fb1","#fff"];
+  for(var i=0;i<46;i++){var e=document.createElement("i");e.style.left=Math.random()*100+"%";e.style.background=cols[i%cols.length];e.style.animationDuration=(3+Math.random()*3)+"s";e.style.animationDelay=(Math.random()*1.5)+"s";e.style.transform="rotate("+Math.floor(Math.random()*360)+"deg)";box.appendChild(e);}
+  setTimeout(function(){box.innerHTML="";},8000);
+}
+function money(d){if(!d||!d.paid)return "$12";var n=Number(d.paid.amount);return (d.paid.currency==="NGN"?"₦":"$")+n.toLocaleString();}
+function done(d){
+  $("wait").style.display="none";$("cel").className="cel on";$("amt").textContent=money(d);
+  if(d.vipBlocked){$("warn").style.display="block";$("warn").textContent=d.message;}
+  tellLive();confetti();document.title="Promotion Successful - Vico Pay Live";
+}
+// "Go Back to Live Stream": the live is still running in the tab that opened this page
+function after(){setTimeout(function(){$("hint").textContent="You can close this tab now. Your live is still running.";},500);}
+$("bLive").onclick=function(){
+  var o=liveTab();
+  if(o){try{o.focus();}catch(e){}window.close();after();return;}
+  location.href="Go-Live.html?promo=ok";
+};
+$("bVip").onclick=function(){
+  var o=liveTab();
+  if(o){try{o.postMessage({type:"vico-open-vip"},location.origin);o.focus();}catch(e){}window.close();after();return;}
+  location.href="Go-Live.html?vip=1";
+};
+function bad(msg){var ic=$("ic");ic.className="ic x";ic.textContent="!";$("h").textContent="We could not confirm it yet";$("p").textContent=msg;
+  var b=document.createElement("button");b.className="btn";b.type="button";b.textContent="Try again";b.onclick=function(){location.reload();};$("act").appendChild(b);}
+function go(){
+  if(!ref){bad("No payment reference was found. If you were charged, your promotion is applied automatically within a minute.");return;}
+  fetch("/api/promo/verify?reference="+encodeURIComponent(ref),{credentials:"same-origin",cache:"no-store"}).then(function(r){return r.json().then(function(d){return {s:r.status,d:d};});}).then(function(x){
+    if(x.d&&x.d.success){done(x.d);return;}
+    if(x.s===202&&tries++<6){setTimeout(go,2500);return;}
+    bad((x.d&&x.d.message)||"Please try again in a moment.");
+  }).catch(function(){bad("Check your connection and try again.");});
+}
+go();
+})();
+</script></body></html>

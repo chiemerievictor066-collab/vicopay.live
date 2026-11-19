@@ -14,7 +14,13 @@
     "db:selftest": "node db-selftest.js",
     "db:verify": "node ledger-verify.js",
     "backup": "node backup.js",
-    "restore": "node restore.js"
+    "restore": "node restore.js",
+    "test:market": "node tests/market-community.test.js && node tests/commerce.test.js && node tests/marketplace-videos.test.js && node tests/wallet-security.test.js",
+    "test:vip": "node tests/vip.stage1.test.js && node tests/vip.gifts.test.js && node tests/vip.entrance.test.js && node tests/vip.entrance.client.test.js",
+    "test:ads": "node tests/ad-jobs.test.js",
+    "test:company-verification": "node tests/company-verification-flow.test.js",
+    "test:promo": "node tests/promo.test.js",
+    "check:deploy": "node check-deploy-config.js"
   },
   "dependencies": {
     "axios": "^1.7.7",

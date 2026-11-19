@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Go Live with a Product - Vico Pay Live</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+.pl-wrap{width:min(900px,100%);margin:0 auto;padding:10px 14px 110px}
+.pl-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.pl-stage{position:relative;aspect-ratio:9/16;max-height:72vh;border-radius:22px;overflow:hidden;background:#0b1233;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700}
+.pl-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.pl-badge{position:absolute;z-index:3;left:12px;top:12px;background:#e11d2e;border-radius:10px;padding:3px 10px;font:900 12px Arial;display:none}.pl-badge.on{display:block}
+.pl-viewers{position:absolute;z-index:3;right:12px;top:12px;background:rgba(0,0,0,.5);border-radius:12px;padding:3px 10px;font:800 13px Arial;display:none}.pl-viewers.on{display:block}
+.pl-chat{position:absolute;z-index:3;left:10px;right:10px;bottom:10px;max-height:34%;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;text-align:left;font-size:13px;pointer-events:none}.pl-chat div{background:rgba(0,0,0,.45);border-radius:12px;padding:4px 10px;width:fit-content;max-width:100%}.pl-call-pip{display:none;position:absolute;z-index:8;right:12px;top:58px;width:112px;aspect-ratio:3/4;border:2px solid #57e5ff;border-radius:15px;overflow:hidden;background:#07194a;box-shadow:0 8px 24px #0009}.pl-call-pip.on{display:block}.pl-call-pip video{width:100%;height:100%;object-fit:cover}.pl-call-pip b{position:absolute;bottom:4px;left:4px;right:4px;background:#03133ddd;color:#fff;border-radius:7px;padding:4px;font-size:10px}.pl-call-pip button{position:absolute;right:4px;top:4px;border:0;border-radius:50%;background:#e3264f;color:#fff;width:23px;height:23px}.pl-call-incoming{display:none;position:absolute;z-index:10;inset:0;background:#041333dd;align-items:center;justify-content:center;padding:16px}.pl-call-incoming.on{display:flex}.pl-call-card{width:100%;padding:16px;border-radius:18px;background:linear-gradient(145deg,#0b2d72,#11134d);border:1px solid #57b8ff;color:#fff;text-align:center}.pl-call-card button{border:0;border-radius:12px;padding:10px 14px;color:#fff;background:#087fe8;font-weight:900;margin:4px}.pl-call-card .no{background:#dc264f}
+.pl-prod{display:flex;gap:10px;align-items:center;padding:10px;border:2px solid var(--gm-line);border-radius:16px;margin-top:8px;cursor:pointer;background:#fff}.pl-prod.on{border-color:#6d28d9;background:#f3eeff}.pl-prod img,.pl-prod .pi{width:54px;height:54px;border-radius:12px;object-fit:cover;background:#e3eefc;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}.pl-prod b{display:block}.pl-prod small{color:var(--gm-muted);font-weight:700}
+.err{color:#dc2626;font-weight:700;font-size:13.5px;min-height:18px;margin-top:8px}
+.note{padding:12px 16px;border-radius:16px;background:#eef6ff;border:1px solid var(--gm-line);font-weight:700;font-size:14px;margin-bottom:12px;color:#1b3a8a}.warn{background:#fff4d6;border-color:#f3d98a;color:#7a5200}
+@media(max-width:720px){.pl-grid{grid-template-columns:1fr}.pl-stage{max-height:56vh}}
+</style></head>
+<body class="gm" data-title="Go Live with a Product">
+<div class="pl-wrap">
+  <div id="needLogin" class="note warn" style="display:none">Please <a href="join-now.html?next=product-live.html" style="text-decoration:underline">log in</a> to go live with a product.</div>
+  <div id="idNote" class="note warn" style="display:none"><b>ID check needed.</b> To sell a product in a live, your ID must be approved by the Vico team first. <a href="vico-ad-center.html" style="text-decoration:underline">Open the Ad Center to finish your ID check</a>.</div>
+  <div class="note">Your viewers see the product you choose pinned on your live, with its price and a <b>Buy Now</b> button. The live uses the same connection as your normal Go Live. VicoPay also records the camera and microphone into a real video file and attaches it to this product after you end the live.</div>
+  <div class="note" id="recordingStatus" style="background:#effaf3;border-color:#b7e4c7;color:#166534">Recording status: waiting for your live to start.</div>
+  <div class="pl-grid">
+    <div class="pl-stage" id="stage"><span id="stageMsg">Your camera preview appears here when you start.</span><span class="pl-badge" id="liveB">LIVE</span><span class="pl-viewers" id="viewers">👁 0</span><div class="pl-chat" id="chat"></div><video id="vid" playsinline muted></video><div class="pl-call-pip" id="plCallPip"><video id="plCallerVideo" autoplay playsinline></video><b id="plCallerName">Video caller</b><button id="plCallEnd" type="button">×</button></div><div class="pl-call-incoming" id="plCallIncoming"><div class="pl-call-card"><h3>📹 Incoming Vico Video Call</h3><p id="plCallText">A buyer wants to speak with you.</p><button class="no" id="plCallDecline" type="button">Decline</button><button id="plCallAccept" type="button">Accept call</button></div></div></div>
+    <div class="gm-card" style="padding:16px">
+      <h2 style="margin:0 0 4px">Choose your product</h2>
+      <div class="fine" style="color:var(--gm-muted);font-weight:600;font-size:13px">Only your active Marketplace products are shown (the ones you registered through the Ad Center).</div>
+      <div id="prods"><div style="padding:14px;font-weight:700">Loading…</div></div>
+      <label class="gm-lab">Live title</label><input class="gm-in" id="lt" maxlength="60" placeholder="e.g. Fresh sneakers, live sale">
+      <div class="err" id="err"></div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="gm-btn" id="go" type="button">🔴 Go Live</button><button class="gm-btn" id="end" type="button" style="background:#dc2626;display:none">End live</button><a class="gm-btn blue" id="watch" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none">See how viewers see it</a></div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
+<script src="auth.js"></script><script src="gm-nav.js"></script>
+<script>
+var L=window.LivekitClient,room=null,roomId=null,beat=null,thumbT=null,picked=null,P=[],canGo=false,mediaRecorder=null,recordedChunks=[],recordingBlob=null,recordingMime="",recordingStarted=0,pendingCaller=null,pendingCallId=null,activeCaller=null,activeCallId=null;
+function $(i){return document.getElementById(i);}
+function draw(){$("prods").innerHTML=P.map(function(p){return '<div class="pl-prod'+(picked===p.id?" on":"")+'" data-id="'+p.id+'">'+(p.imageUrl?'<img alt="" src="'+gmEsc(p.imageUrl)+'">':'<span class="pi">🛍️</span>')+'<div><b>'+gmEsc(p.title)+'</b><small>'+gmM(p.price)+'</small></div></div>';}).join("")||'<div class="note" style="margin-top:10px">You have no active Marketplace products yet. <a href="vico-ad-center.html" style="text-decoration:underline">Register one in the Ad Center</a>.</div>';}
+$("prods").onclick=function(e){if(room)return;var c=e.target.closest(".pl-prod");if(!c)return;picked=Number(c.dataset.id);var p=P.filter(function(x){return x.id===picked;})[0];if(p&&!$("lt").value)$("lt").value=p.title.slice(0,60);draw();};
+function load(){if(!gmSignedIn()){$("needLogin").style.display="block";$("prods").innerHTML="";return;}
+  gmApi("/api/live/product/mine").then(function(d){if(!d.success){$("err").textContent=d.message||"Could not load your products.";return;}P=d.products||[];canGo=!!d.canGoLive;$("idNote").style.display=canGo?"none":"block";if(P.length===1)picked=P[0].id;draw();});}
+function addChat(name,text){var c=$("chat"),d=document.createElement("div");d.innerHTML="<b></b> <span></span>";d.firstChild.textContent=name;d.lastChild.textContent=text;c.appendChild(d);while(c.children.length>6)c.removeChild(c.firstChild);}
+function shot(){try{var v=$("vid");if(!v.videoWidth)return;var c=document.createElement("canvas");c.width=270;c.height=Math.round(270*v.videoHeight/v.videoWidth);c.getContext("2d").drawImage(v,0,0,c.width,c.height);gmApi("/api/live/"+encodeURIComponent(roomId)+"/thumbnail",{body:{image:c.toDataURL("image/jpeg",.6)}});}catch(e){}}
+async function productCallDecision(accept){if(!room||!pendingCaller||!pendingCallId)return;var identity=pendingCaller;try{var d=await gmApi("/api/calls/decision",{body:{callId:pendingCallId,decision:accept?"accept":"decline"}});if(!d.success)throw new Error(d.message||"Could not update call request.");await room.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:accept?"call_accept":"call_decline",to:identity})),{reliable:true,destinationIdentities:[identity]});if(accept){activeCaller=identity;activeCallId=pendingCallId;}pendingCaller=null;pendingCallId=null;$("plCallIncoming").classList.remove("on");}catch(e){gmToast(e.message||"Could not respond to call.");}}
+$("plCallAccept").onclick=function(){productCallDecision(true);};$("plCallDecline").onclick=function(){productCallDecision(false);};$("plCallEnd").onclick=function(){if(activeCallId)gmApi("/api/calls/end",{body:{callId:activeCallId}});if(room&&activeCaller)room.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"call_end",to:activeCaller})),{reliable:true,destinationIdentities:[activeCaller]}).catch(function(){});activeCaller=null;activeCallId=null;$("plCallPip").classList.remove("on");$("plCallerVideo").srcObject=null;};
+function stop(msg){if(activeCallId)gmApi("/api/calls/end",{body:{callId:activeCallId}});activeCallId=null;activeCaller=null;pendingCallId=null;pendingCaller=null;$("plCallPip").classList.remove("on");$("plCallIncoming").classList.remove("on");clearInterval(beat);clearInterval(thumbT);if(room){try{room.disconnect();}catch(e){}}room=null;roomId=null;$("vid").srcObject=null;$("liveB").classList.remove("on");$("viewers").classList.remove("on");$("go").style.display="";$("end").style.display="none";$("watch").style.display="none";$("stageMsg").style.display="";$("stageMsg").textContent=msg||"Your live has ended.";$("chat").innerHTML="";}
+
+function startRealRecording(){
+  if(!window.MediaRecorder)throw new Error("This browser cannot record video. Please use an up-to-date Chrome browser.");
+  var tracks=[];
+  [L.Track.Source.Camera,L.Track.Source.Microphone].forEach(function(src){
+    var pub=room.localParticipant.getTrackPublication(src);
+    if(pub&&pub.track&&pub.track.mediaStreamTrack&&pub.track.mediaStreamTrack.readyState==="live")tracks.push(pub.track.mediaStreamTrack);
+  });
+  if(!tracks.some(function(t){return t.kind==="video";}))throw new Error("Camera track is not ready for recording.");
+  var stream=new MediaStream(tracks);
+  var types=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
+  var chosen=types.find(function(t){return MediaRecorder.isTypeSupported(t);})||"";
+  mediaRecorder=new MediaRecorder(stream,chosen?{mimeType:chosen}:undefined);
+  recordedChunks=[];recordingBlob=null;recordingMime=mediaRecorder.mimeType||chosen||"video/webm";recordingStarted=Date.now();
+  mediaRecorder.ondataavailable=function(e){if(e.data&&e.data.size)recordedChunks.push(e.data);};
+  mediaRecorder.start(1000);
+  $("recordingStatus").textContent="Recording status: recording real camera and microphone video.";
+}
+function finishRealRecording(){
+  return new Promise(function(resolve,reject){
+    if(!mediaRecorder){if(recordingBlob)return resolve(recordingBlob);return reject(new Error("No video recording was created."));}
+    if(mediaRecorder.state==="inactive"){recordingBlob=new Blob(recordedChunks,{type:recordingMime});return resolve(recordingBlob);}
+    mediaRecorder.onstop=function(){
+      recordingBlob=new Blob(recordedChunks,{type:recordingMime});
+      if(!recordingBlob.size)return reject(new Error("The recording file is empty."));
+      resolve(recordingBlob);
+    };
+    mediaRecorder.onerror=function(){reject(new Error("The browser could not finish the video recording."));};
+    mediaRecorder.stop();
+  });
+}
+async function saveRealRecording(){
+  if(!recordingBlob)await finishRealRecording();
+  var token=window.VicoAuth&&VicoAuth.getToken?VicoAuth.getToken():"";
+  if(!token)throw new Error("Your VicoPay sign-in expired. Sign in again before saving this recording.");
+  var duration=Math.max(1,Math.round((Date.now()-recordingStarted)/1000));
+  var mime=recordingBlob.type||recordingMime||"video/webm";
+  var ext=mime.indexOf("mp4")>=0?".mp4":".webm";
+  var response=await fetch("/api/product-live-recordings/"+encodeURIComponent(roomId),{
+    method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":mime,"X-Recording-Duration":String(duration)},
+    body:recordingBlob
+  });
+  var data=await response.json().catch(function(){return {};});
+  if(!response.ok||!data.success)throw new Error(data.message||"VicoPay could not save the recording.");
+  $("recordingStatus").textContent="Recording status: saved as a real "+ext+" video and linked to your Marketplace product.";
+  return data;
+}
+$("go").onclick=function(){var e=$("err");e.textContent="";if(!gmSignedIn()){gmNeedLogin();return;}if(!L){e.textContent="The live video tool could not load. Check your connection and refresh.";return;}if(!window.MediaRecorder){e.textContent="Your browser cannot save a real livestream recording. Please use an updated Chrome browser before going live.";return;}
+  if(!picked){e.textContent="Choose the product you are selling.";return;}if(!canGo){e.textContent="Your ID check must be approved first.";return;}
+  var go=this;go.disabled=true;
+  gmApi("/api/live/create",{body:{title:$("lt").value||"Live product sale",category:"Shopping",liveType:"video",productId:picked}}).then(function(d){
+    if(!d.success){go.disabled=false;e.textContent=d.message||"Could not start the live.";if(d.needId)$("idNote").style.display="block";return;}
+    roomId=d.room.roomId;room=new L.Room({adaptiveStream:true,dynacast:true});
+    room.on(L.RoomEvent.DataReceived,function(buf,p){try{var m=JSON.parse(new TextDecoder().decode(buf));if(m.type==="chat"&&m.text)addChat((p&&p.name)||m.name||"Viewer",String(m.text).slice(0,200));if(m.type==="call_request"&&p&&m.callId&&!pendingCaller&&!activeCaller){gmApi("/api/calls/request/"+encodeURIComponent(m.callId)).then(function(d){if(!d.success||!d.call||d.call.status!=="requested"||d.call.callerIdentity!==p.identity)return;pendingCaller=p.identity;pendingCallId=m.callId;$("plCallText").textContent=(p.name||m.displayName||"A viewer")+" wants to join your product livestream by video call.";$("plCallIncoming").classList.add("on");});}if(m.type==="call_end"&&p&&p.identity===activeCaller){if(activeCallId)gmApi("/api/calls/end",{body:{callId:activeCallId}});activeCaller=null;activeCallId=null;$("plCallPip").classList.remove("on");$("plCallerVideo").srcObject=null;}}catch(x){}});
+    room.on(L.RoomEvent.TrackSubscribed,function(track,pub,participant){if(participant&&participant.identity!==room.localParticipant.identity&&track.kind===L.Track.Kind.Video&&activeCaller===participant.identity){track.attach($("plCallerVideo"));$("plCallerName").textContent=participant.name||"Video caller";$("plCallPip").classList.add("on");}});
+    room.on(L.RoomEvent.ParticipantDisconnected,function(participant){if(participant&&participant.identity===activeCaller){activeCaller=null;activeCallId=null;$("plCallPip").classList.remove("on");$("plCallerVideo").srcObject=null;}});
+    room.on(L.RoomEvent.Disconnected,function(){if(room)stop("You were disconnected. Tap Go Live to start again.");});
+    return room.connect(d.livekit.url,d.livekit.token).then(function(){return room.localParticipant.setCameraEnabled(true);}).then(function(){return room.localParticipant.setMicrophoneEnabled(true);}).then(function(){
+      var pub=room.localParticipant.getTrackPublication(L.Track.Source.Camera);if(pub&&pub.track)pub.track.attach($("vid"));
+      startRealRecording();
+      $("stageMsg").style.display="none";$("liveB").classList.add("on");$("viewers").classList.add("on");go.style.display="none";go.disabled=false;$("end").style.display="";$("watch").style.display="";$("watch").href="live-feed.html?room="+encodeURIComponent(roomId);
+      beat=setInterval(function(){gmApi("/api/live/"+encodeURIComponent(roomId)+"/heartbeat",{body:{}}).then(function(h){if(h&&h.viewers!=null)$("viewers").textContent="👁 "+h.viewers;});},20000);
+      thumbT=setInterval(shot,30000);setTimeout(shot,3000);});
+  }).catch(function(x){go.disabled=false;if(room){var id=roomId;stop("");gmApi("/api/live/end/"+encodeURIComponent(id),{body:{}});}e.textContent=(x&&x.name==="NotAllowedError")?"Allow the camera and microphone, then try again.":"Could not start the live. Please try again.";});};
+$("end").onclick=async function(){
+  if(!confirm("End your live now? VicoPay will first save the actual video recording and attach it to your selected product."))return;
+  var id=roomId,btn=$("end");btn.disabled=true;btn.textContent="Saving recording…";$("recordingStatus").textContent="Recording status: finishing and uploading your video file. Keep this page open.";
+  try{
+    await finishRealRecording();
+    await saveRealRecording();
+    await gmApi("/api/live/end/"+encodeURIComponent(id),{body:{}});
+    stop("Your live has ended. The video recording is saved on your product page.");
+  }catch(err){
+    btn.disabled=false;btn.textContent="Retry save & end live";
+    $("err").textContent=(err&&err.message)||"The recording could not be saved. Keep this page open and retry.";
+    $("recordingStatus").textContent="Recording status: not yet saved. Your live is still open; retry saving before closing this page.";
+  }
+};
+load();
+</script></body></html>

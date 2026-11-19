@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VicoPay | Customer & Creator Management Centre</title>
+<style>
+:root{--bg:#071326;--panel:#0d1d35;--panel2:#122744;--line:#203b5d;--muted:#91a7c4;--text:#edf5ff;--teal:#19d5c0;--gold:#ffc95b;--red:#ff7185}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#071326,#091a30 55%,#071326);color:var(--text);font:14px Inter,Segoe UI,Arial,sans-serif}
+header{height:70px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 26px;background:#08172beF;position:sticky;top:0;z-index:2}
+.brand{font-size:22px;font-weight:800}.brand span{color:var(--teal)}.tag{font-size:11px;color:var(--gold);border:1px solid #6c5527;padding:5px 9px;border-radius:20px;margin-left:10px}
+main{max-width:1400px;margin:auto;padding:26px}.intro{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}.intro h1{font-size:28px;margin:0 0 7px}.muted{color:var(--muted)}.notice{border:1px solid #6b5428;background:#2a2417;color:#f6d58c;padding:10px 13px;border-radius:10px;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}.stat,.panel{background:linear-gradient(145deg,var(--panel),#0b1a30);border:1px solid var(--line);border-radius:14px}.stat{padding:17px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:26px;margin-top:8px}.stat em{font-style:normal;color:var(--teal);font-size:11px}
+.layout{display:grid;grid-template-columns: minmax(0,1fr) 320px;gap:16px}.panel{padding:17px;margin-bottom:16px}.panel h2{font-size:16px;margin:0 0 14px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:13px}
+input,select{background:#08172b;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 11px;outline:none}input{flex:1;min-width:180px}button{background:#123b54;border:1px solid #246579;color:white;border-radius:8px;padding:9px 12px;cursor:pointer}button.primary{background:#087e78;border-color:#18bdae}button:disabled{opacity:.45;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;min-width:680px}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid #1b3452;font-size:12px}th{color:var(--muted);font-weight:600}tr:hover td{background:#ffffff05}.tablewrap{overflow:auto}.pill{border-radius:20px;padding:4px 8px;font-size:10px;border:1px solid var(--line);white-space:nowrap}.active{color:#6de5c7;border-color:#286e64}.pending{color:#ffd17a;border-color:#735b2d}.suspended{color:#ff8999;border-color:#743b4a}
+.profile{display:flex;gap:10px;align-items:center}.avatar{width:34px;height:34px;border-radius:50%;background:#17436a;display:grid;place-items:center;font-weight:700;color:#bdeaff}.detail{display:grid;gap:10px}.detail div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #1b3452;padding:8px 0}.detail span{color:var(--muted)}.timeline{border-left:2px solid #24536a;margin:8px 0 0 7px;padding-left:15px}.event{margin:0 0 15px;position:relative}.event:before{content:"";position:absolute;left:-21px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--teal)}.event b{display:block;font-size:12px}.event small{color:var(--muted)}
+.tabs{display:flex;gap:7px;margin-bottom:12px}.tabs button{background:#0a1a30}.tabs button.sel{background:#13505a;border-color:#218e8a}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:15px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.intro{display:block}.notice{margin-top:15px}}@media(max-width:500px){main{padding:15px}.stats{grid-template-columns:1fr 1fr}.stat strong{font-size:21px}header{padding:0 14px}}
+</style></head>
+<body>
+<header><div class="brand">👑 Vico<span>Pay</span> <span class="tag">ADMIN • PREVIEW</span></div><div class="muted">Customer & Creator Management</div></header>
+<main>
+<div class="intro"><div><h1>Customer & Creator Management Centre</h1><div class="muted">A unified workspace for account reviews, creator verification and customer activity investigations.</div></div><div class="notice">Preview data only — connect authenticated backend endpoints before using operational controls.</div></div>
+<section class="stats">
+<div class="stat"><small>Customers in directory</small><strong id="customersCount">12,480</strong><em>Illustrative total</em></div>
+<div class="stat"><small>Creator accounts</small><strong>1,286</strong><em>Illustrative total</em></div>
+<div class="stat"><small>Verification pending</small><strong>37</strong><em>Requires review</em></div>
+<div class="stat"><small>Accounts flagged</small><strong>12</strong><em>Investigation queue</em></div>
+</section>
+<div class="layout">
+<div>
+<section class="panel">
+<h2>Account directory</h2>
+<div class="tabs"><button class="sel" data-kind="all">All accounts</button><button data-kind="customer">Customers</button><button data-kind="creator">Creators</button></div>
+<div class="toolbar"><input id="search" placeholder="Search name, email or account ID"><select id="status"><option value="all">All statuses</option><option>Active</option><option>Pending</option><option>Suspended</option></select><button id="clear">Clear</button></div>
+<div class="tablewrap"><table><thead><tr><th>ACCOUNT</th><th>TYPE</th><th>JOINED</th><th>STATUS</th><th>RISK</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+</section>
+<section class="panel"><h2>Investigation checklist</h2><div class="muted">Use this review sequence before taking action in the connected production admin system.</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px">
+<label><input type="checkbox"> Confirm account ownership</label><label><input type="checkbox"> Review login/device history</label><label><input type="checkbox"> Review coin purchases</label><label><input type="checkbox"> Review gifts sent/received</label><label><input type="checkbox"> Review creator earnings</label><label><input type="checkbox"> Record investigation reason</label></div></section>
+</div>
+<aside>
+<section class="panel"><h2>Selected account</h2><div id="selected" class="muted">Select an account from the directory to inspect its preview profile.</div></section>
+<section class="panel"><h2>Activity timeline</h2><div id="timeline" class="muted">Select an account to see illustrative activity events.</div></section>
+<section class="panel"><h2>Operational safeguards</h2><div class="detail"><div><span>Suspension</span><b>Reason required</b></div><div><span>Creator verification</span><b>Manual review</b></div><div><span>Payout restriction</span><b>Separate approval</b></div><div><span>Audit trail</span><b>Required</b></div></div></section>
+</aside>
+</div>
+</main><footer>VicoPay Admin Preview • Sample records are fictional and do not represent live customer data.</footer>
+<script>
+const data=[
+{id:"VP-100284",name:"Amara Okafor",email:"amara@example.test",type:"creator",joined:"2026-10-12",status:"Active",risk:"Low",city:"Lagos",coins:"18,400",gifts:"126",earnings:"₦284,000",events:[["Creator profile verified","2026-10-14 10:32"],["Received 12 gifts in a live session","2026-10-16 19:04"],["Withdrawal request submitted","2026-10-17 08:20"]]},
+{id:"VP-100291",name:"Tunde Bello",email:"tunde@example.test",type:"customer",joined:"2026-10-15",status:"Pending",risk:"Medium",city:"Abuja",coins:"2,100",gifts:"8",earnings:"—",events:[["Account registered","2026-10-15 09:12"],["Email verification pending","2026-10-15 09:13"],["Coin purchase attempt","2026-10-16 14:22"]]},
+{id:"VP-100307",name:"Zainab Musa",email:"zainab@example.test",type:"creator",joined:"2026-09-28",status:"Suspended",risk:"High",city:"Kano",coins:"0",gifts:"42",earnings:"₦96,500",events:[["Multiple failed sign-in attempts","2026-10-18 21:02"],["Security alert opened","2026-10-18 21:05"],["Account suspended for review","2026-10-18 21:16"]]},
+{id:"VP-100318",name:"Chidi Eze",email:"chidi@example.test",type:"customer",joined:"2026-10-20",status:"Active",risk:"Low",city:"Enugu",coins:"750",gifts:"3",earnings:"—",events:[["Account registered","2026-10-20 11:04"],["Successful coin purchase","2026-10-20 11:12"],["Sent a gift in a live room","2026-10-20 19:31"]]},
+{id:"VP-100322",name:"Bisi Adeyemi",email:"bisi@example.test",type:"creator",joined:"2026-10-21",status:"Active",risk:"Medium",city:"Ibadan",coins:"5,600",gifts:"89",earnings:"₦142,000",events:[["Creator application submitted","2026-10-21 13:42"],["Verification documents received","2026-10-22 08:14"],["Verification review pending","2026-10-22 08:20"]]}
+];
+let kind="all",chosen=null;
+const $=id=>document.getElementById(id);
+function render(){const q=$("search").value.toLowerCase(),s=$("status").value;const list=data.filter(x=>(kind==="all"||x.type===kind)&& (s==="all"||x.status===s)&&[x.name,x.email,x.id].some(v=>v.toLowerCase().includes(q)));
+$("rows").innerHTML=list.map(x=>`<tr><td><div class="profile"><div class="avatar">${x.name.split(" ").map(v=>v[0]).join("").slice(0,2)}</div><div><b>${x.name}</b><br><span class="muted">${x.email}</span></div></div></td><td>${x.type}</td><td>${x.joined}</td><td><span class="pill ${x.status.toLowerCase()}">${x.status}</span></td><td>${x.risk}</td><td><button data-id="${x.id}">View</button></td></tr>`).join("")||'<tr><td colspan="6">No matching preview accounts.</td></tr>';
+document.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>select(data.find(x=>x.id===b.dataset.id)));
+}
+function select(x){chosen=x;$("selected").innerHTML=`<div class="profile"><div class="avatar">${x.name.split(" ").map(v=>v[0]).join("").slice(0,2)}</div><div><b>${x.name}</b><br><span class="muted">${x.id} • ${x.type}</span></div></div><div class="detail" style="margin-top:12px"><div><span>Email</span><b>${x.email}</b></div><div><span>Location</span><b>${x.city}</b></div><div><span>Status / risk</span><b>${x.status} / ${x.risk}</b></div><div><span>Coin balance</span><b>${x.coins}</b></div><div><span>Gifts sent/received</span><b>${x.gifts}</b></div><div><span>Creator earnings</span><b>${x.earnings}</b></div></div><p class="notice" style="margin-top:12px">Preview only: live account actions are intentionally not enabled.</p>`;
+$("timeline").innerHTML='<div class="timeline">'+x.events.map(e=>`<div class="event"><b>${e[0]}</b><small>${e[1]}</small></div>`).join("")+'</div>';
+}
+document.querySelectorAll("[data-kind]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-kind]").forEach(v=>v.classList.remove("sel"));b.classList.add("sel");kind=b.dataset.kind;render()});
+$("search").addEventListener("input",render);$("status").addEventListener("change",render);$("clear").onclick=()=>{$("search").value="";$("status").value="all";render()};render();
+</script></body></html>

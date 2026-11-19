@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vico Pay Global Market Community</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:1.25fr 1fr;gap:10px;align-items:center;padding:26px 26px 22px;background:linear-gradient(120deg,#bfe0ff 0,#a9d2ff 55%,#c9b8ff 100%);border-radius:28px;border:1px solid #b5d4f7;box-shadow:var(--gm-shadow)}
+.hero h1{margin:0 0 6px;font-size:clamp(28px,6vw,52px);line-height:1.02;color:#12275c}.hero h1 span{color:var(--gm-purple);display:block;font-style:italic}
+.hero p{margin:0 0 6px;color:#1b2f66;font-weight:700;max-width:420px}.hero .tag{font-weight:800;color:#12275c;margin-bottom:14px;font-size:17px}
+.bot{display:flex;justify-content:center;align-items:center}.bot img{display:block;width:min(280px,65vw);height:auto;object-fit:contain;filter:drop-shadow(0 12px 22px rgba(60,60,160,.35));border-radius:22px}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.can{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;background:#ffffffd9;border-radius:18px;padding:14px 18px;margin-top:6px}
+.can div{font-weight:800;font-size:14.5px}.can div::before{content:"✔";display:inline-flex;width:22px;height:22px;border-radius:50%;background:#2b7bff;color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:8px}
+.snap{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 4px}
+.snap a{flex:1 1 150px;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border:1px solid var(--gm-line);border-radius:18px;box-shadow:var(--gm-shadow);font-weight:800}
+.snap b{display:block;font-size:22px;color:var(--gm-purple)}.snap small{color:var(--gm-muted);font-weight:700}
+.four{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:16px 0}
+.fc{padding:16px;position:relative;overflow:hidden;background:linear-gradient(160deg,#fff,#e8f2ff)}
+.fc h3{margin:0 0 2px;font-size:21px;color:var(--gm-purple)}.fc .sub{font-weight:700;color:var(--gm-muted);margin-bottom:10px;font-size:14px}
+.fc ul{list-style:none;margin:0 0 14px;padding:0}.fc li{font-weight:700;font-size:14px;margin:6px 0}.fc li::before{content:"✔";display:inline-flex;width:18px;height:18px;border-radius:50%;background:#2b7bff;color:#fff;font-size:10px;align-items:center;justify-content:center;margin-right:8px}
+.fc .big{position:absolute;right:10px;bottom:46px;font-size:52px;opacity:.9}.fc .ai-card-guide{position:absolute;right:8px;bottom:42px;width:92px;height:82px;object-fit:contain;border-radius:14px;pointer-events:none}
+.fc.ads{background:linear-gradient(160deg,#fff,#e6dcff)}.fc.ai{background:linear-gradient(160deg,#fff,#dbeaff)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:10px;margin:6px 0 16px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:#fff;border:1px solid var(--gm-line);border-radius:18px;font-weight:800;font-size:13px;text-align:center;cursor:pointer;color:var(--gm-ink);box-shadow:var(--gm-shadow)}
+.tile span{font-size:28px}.tile:active{transform:scale(.97)}
+.up{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;margin-bottom:10px}
+.up .a{display:flex;align-items:center;gap:14px;padding:16px;background:linear-gradient(120deg,#cfe6ff,#e5dcff)}.up .a h3{margin:0;font-size:22px;color:#2a47b8}.up .a p{margin:2px 0 0;font-weight:700;color:#334}
+.up .b{padding:16px}.up .b h4{margin:0 0 8px;color:#6d28d9}.up .b div{font-weight:700;font-size:14px;margin:4px 0}
+@media(max-width:720px){.hero{grid-template-columns:1fr;padding:18px}.up{grid-template-columns:1fr}.gm-search{display:none}.gm-me span.n{display:none}}
+</style></head>
+<body class="gm" data-gm="home" data-ai="general" data-ai-img="vico-ai-guide.gif">
+<div class="gm-wrap">
+  <div class="gm-top">
+    <a class="gm-logo" href="home.html"><i>▶</i><div>Vico <b>Pay Live</b><small>Connect • Create • Earn • Grow</small></div></a>
+    <div class="gm-search"><input id="q" placeholder="Search on Vico Pay Live…" onkeydown="if(event.key==='Enter')gmToast('Search is opening soon.')"></div>
+    <a class="gm-bell" id="bell" href="#" onclick="gmToast('Open your notifications from your Profile.');return false" aria-label="Notifications">🔔</a>
+    <a class="gm-me" id="me" href="profile.html"><div class="ph">V</div><span class="n" id="meName">Join</span></a>
+  </div>
+
+  <section class="hero">
+    <div>
+      <div class="tag" style="margin:0 0 4px">Welcome to</div>
+      <h1>Vico Pay <span>Global Market Community</span></h1>
+      <p class="tag">Buy • Sell • Trade • Grow</p>
+      <p>Advertise your business, shop the marketplace, chat with your community and grow with Vico AI.</p>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="gm-btn" onclick="gmOpen('market')">Explore Marketplace →</button>
+        <button class="gm-btn blue" onclick="gmOpen('ai')">Chat with Vico AI →</button>
+        <a class="gm-btn" href="global-enquiry.html" style="text-decoration:none;background:linear-gradient(110deg,#1687df,#6546c7)">Make an Enquiry →</a>
+      </div>
+    </div>
+    <div class="bot" aria-label="Vico AI animated question guide"><img src="vico-ai-guide.gif" alt="Vico AI animated question guide"></div>
+    <div class="can"><div>Ask Anything</div><div>Get Advice</div><div>Learn &amp; Grow</div><div>Create Content</div><div>Solve Problems</div></div>
+  </section>
+
+  <div class="snap" id="snap" style="display:none">
+    <a href="coin-history.html"><span style="font-size:26px">🪙</span><div><b id="sCoins">0</b><small>Your coins</small></div></a>
+    <a href="live-room.html"><span style="font-size:26px">🔴</span><div><b id="sLive">0</b><small>Live now</small></div></a>
+    <a href="invite-friends.html"><span style="font-size:26px">🎁</span><div><b>Invite</b><small>Friends &amp; earn coins</small></div></a>
+  </div>
+
+  <section class="four">
+    <div class="gm-card fc ads"><h3>Vico Ad Center</h3><div class="sub">Create and Pay for Ads</div><ul><li>Advertise Your Product</li><li>Promote Your Business</li><li>Reach Your Audience</li></ul><span class="big">🎯</span><button class="gm-btn sm" onclick="gmOpen('ads')">Create Ad →</button></div>
+    <div class="gm-card fc ai"><h3>Vico AI</h3><div class="sub">Your Smart AI Assistant</div><ul><li>Get Answers</li><li>Business Ideas</li><li>Write &amp; Translate</li></ul><img class="ai-card-guide" src="vico-ai-guide.gif" alt="Vico AI animated question guide"><button class="gm-btn sm blue" onclick="gmOpen('ai')">Chat Now →</button></div>
+    <div class="gm-card fc"><h3>Vico Wallet</h3><div class="sub">Manage Your Money</div><ul><li>Deposit &amp; Withdraw</li><li>Pay for Ads</li><li>Track Your Earnings</li></ul><span class="big">👛</span><button class="gm-btn sm" onclick="gmOpen('wallet')">Open Wallet →</button></div>
+    <div class="gm-card fc"><h3>Vico Marketplace</h3><div class="sub">Buy and Sell Easily</div><ul><li>Shop Products</li><li>Sell Your Items</li><li>Grow Your Business</li></ul><span class="big">🏪</span><button class="gm-btn sm" onclick="gmOpen('market')">Shop Now →</button></div>
+  </section>
+
+  <section class="tiles">
+    <a class="tile" href="home.html"><span>⬅️</span>Back to Home</a>
+    <a class="tile" href="host-wallet.html"><span>👥</span>Creator Center</a>
+    <a class="tile" href="vico-business-center.html"><span>💼</span>Vico Pay High Business Center</a>
+    <a class="tile" href="vico-studio.html"><span>🖥️</span>Vico Studio</a>
+    <div class="tile" onclick="gmToast('Analytics is opening soon.')"><span>📊</span>Analytics</div>
+    <a class="tile" href="help-center.html"><span>🎧</span>Support</a>
+    <a class="tile" href="settings.html"><span>⚙️</span>Settings</a>
+  </section>
+
+  <section class="up">
+    <div class="gm-card a"><span style="font-size:54px">🎁</span><div><h3>Get More with Vico Pay Live!</h3><p>Join VIP, earn rewards, enjoy exclusive features!</p><a class="gm-btn sm" style="margin-top:10px" href="vip-profile.html">Upgrade Now →</a></div></div>
+    <div class="gm-card b"><h4>👑 Your Benefits</h4><div>✔ Premium features</div><div>✔ Higher earnings</div><div>✔ Exclusive gifts &amp; more</div></div>
+  </section>
+</div>
+
+<script src="auth.js"></script>
+<script src="gm-nav.js"></script>
+<script>
+(async function () {
+  if (!(window.VicoAuth && VicoAuth.isSignedIn())) { document.getElementById("meName").textContent = "Join Now"; document.getElementById("me").href = "join-now.html"; }
+  else {
+    document.getElementById("snap").style.display = "flex";
+    try { var m = await (await fetch("/api/me")).json();
+      if (m && m.success !== false) {
+        document.getElementById("meName").textContent = m.displayName || m.handle || "Me";
+        var ph = document.querySelector("#me .ph");
+        if (m.avatar) { var im = document.createElement("img"); im.src = m.avatar; im.alt = ""; ph.replaceWith(im); } else ph.textContent = String(m.displayName || m.handle || "V").charAt(0).toUpperCase();
+      } } catch (e) {}
+    try { var n = await (await fetch("/api/notifications")).json();
+      if (n && n.unread > 0) { var b = document.getElementById("bell"); var em = document.createElement("em"); em.textContent = n.unread > 99 ? "99+" : n.unread; b.appendChild(em); } } catch (e) {}
+    try { var s = await (await fetch("/api/me/statement?limit=1")).json(); if (s && s.balance !== undefined) document.getElementById("sCoins").textContent = Number(s.balance).toLocaleString(); } catch (e) {}
+  }
+  try { var d = await (await fetch("/api/live/discover")).json(); document.getElementById("sLive").textContent = Array.isArray(d.rooms) ? d.rooms.length : 0; } catch (e) {}
+})();
+</script></body></html>

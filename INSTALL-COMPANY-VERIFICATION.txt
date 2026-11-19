@@ -1,0 +1,105 @@
+VICO PAY LIVE — FREE-FIRST COMPANY VERIFICATION ADD-ON
+
+FILES
+- server.js: latest server(6).js with the company-verification module registered and JSON body limit raised to 7 MB for document uploads.
+- company-verification.js: PostgreSQL tables and authenticated customer/admin API routes.
+- admin-company-verification.html: admin review screen.
+- db-reference.js: reference copy of the db.js supplied in the Library; DO NOT replace your project's db.js with this reference file.
+
+INSTALL
+1. Back up your current project folder.
+2. Copy company-verification.js into the same folder as your server.js and db.js.
+3. Replace your project's server.js with the included server.js ONLY if it is the exact latest server(6).js version you supplied. Otherwise manually apply the two changes below.
+4. Copy admin-company-verification.html into the same website folder as your other HTML pages.
+5. Keep your existing .env and DATABASE_URL. Do not share them.
+6. Restart the Node server. The three PostgreSQL tables are created automatically when the first verification API request arrives.
+7. Open https://YOUR-DOMAIN/admin-company-verification.html and enter the existing ADMIN_KEY.
+
+If you do not want to replace server.js, manually:
+A. Change express.json({ limit: "400kb", verify: ... }) to express.json({ limit: "7mb", verify: ... }).
+B. Immediately after require("./analytics")({ app, db, requireAdmin }); add:
+   require("./company-verification")({ app, db, requireAuth, requireAdmin });
+
+API
+POST /api/company-verification/applications (signed-in user; JSON documents as base64)
+GET  /api/company-verification/my-applications (signed-in user)
+GET  /api/admin/company-verification (ADMIN_KEY)
+GET  /api/admin/company-verification/:id (ADMIN_KEY)
+GET  /api/admin/company-verification/:id/documents/:docId (ADMIN_KEY; binary download)
+POST /api/admin/company-verification/:id/review (ADMIN_KEY)
+POST /api/admin/company-verification/:id/official-check (ADMIN_KEY)
+
+DOCUMENT JSON EXAMPLE
+{
+  "organisationType":"company",
+  "legalName":"Example Limited",
+  "registrationNumber":"RC123456",
+  "address":"Registered address",
+  "representativeName":"Authorised representative",
+  "representativeRole":"Director",
+  "documents":[{
+    "documentType":"cac_certificate",
+    "fileName":"cac-certificate.pdf",
+    "mimeType":"application/pdf",
+    "dataBase64":"BASE64_FILE_CONTENT"
+  }]
+}
+Allowed MIME types: application/pdf, image/jpeg, image/png. Max 4 MB per file; max 10 documents. Total JSON request is limited to 7 MB.
+
+IMPORTANT LIMITATIONS / SAFETY
+- No paid verification provider is used. No monthly subscription or per-check API is required by this add-on.
+- It does NOT have direct CAC or NIMC database access. The admin must open the official CAC portal / relevant government source and record the result in the Official Check section.
+- File signature and SHA-256 checks are integrity/basic-format checks, NOT AI forgery detection and NOT proof of authenticity.
+- Do not mark an organisation verified solely because its files uploaded successfully. Confirm its legal registration and authority through official sources, and follow applicable privacy/data-protection rules.
+- Documents are stored in PostgreSQL BYTEA and are only downloadable through the ADMIN_KEY-protected endpoint. Protect ADMIN_KEY, use HTTPS, restrict admin access and define retention/deletion rules.
+- Syntax checks passed for server.js and company-verification.js. A live PostgreSQL test was not possible because the private DATABASE_URL was not supplied to this environment.
+
+
+============================================================
+UPDATED AD-CENTER CONNECTION (BIG BUSINESS / COMPANY / NATIONAL)
+============================================================
+
+The full project now connects organisation verification to the paid advert order.
+
+Advertiser journey:
+1. Choose an advert level and job.
+2. Pay through the existing Paystack advert payment flow.
+3. Complete business information, advert placements, address/city/country, product pictures and promotional video.
+4. The server checks the paid order and saved location.
+5. Big Business Ads and Company Ads are sent to the company KYB form.
+   National Ads are sent to the national/government organisation KYB form.
+6. Personal Ads and Small Business Ads continue to the existing personal ID form
+   (National ID, passport, driver's licence or voter's card).
+7. The admin reviews the organisation application in admin-company-verification.html.
+   A matching official CAC/government-source check must be recorded before the
+   API allows the admin to mark the organisation verified.
+8. When the admin approves it, the linked advert order is marked verified.
+
+Organisation documents:
+- Big Business / Company: CAC certificate, CAC status report/company extract,
+  registered address evidence, board/authorisation letter, and directors /
+  shareholders / beneficial ownership declaration.
+- National: establishment law/Gazette/official establishment evidence,
+  official government letterhead evidence, and appointment/delegation of
+  authority for the representative.
+- TIN, official email, phone and website can also be supplied.
+
+Security:
+- Organisation files are encrypted with AES-256-GCM before storage in PostgreSQL.
+  The encryption key is derived from the existing ID_DOC_KEY environment secret.
+- Keep the exact same ID_DOC_KEY permanently. If you change it, older encrypted
+  identity and organisation documents cannot be decrypted.
+- If ID_DOC_KEY is not configured in your real server environment, generate a
+  32-byte key once with:
+      node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  Put the resulting 64-character value in the real server .env as ID_DOC_KEY=...
+  Do not paste the key into chat, commit it to Git, or put it in a public file.
+- Uploaded organisation documents: PDF/JPG/PNG, max 2 MB each and max 4 MB total.
+- The JSON body limit in the current server is 7 MB to allow the base64 uploads.
+
+Important limitation:
+- The application does not have a direct CAC/NIMC/government registry API connection.
+  Vico admins must check the official registry or official government source and
+  record the result. File signatures and hashes do not prove that a document is genuine.
+- This build was syntax-checked and the existing ad-jobs test suite passed.
+  It has not been connected to your live Render/PostgreSQL account in this workspace.

@@ -80,8 +80,28 @@
     { id: "bokeh", icon: "🔮", name: "Bokeh Lights" }
   ];
 
-  var state = { filter: "none", sticker: "none", fx: "none" };
-  try { var saved = JSON.parse(localStorage.getItem("vicoFx") || "null"); if (saved) { state.filter = saved.filter || "none"; state.sticker = saved.sticker || "none"; state.fx = saved.fx || "none"; } } catch (e) { }
+  /* ------------------------- VIP emoji & effects -------------------------
+     Pictures live next to the pages (vipfx-<id>.webp). They are drawn on the same canvas, so VIEWERS SEE THEM TOO.
+       vipEmoji   = crowned VicoPay mascot emoji      vipAvatar = glamour avatars       vipSticker = glamour stickers
+       (one of these three can be on at a time, in a corner you choose)
+       vipFrame   = crown / headphone frame that follows your face (needs face tracking, like face stickers)
+     Set window.VICO_VIP_FX_VIP_ONLY = true before this script if only VIP hosts should be able to use them. */
+  var VIP_OVERLAY = ["vipEmoji", "vipAvatar", "vipSticker"], VIP_SIZE = { vipEmoji: 0.36, vipAvatar: 0.44, vipSticker: 0.42 };
+  function vipList(kind, rows) { var out = [{ id: "none", icon: "🚫", name: "None" }]; rows.forEach(function (r) { var o = { id: r[0], name: r[1], img: "vipfx-" + r[0] + ".webp" }; if (r[2]) o.hole = r[2]; out.push(o); }); return out; }
+  var VIP_EMOJI = vipList("vipEmoji", [["emoji1", "Royal Wink"], ["emoji2", "Red Cape"], ["emoji3", "Cool Shades"], ["emoji4", "Big Logo"], ["emoji5", "Gold Coins"], ["emoji6", "Heart Holder"], ["emoji7", "Purple Love"], ["emoji8", "Gold Hands"], ["emoji9", "Kiss Queen"]]);
+  var VIP_AVATARS = vipList("vipAvatar", [["avatar1", "Streamer Queen"], ["avatar2", "Purple Queen"], ["avatar3", "Crown Glam"], ["avatar4", "Glam Portrait"], ["avatar5", "Neon Queen"], ["avatar6", "Kiss Sticker"]]);
+  var VIP_STICKERS = vipList("vipSticker", [["sticker1", "Kiss Heart"], ["sticker2", "DJ Tongue"], ["sticker3", "Sleepy Queen"], ["sticker4", "Shades"], ["sticker5", "Thumbs Up"], ["sticker6", "Cat Mask"], ["sticker7", "Heart Pillow"], ["sticker8", "Neon Party"], ["sticker9", "Flower Crown"], ["sticker10", "Magic Wand"]]);
+  var VIP_FRAMES = vipList("vipFrame", [["frame1", "Headphone Queen", [0.4039, 0.2584, 0.5934, 0.5858]], ["frame2", "Neon Crown", [0.2987, 0.3057, 0.7053, 0.8383]], ["frame3", "Winged Headphones", [0.3487, 0.3314, 0.6592, 0.858]]]);
+  var VIP_LISTS = { vipEmoji: VIP_EMOJI, vipAvatar: VIP_AVATARS, vipSticker: VIP_STICKERS, vipFrame: VIP_FRAMES };
+  var IMGS = {};
+  function vipImg(file) { if (!IMGS[file]) { var i = new Image(); i.src = file; IMGS[file] = i; } return IMGS[file]; }
+  function needsFace() { return (state.sticker !== "none" && !!DRAW[state.sticker]) || state.vipFrame !== "none"; }
+
+  var state = { filter: "none", sticker: "none", fx: "none", vipEmoji: "none", vipAvatar: "none", vipSticker: "none", vipFrame: "none", vipPos: "br" };
+  try {
+    var saved = JSON.parse(localStorage.getItem("vicoFx") || "null");
+    if (saved) { Object.keys(state).forEach(function (k) { if (saved[k]) state[k] = saved[k]; }); }
+  } catch (e) { }
   function persist() { try { localStorage.setItem("vicoFx", JSON.stringify(state)); } catch (e) { } }
   function byId(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return list[0]; }
   function toast(m) { if (typeof window.showToast === "function") window.showToast(m); }
@@ -371,8 +391,8 @@
       c.globalCompositeOperation = "source-over"; c.globalAlpha = 1;
     }
 
-    /* 2. face sticker */
-    if (state.sticker !== "none" && DRAW[state.sticker]) {
+    /* 2. face sticker + VIP face frame (both follow the face) */
+    if (needsFace()) {
       this.frame++;
       if (this.frame % 2 === 0) {
         var f = detectFace(v, W, H, this.face);
@@ -381,10 +401,16 @@
       if (this.face) {
         var fr = faceFrame(this.face);
         c.save(); c.translate(fr.o.x, fr.o.y); c.rotate(fr.ang);
-        try { DRAW[state.sticker](c, fr, t); } catch (e) { /* never let one bad frame stop the live */ }
+        if (state.sticker !== "none" && DRAW[state.sticker]) {
+          try { DRAW[state.sticker](c, fr, t); } catch (e) { /* never let one bad frame stop the live */ }
+        }
+        if (state.vipFrame !== "none") { try { drawVipFrame(c, fr); } catch (e) { } }
         c.restore();
       }
     } else { this.face = null; }
+
+    /* 2b. VIP emoji / avatar / sticker in a corner (one at a time) */
+    try { drawVipOverlay(c, W, H, t); } catch (e) { }
 
     /* 3. screen effect */
     var cfg = EFFECT_CFG[state.fx];
@@ -401,20 +427,49 @@
     } else if (this.parts.length) { this.parts.length = 0; }
   };
 
+  /* VIP drawing helpers */
+  function drawVipFrame(c, fr) {
+    var o = byId(VIP_FRAMES, state.vipFrame); if (!o.img) return;
+    var im = vipImg(o.img); if (!im.complete || !im.naturalWidth) return;
+    var hw = (o.hole[2] - o.hole[0]) * im.naturalWidth, hh = (o.hole[3] - o.hole[1]) * im.naturalHeight;
+    var hcx = (o.hole[0] + o.hole[2]) / 2 * im.naturalWidth, hcy = (o.hole[1] + o.hole[3]) / 2 * im.naturalHeight;
+    var sc = Math.max(fr.w * 1.12 / hw, fr.h * 1.0 / hh);                 // the hole in the picture is made to fit the face
+    var cy = (fr.top.y + fr.chin.y) / 2;
+    c.drawImage(im, -hcx * sc, cy - hcy * sc, im.naturalWidth * sc, im.naturalHeight * sc);
+  }
+  function drawVipOverlay(c, W, H, t) {
+    var kind = null; for (var i = 0; i < VIP_OVERLAY.length; i++) if (state[VIP_OVERLAY[i]] !== "none") { kind = VIP_OVERLAY[i]; break; }
+    if (!kind) return;
+    var o = byId(VIP_LISTS[kind], state[kind]); if (!o.img) return;
+    var im = vipImg(o.img); if (!im.complete || !im.naturalWidth) return;
+    var h = H * VIP_SIZE[kind], w = h * im.naturalWidth / im.naturalHeight;
+    if (w > W * 0.55) { w = W * 0.55; h = w * im.naturalHeight / im.naturalWidth; }
+    var m = Math.min(W, H) * 0.03, pos = state.vipPos || "br";
+    var x = pos.charAt(1) === "l" ? m : W - w - m, y = pos.charAt(0) === "t" ? m : H - h - m;
+    var k = 1 + 0.025 * Math.sin(t * 3);                                  // a gentle "breathing" pulse
+    c.save(); c.translate(x + w / 2, y + h / 2 + Math.sin(t * 2) * H * 0.008); c.scale(k, k);
+    c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
+    c.drawImage(im, -w / 2, -h / 2, w, h); c.restore();
+  }
+
   var engines = [], preview = null;
 
   /* ------------------------------ public API ------------------------- */
   var API = {
     FILTERS: FILTERS, STICKERS: STICKERS, EFFECTS: EFFECTS, state: state,
+    VIP_LISTS: VIP_LISTS, VIP_ONLY: !!window.VICO_VIP_FX_VIP_ONLY,
     set: function (kind, id) {
+      if (kind === "vipPos") { state.vipPos = id; persist(); return; }
+      if (VIP_OVERLAY.indexOf(kind) >= 0 && id !== "none") VIP_OVERLAY.forEach(function (k) { state[k] = "none"; });   // one corner picture at a time
       state[kind] = id; persist();
-      if (kind === "sticker" && id !== "none" && tracker.status === "idle") loadTracker();
+      if (VIP_LISTS[kind] && id !== "none") { var o = byId(VIP_LISTS[kind], id); if (o.img) vipImg(o.img); }
+      if (needsFace() && tracker.status === "idle") loadTracker();
     },
-    clear: function () { state.filter = "none"; state.sticker = "none"; state.fx = "none"; persist(); },
+    clear: function () { state.filter = "none"; state.sticker = "none"; state.fx = "none"; state.vipEmoji = "none"; state.vipAvatar = "none"; state.vipSticker = "none"; state.vipFrame = "none"; persist(); },
     // hand this to LiveKit:  videoTrack.setProcessor(VicoFX.createProcessor())
     createProcessor: function () {
       var e = new Engine(); engines.push(e);
-      if (state.sticker !== "none" && tracker.status === "idle") loadTracker();
+      if (needsFace() && tracker.status === "idle") loadTracker();
       return e;
     },
     // effects on the camera preview BEFORE you press Start Live
@@ -422,7 +477,7 @@
       API.stopPreview();
       var vt = mediaStream && mediaStream.getVideoTracks()[0]; if (!vt) return Promise.resolve();
       var e = new Engine(); engines.push(e); preview = e;
-      if (state.sticker !== "none" && tracker.status === "idle") loadTracker();
+      if (needsFace() && tracker.status === "idle") loadTracker();
       return e.init({ track: vt }).then(function () { videoEl.srcObject = new MediaStream([e.processedTrack]); });
     },
     stopPreview: function () { if (preview) { preview.destroy(); preview = null; } }

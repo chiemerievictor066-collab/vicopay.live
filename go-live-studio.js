@@ -262,7 +262,7 @@
     });
   }
 
-  /* ---------------- stars (10 coins = 5 stars) ---------------- */
+  /* ---------------- live star counter ---------------- */
   function paintStars(box, n, added){
     if (!box) return; n = Math.max(0, Number(n) || 0);
     const goal = Math.max(3000, Math.ceil(n / 3000) * 3000);
@@ -359,6 +359,6 @@
       if (ok) sel.value = saved; else { localStorage.removeItem("vicoPayLiveCategory"); var rc = $("#roomCategory"); if (rc) rc.textContent = sel.value; }
     }
   })();
-  window.addEventListener("beforeunload", function (e) { if (typeof vicoLiveKitRoom !== "undefined" && vicoLiveKitRoom) { e.preventDefault(); e.returnValue = ""; } });
+  // No "leave this page?" question: only the host's own End Live button ends the live. Pages the host opens appear in a layer on top of the live (see Go-Live.html).
   loadMe();
 })();

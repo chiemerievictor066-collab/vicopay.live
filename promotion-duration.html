@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0a1a8a">
+<title>Promotional Duration - Vico Pay Live</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0}
+body{min-height:100vh;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at 50% 0,#2234d8 0,#0c1a9c 38%,#070f5e 100%)}
+.wrap{width:min(560px,100%);margin:0 auto;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+.hero{position:relative}.hero img{display:block;width:100%;height:auto}
+.hero .back{position:absolute;left:1.8%;top:3.5%;width:9%;aspect-ratio:1;border:0;border-radius:50%;background:transparent;cursor:pointer}
+.panel{margin:0 14px;border-radius:26px;padding:18px 12px 14px;background:linear-gradient(180deg,rgba(18,62,200,.75),rgba(8,28,120,.8));border:2px solid #3b82ff;box-shadow:0 0 24px rgba(60,120,255,.45),inset 0 0 20px rgba(60,120,255,.25);position:relative}
+.panel h2{position:absolute;left:50%;top:-22px;transform:translateX(-50%);margin:0;padding:8px 26px;white-space:nowrap;border-radius:30px;background:linear-gradient(180deg,#2f6dff,#1745c8);border:2px solid #5aa0ff;font-size:clamp(17px,4.6vw,26px);font-weight:900}
+.panel .lead{margin:12px 0 10px;text-align:center;font-weight:700;font-size:clamp(14px,3.8vw,19px)}
+.goals{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.goal{border-radius:16px;padding:10px 4px 8px;text-align:center;background:rgba(8,26,120,.7);border:1.5px solid #2b58d8;font-weight:800;line-height:1.15}
+.goal .ic{font-size:clamp(22px,6vw,34px)}.goal .n{display:block;font-size:clamp(13px,3.6vw,19px);margin-top:3px}.goal small{display:block;font-size:clamp(10px,2.8vw,13px);font-weight:700;opacity:.9}
+.goal .bar{height:5px;border-radius:5px;background:rgba(255,255,255,.2);margin:7px 6px 0;overflow:hidden}.goal .bar i{display:block;height:100%;background:linear-gradient(90deg,#ffd24a,#ff9d00);border-radius:5px}
+.goal.met{border-color:#22c55e;box-shadow:0 0 14px rgba(34,197,94,.5)}.goal.met .bar i{background:#22c55e}.goal .have{display:block;font-size:10.5px;opacity:.85;margin-top:3px;font-weight:700}
+.or{display:flex;align-items:center;gap:10px;margin:18px 16px 26px}.or:before,.or:after{content:"";flex:1;height:2px;background:linear-gradient(90deg,transparent,#8b5cf6,transparent)}.or b{padding:5px 24px;border-radius:20px;background:#4c1dbf;border:2px solid #8b5cf6;font-size:20px}
+.panel.violet{background:linear-gradient(180deg,rgba(104,40,220,.75),rgba(48,20,150,.85));border-color:#a56bff;box-shadow:0 0 24px rgba(150,90,255,.5),inset 0 0 20px rgba(150,90,255,.25)}
+.panel.violet h2{background:linear-gradient(180deg,#7c3aed,#4c1dbf);border-color:#c0a0ff;font-size:clamp(15px,4.2vw,24px)}
+.buy{display:grid;grid-template-columns:30% 1fr;gap:10px;align-items:center;margin-top:8px}.buy .vip{width:100%;display:block;border-radius:14px}
+.price{border-radius:18px;padding:12px 6px;text-align:center;background:linear-gradient(180deg,#14238f,#0a1560);border:2px solid #4d7dff;box-shadow:0 0 16px rgba(80,130,255,.5)}.price b{display:block;font-size:clamp(40px,12vw,66px);line-height:1;font-weight:900;text-shadow:0 3px 0 #0b1160}.price span{display:block;font-weight:800;font-size:clamp(15px,4vw,22px);margin-top:2px}
+.checks{grid-column:1/-1;margin:6px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-weight:700;font-size:clamp(12.5px,3.4vw,16px)}.checks li:before{content:"✔";display:inline-flex;width:22px;height:22px;border-radius:50%;background:#facc15;color:#3a2600;align-items:center;justify-content:center;font-size:13px;margin-right:7px;font-weight:900}
+.cur{display:flex;gap:8px;justify-content:center;margin:12px 0 2px}.cur button{border:1.5px solid #8b5cf6;background:rgba(255,255,255,.08);color:#fff;border-radius:18px;padding:8px 16px;font:800 14px system-ui,Arial,sans-serif;cursor:pointer}.cur button.on{background:#facc15;color:#2b1a00;border-color:#facc15}
+.note{margin:18px 14px 0;border-radius:20px;padding:12px 14px;display:flex;gap:12px;background:rgba(5,22,110,.8);border:2px solid #2b8cff}.note i{flex:none;width:38px;height:38px;border-radius:50%;background:#1d9bff;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:900;font-size:22px}
+.note b{color:#facc15;font-size:clamp(16px,4.4vw,21px)}.note ul{margin:4px 0 0;padding-left:18px;font-weight:600;font-size:clamp(12.5px,3.4vw,16px);line-height:1.35}.note em{font-style:normal;color:#facc15;font-weight:800}.note u{text-decoration:none;color:#7fd0ff;font-weight:800}
+.cta{display:flex;align-items:center;justify-content:center;gap:12px;width:calc(100% - 28px);margin:18px 14px 0;border:0;border-radius:40px;padding:14px 18px;cursor:pointer;background:linear-gradient(180deg,#ffd84a,#f5a300);border:3px solid #fff3b0;box-shadow:0 8px 24px rgba(255,190,0,.45);color:#13184a;text-align:center;line-height:1.1}
+.cta .di{font-size:clamp(30px,9vw,46px)}.cta b{display:block;font-size:clamp(19px,5.4vw,30px);font-style:italic;font-weight:900}.cta span.s{display:block;font-size:clamp(16px,4.4vw,24px);font-style:italic;font-weight:900}.cta .go{margin-left:auto;width:42px;height:42px;border-radius:50%;background:#0d1b5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.cta:disabled{opacity:.6;cursor:wait}.msg{margin:12px 20px 0;text-align:center;font-weight:800;color:#ffd0d0;min-height:20px}.msg.ok{color:#bbf7d0}
+.state{margin:14px;border-radius:18px;padding:14px;text-align:center;font-weight:800;background:linear-gradient(180deg,#22c55e,#15803d);display:none;border:2px solid #86efac}.state.on{display:block}.state small{display:block;font-weight:600;margin-top:3px;opacity:.95}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="hero"><img src="vico-promo-hero.jpg" alt="Promotional Duration. Get promoted instantly and upgrade to VIP"><button class="back" id="back" type="button" aria-label="Back"></button></div>
+  <div class="state" id="state"></div>
+  <section class="panel" style="margin-top:34px"><h2>Promotion Eligibility</h2>
+    <div class="lead">You can only be promoted for free when you reach:</div>
+    <div class="goals" id="goals"></div></section>
+  <div class="or"><b>OR</b></div>
+  <section class="panel violet"><h2>Promotional Duration (Direct Upgrade)</h2>
+    <div class="lead" style="margin-top:14px">If you do not want to wait, you can get the promotion straight away by purchasing the Promotional Duration.</div>
+    <div class="buy"><img class="vip" src="vico-promo-vip.jpg" alt="VIP Go Live"><div class="price"><b id="price">$12</b><span>Only</span></div>
+      <ul class="checks"><li>Upgrade to VIP Instantly</li><li>Unlock Premium Features</li><li>Boost Your Live Audience</li><li>Enjoy More Visibility</li></ul></div>
+    <div class="cur" id="cur"><button type="button" data-c="USD" class="on">Pay in Dollars</button><button type="button" data-c="NGN">Pay in Naira</button></div>
+  </section>
+  <div class="note"><i>i</i><div><b>Important Note:</b><ul><li>A normal <u>live</u> stream without these achievements <em>cannot</em> be upgraded.</li><li>You must either <u>reach</u> the required goals or make a payment of <em id="p2">$12</em> for the <em>Promotional Duration</em> to upgrade to VIP.</li></ul></div></div>
+  <button class="cta" id="pay" type="button"><span class="di">💎</span><span><b>Get Promotional Duration</b><span class="s" id="payFor">for $12</span></span><span class="go">›</span></button>
+  <div class="msg" id="msg" role="status"></div>
+</div>
+<script src="auth.js"></script><script>VicoAuth.requireLogin();</script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i);},S=null,cur="USD";
+function n(v){return Number(v).toLocaleString();}
+function short(v){v=Number(v);return v>=1e6?(v/1e6)+" Million":n(v);}
+function money(){return cur==="USD"?"$"+n(S?S.priceUsd:12):"₦"+n(S?S.priceNgn:19000);}
+function paintPrice(){$("price").textContent=money();$("p2").textContent=money();$("payFor").textContent="for "+money();}
+function goal(ic,label,have,need){var met=need>0&&have>=need,pct=need>0?Math.min(100,Math.round(have/need*100)):100;
+ return '<div class="goal'+(met?" met":"")+'"><div class="ic">'+ic+'</div><span class="n">'+short(need)+'</span><small>'+label+'</small><div class="bar"><i style="width:'+pct+'%"></i></div><span class="have">'+(met?"✔ Reached":n(have)+" now")+'</span></div>';}
+function draw(){var g=S.goals,f=S.facts;
+ $("goals").innerHTML=goal("👥","Followers",f.followers,g.followers)+goal("❤️","Likes",f.likes,g.likes)+goal("⭐","Stars",f.stars,g.stars)+(g.views>0?goal("👁️","Views",f.views,g.views):'<div class="goal"><div class="ic">👁️</div><span class="n">High</span><small>Views</small><span class="have">Counted for you</span></div>');
+ paintPrice();
+ var st=$("state");
+ if(S.promoted){st.className="state on";var until=S.expiresAt?" until "+new Date(S.expiresAt).toLocaleDateString():"";
+  st.innerHTML=(S.source==="paid"?"✔ Promotion active"+until:S.source==="earned"?"✔ You reached the goals. You are promoted!":"✔ You already have VIP")+"<small>Go back to your live and tap Promotion Successful.</small>";
+  if(S.source!=="paid"){$("pay").disabled=true;$("pay").style.display="none";}else{$("payFor").textContent="to extend ("+money()+")";}}
+}
+function load(){fetch("/api/promo/status",{credentials:"same-origin",cache:"no-store"}).then(function(r){return r.json();}).then(function(d){if(d&&d.success){S=d;draw();}}).catch(function(){});}
+$("cur").onclick=function(e){var b=e.target.closest("button");if(!b)return;cur=b.dataset.c;[].forEach.call(this.children,function(x){x.className=x===b?"on":"";});paintPrice();};
+$("back").onclick=function(){if(window.opener){window.close();return;}if(history.length>1)history.back();else location.href="Go-Live.html";};
+$("pay").onclick=function(){var b=this,m=$("msg");m.className="msg";m.textContent="";b.disabled=true;
+ fetch("/api/promo/initialize",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({currency:cur})}).then(function(r){return r.json();}).then(function(d){
+  if(d&&d.success&&d.authorization_url){m.className="msg ok";m.textContent="Opening Paystack…";location.href=d.authorization_url;return;}
+  b.disabled=false;m.textContent=(d&&d.message)||"Could not start the payment. Please try again.";
+ }).catch(function(){b.disabled=false;m.textContent="Could not start the payment. Check your connection.";});};
+load();
+})();
+</script></body></html>

@@ -198,11 +198,13 @@ module.exports = function payoutsModule(ctx) {
     const units = calcUnits(stars), usd = calcUsd(stars), starsSpent = units * R.minimumStars;
     const flag = await db.get("SELECT banned FROM user_flags WHERE email = ?", [host]);
     const sec = await db.get("SELECT banned, disqualified FROM withdrawal_security WHERE creator_id = ?", [host]);
+    const adminHold = await db.get("SELECT reason FROM admin_payout_holds WHERE creator_id = ? AND active = 1", [host]).catch(() => null);
     const rec = await db.get("SELECT * FROM payout_recipients WHERE creator_id = ?", [host]);
 
     let status = "ready", reason = null;
     if (stars < R.minimumStars) { status = "ineligible"; reason = `Only ${stars.toLocaleString()} stars (needs ${R.minimumStars.toLocaleString()})`; }
     else if (liveDays < win.days) { status = "ineligible"; reason = `Live ${R.dailyLiveHours}h on ${liveDays}/${win.days} days (needs every day)`; }
+    else if (adminHold) { status = "held"; reason = "Administrator payout hold: " + String(adminHold.reason || "under review").slice(0,180); }
     else if ((flag && Number(flag.banned)) || (sec && (Number(sec.banned) || Number(sec.disqualified)))) { status = "held"; reason = "Account is banned or disqualified"; }
     else if (usd > C.maxItemUsd) { status = "held"; reason = `Amount ${money(usd)} is above the per-creator safety limit (${money(C.maxItemUsd)})`; }
     else if (!rec) { status = "held"; reason = "No verified bank account yet"; }
@@ -352,6 +354,8 @@ module.exports = function payoutsModule(ctx) {
       const hold = async (why) => { await t.run("UPDATE payout_items SET status = 'held', reason = ?, updated_at = ? WHERE id = ? AND status = 'queued'", [why, Date.now(), itemId]); return null; };
       const flag = await t.get("SELECT banned FROM user_flags WHERE email = ?", [cur.creator_id]);
       const sec = await t.get("SELECT banned, disqualified FROM withdrawal_security WHERE creator_id = ?", [cur.creator_id]);
+      const adminHold = await t.get("SELECT reason FROM admin_payout_holds WHERE creator_id = ? AND active = 1", [cur.creator_id]).catch(() => null);
+      if (adminHold) return hold("Administrator payout hold: " + String(adminHold.reason || "under review").slice(0,180));
       if ((flag && Number(flag.banned)) || (sec && (Number(sec.banned) || Number(sec.disqualified)))) return hold("Account is banned or disqualified");
       const rec = await t.get("SELECT * FROM payout_recipients WHERE creator_id = ?", [cur.creator_id]);
       if (!rec || rec.recipient_code !== cur.recipient_code) return hold("Bank details changed after approval. Re-check and re-approve.");

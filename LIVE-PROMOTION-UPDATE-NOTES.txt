@@ -1,0 +1,17 @@
+Vico Pay Live - Promotion and Live Hours update
+
+Implemented:
+- Promotion threshold is 1,000 followers AND 12,000 earned gift stars.
+- Watch Live and VIP Watch Live show streamer promotion status, profile story/bio, Vico Pay Live join date, stream start time, and elapsed live duration.
+- When a stream ends, the viewer page requests the stored session record and displays the end time and final duration.
+- PostgreSQL live_sessions remains the source of truth for session start/end times; create/end handlers now await the session writes.
+- Added authenticated /api/creator/live-summary with follower count, total stars, lifetime streamed hours, and profile/join information.
+- Added a creator promotion/live-hours summary to live-room-dashboard.html and a reusable card automatically injected on Go-Live.html by the server.
+- No new database table is required; existing users, profiles, follows, gift stats, and live_sessions tables are used.
+
+Important source-file limitation:
+- The supplied Go-Live.html in the uploaded ZIP is already truncated. It starts mid-tag at `src="vico-gifts.js"></script>` and contains only the tail end of the page. Its original studio markup and main camera/start-broadcast logic are absent from the supplied archive. The update adds the creator summary card through server-side page injection, but does not fabricate or replace the missing original broadcast studio.
+
+Validation:
+- Node syntax checks passed for server.js, features.js, live-promotion.js, go-live-studio.js, and inline scripts in the modified HTML pages.
+- Full runtime/database tests were not run because dependencies and a configured PostgreSQL database are not present in this workspace.

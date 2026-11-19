@@ -8,6 +8,10 @@ const { AccessToken } = require("livekit-server-sdk");
 const crypto = require("crypto");
 const db = require("./db");
 const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+let commandCenter = null;
+let adminControl = null;
+let callSystem = null;
+let platformMaintenance = { enabled: false, message: "VicoPay is temporarily undergoing maintenance." };
 
 // =====================================================
 // LIVEKIT CLOUD CREDENTIALS
@@ -34,7 +38,7 @@ if (!process.env.PAYSTACK_SECRET_KEY) {
 const app = express();
 // Express 4 does not catch errors thrown inside async handlers. This wrapper sends them to the error handler at the
 // bottom of this file instead of crashing or hanging the request.
-for (const m of ["get", "post", "use"]) {
+for (const m of ["get", "post", "put", "patch", "delete", "use"]) {
   const orig = app[m].bind(app);
   app[m] = (...args) => orig(...args.map((h) =>
     typeof h === "function" && h.constructor.name === "AsyncFunction" && h.length < 4
@@ -45,8 +49,14 @@ app.set("trust proxy", 1);
 app.use(cors(process.env.APP_URL && /^https:/.test(process.env.APP_URL) ? { origin: process.env.APP_URL.replace(/\/$/, "") } : undefined));
 
 // Middleware
-app.use(express.json({ limit: "400kb", verify: (req, res, buf) => { req.rawBody = Buffer.from(buf); } }));
+app.use(express.json({ limit: "7mb", verify: (req, res, buf) => { req.rawBody = Buffer.from(buf); } }));
 app.use(express.urlencoded({ extended: true }));
+// Emergency maintenance gate: public API traffic is paused, while health/admin APIs remain reachable.
+app.use((req, res, next) => {
+  if (!platformMaintenance.enabled || !req.path.startsWith("/api/") || req.path === "/api/health" || req.path.startsWith("/api/admin/")) return next();
+  res.setHeader("Retry-After", "300");
+  return res.status(503).json({ success: false, maintenance: true, message: platformMaintenance.message });
+});
 
 // Serve your Victopay website files straight from this folder (there is no folder called public any more).
 // SECURITY: only an allow-list is ever sent to browsers: the .html pages, vico.css and the browser scripts below.
@@ -59,10 +69,13 @@ app.use((req, res, next) => {
   next();
 });
 const SITE_DIR = __dirname;
-const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "vico-currency.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js"]);
+const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "vico-currency.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js", "vip-ui.js", "vip-entrance.js", "share-menu.js", "gm-nav.js", "vico-shell.js", "vico-buy.js", "vico-social.js", "vico-live-panel.js", "vico-pin.js", "vico-animal-filters.js", "campaigns-ui.js", "campaign-calendar.js"]);
 // gift videos are ordinary files next to the HTML pages: gift-rose.mp4, gift-lion.mp4 ... (there is NO gifts folder)
-const GIFT_VIDEO = /^gift-[a-z0-9-]+\.mp4$/;
-const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || BROWSER_SCRIPTS.has(f) || GIFT_VIDEO.test(f)));
+const GIFT_VIDEO = /^gift-[a-z0-9-]+\.(mp4|jpg)$/;   // gift videos + their small thumbnails
+const VIP_FX_IMG = /^(vipfx-[a-z0-9-]+\.webp|vico-art-[a-z0-9-]+\.jpg|vico-animals\.webp|vico-ai-guide\.gif|vico-promo-(?:hero|vip|celebrate|benefits)\.jpg|vico-bc-(?:hero|shield|support)\.jpg)$/;   // VIP emoji / avatar / sticker / frame pictures used by the live Effects
+const ANIMAL_PAGES = new RegExp("^(go-?live[a-z0-9_-]*\\.html|vip-go-?live[a-z0-9_-]*\\.html" + (process.env.ANIMAL_FILTER_PAGES ? "|" + process.env.ANIMAL_FILTER_PAGES.split(",").map((p) => p.trim().replace(/[^a-zA-Z0-9_.-]/g, "").replace(/\./g, "\\.")).filter(Boolean).join("|") : "") + ")$", "i");
+const APPRECIATION_ART = new Set(["vico-monthly-appreciation.png", "vico-yearly-appreciation.png"]);
+const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || f === "gm.css" || BROWSER_SCRIPTS.has(f) || GIFT_VIDEO.test(f) || VIP_FX_IMG.test(f) || APPRECIATION_ART.has(f)));
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
   let name;
@@ -77,11 +90,17 @@ app.use((req, res, next) => {
         const i = html.lastIndexOf("</body>");
         html = i === -1 ? html + tag : html.slice(0, i) + tag + html.slice(i);
       }
+      // Animal face filters: the Go Live page(s) get vico-animal-filters.js added at the very top, so it is ready before the page asks for the camera.
+      // (Go-Live.html is also the page VIP hosts use. Any other page can be added with ANIMAL_FILTER_PAGES=page1.html,page2.html in .env.)
+      if (ANIMAL_PAGES.test(name) && html.indexOf("vico-animal-filters.js") === -1) {
+        const tag = '<script src="vico-animal-filters.js"></script>', h = /<head[^>]*>/i.exec(html);
+        html = h ? html.slice(0, h.index + h[0].length) + tag + html.slice(h.index + h[0].length) : tag + html;
+      }
       res.type("html").send(html);
     });
   }
   // gift videos: cached, and sendFile supports Range requests so phones can stream them
-  if (GIFT_VIDEO.test(name)) res.setHeader("Cache-Control", "public, max-age=604800");
+  if (GIFT_VIDEO.test(name) || VIP_FX_IMG.test(name) || APPRECIATION_ART.has(name)) res.setHeader("Cache-Control", "public, max-age=604800");
   res.sendFile(path.join(SITE_DIR, name), (err) => { if (err && !res.headersSent) next(); });
 });
 // =====================================================
@@ -97,44 +116,98 @@ const getStarBreakdown = store.starBreakdown;
 const PAYOUT_HOLD_DAYS = store.PAYOUT_HOLD_DAYS;
 const recordSessionStart = (h, r) => store.sessionStart(h, r).catch((e) => console.error("SESSION START ERROR:", e.message));
 const recordSessionEnd = (h, r) => store.sessionEnd(h, r).catch((e) => console.error("SESSION END ERROR:", e.message));
-async function getMonthlyLiveStatus(hostId) { return store.monthlyLiveStatus(hostId, CREATOR_RULES.dailyLiveHours); }
+// Monthly requirements (the same wording is shown to hosts; the maths is in live-hours.js and is shared with payouts.js):
+//   Normal host: 3,000 stars,  live EVERY day for at least 1 hour, and at least 30 live hours in the month. $9.00  per 3,000 stars.
+//   VIP host:   12,000 stars,  live EVERY day for at least 1 hour, and at least 30 live hours in the month. $10.80 per 3,000 stars.
+// The "every day, at least 1 hour" check is the existing per-day check in the store (it takes the hours-per-day as a number);
+// the monthly TOTAL is counted here from live_sessions, in the Nigeria month, with overlapping rooms merged.
+const liveHoursLib = require("./live-hours");
+// hours on each day of the Nigeria month, from live_sessions. Same maths as the monthly payout (live-hours.js):
+// a stream that runs past midnight is split over both days. (todayHours/days show the REAL hours streamed;
+// only the first hour of each day is added to the monthly hours, extra hours that day are free.)
+async function liveMonthPerDay(hostId) {
+  const win = liveHoursLib.currentMonthWindow(Number(process.env.PAYOUT_TZ_OFFSET_MIN || 60));
+  const sessions = await db.all(
+    "SELECT started_at, ended_at, last_beat FROM live_sessions WHERE host_id = ? AND started_at < ? AND COALESCE(ended_at, last_beat, started_at) > ?",
+    [String(hostId || "").trim().toLowerCase(), win.endMs, win.startMs]);
+  return { win, perDay: liveHoursLib.liveHoursPerDay(sessions, win) };
+}
+async function liveHoursThisMonth(hostId) {
+  return liveHoursLib.totalHours((await liveMonthPerDay(hostId)).perDay, liveHoursLib.DAILY_CAP_HOURS);
+}
+// The live requirement is a MINIMUM: at least dailyHours on every day and at least monthlyHours in the month.
+// A host can keep streaming as long as they like after the first hour of the day, but only 1 hour per day is added to the monthly hours.
+async function getMonthlyLiveStatus(hostId, hostRules) {
+  const r = hostRules || { dailyHours: CREATOR_RULES.dailyLiveHours, monthlyHours: CREATOR_RULES.monthlyLiveHours };
+  const base = await store.monthlyLiveStatus(hostId, r.dailyHours);            // month label and the shape the pages already use
+  const { win, perDay } = await liveMonthPerDay(hostId);
+  const days = perDay.map((h, i) => ({ day: i + 1, hours: Number(h.toFixed(2)), complete: h >= r.dailyHours - 1e-9 }));
+  const completedDays = days.filter((d) => d.complete).length;
+  const today = days[Math.min(win.days - 1, Math.max(0, Math.floor((Date.now() - win.startMs) / liveHoursLib.DAY)))];
+  const monthlyHours = liveHoursLib.totalHours(perDay, r.dailyHours);
+  const everyDayComplete = completedDays >= win.days, totalHoursComplete = monthlyHours >= r.monthlyHours;
+  return Object.assign({}, base, {
+    daysInMonth: win.days, completedDays, remainingDays: win.days - completedDays, days,
+    dailyRequiredHours: r.dailyHours, todayHours: today.hours, todayComplete: today.complete,
+    everyDayComplete, monthlyHours, monthlyHoursRequired: r.monthlyHours, totalHoursComplete,
+    monthlyRequirementComplete: everyDayComplete && totalHoursComplete
+  });
+}
 
 // =====================================================
 // CREATOR PAYOUT RULES & ELIGIBILITY
 // =====================================================
 
 const CREATOR_RULES = {
-  minimumStars: 3000,
-  dailyLiveHours: 3
+  minimumStars: 3000,       // normal host: stars needed; it is also the size of one payout block ($9 / $10.80)
+  dailyLiveHours: 1,        // live every day for at least 1 hour
+  monthlyLiveHours: 30      // and at least 30 hours in the month
 };
+const VIP_RULES = { minimumStars: 12000, dailyLiveHours: 1, monthlyLiveHours: 30 };   // VIP: 12,000 stars, every day 1 hour, 30 hours a month
 
-// $9 per every complete 3,000 Golden Stars (matches the payout
-// table shown on host-wallet.html: 3,000 -> $9, 6,000 -> $18,
-// 9,000 -> $27 ...)
-function calculateCreatorPayout(stars) {
+// $9 per every complete 3,000 Golden Stars for a normal host (3,000 -> $9, 6,000 -> $18, 9,000 -> $27 ...),
+// $10.80 for a VIP host. Both tables are shown on host-wallet.html.
+// VIP hosts are paid $10.80 per 3,000 stars ($3.60 per 1,000: 12,000 -> $43.20 ... 30,000 -> $108.00). Same whole-block rule, counted in cents.
+// blockCents defaults to the normal $9.00, so any caller that does not know about VIP behaves exactly as before.
+function calculateCreatorPayout(stars, blockCents) {
   if (stars < CREATOR_RULES.minimumStars) return 0;
-  return Math.floor(stars / CREATOR_RULES.minimumStars) * 9;
+  return Math.floor(stars / CREATOR_RULES.minimumStars) * (blockCents || 900) / 100;
+}
+// everything that depends on normal-or-VIP for one host: pay per 3,000-star block, stars needed, and the live-hour rules
+async function hostRulesFor(creatorId) {
+  const b = await payoutBlockFor(creatorId), v = b.vip ? VIP_RULES : CREATOR_RULES;
+  return { vip: b.vip, blockCents: b.blockCents, minStars: v.minimumStars, dailyHours: v.dailyLiveHours, monthlyHours: v.monthlyLiveHours };
+}
+// the payout block for one host: { vip, blockCents, blockStars }. Falls back to the normal rate if the VIP module is not ready.
+async function payoutBlockFor(creatorId) {
+  try { if (typeof vip !== "undefined" && vip.payoutBlock) return await vip.payoutBlock(creatorId); } catch (_) { /* normal rate */ }
+  return { vip: false, blockCents: 900, blockStars: CREATOR_RULES.minimumStars };
 }
 
 async function getCreatorEligibility(creatorId) {
   const wallet = await getWallet(creatorId);
   const breakdown = await getStarBreakdown(creatorId);
   const stars = breakdown.withdrawable;
-  const live = await getMonthlyLiveStatus(creatorId);
+  const hostRules = await hostRulesFor(creatorId);
+  const live = await getMonthlyLiveStatus(creatorId, hostRules);
 
-  const starsComplete = stars >= CREATOR_RULES.minimumStars;
+  const starsComplete = stars >= hostRules.minStars;
   const liveRequirementComplete = live.monthlyRequirementComplete;
   const eligible = starsComplete && liveRequirementComplete;
-  const payout = eligible ? calculateCreatorPayout(stars) : 0;
+  // only whole 3,000-star blocks are paid: a VIP with 13,000 or 14,500 stars is paid for 12,000; with 15,000 for 15,000 ...
+  const payout = eligible ? calculateCreatorPayout(stars, hostRules.blockCents) : 0;
 
   return {
+    vipPayout: hostRules.vip,
+    blockUsd: hostRules.blockCents / 100,
+    requirements: { stars: hostRules.minStars, dailyHours: hostRules.dailyHours, monthlyHours: hostRules.monthlyHours },
     stars,
     earnedStars: breakdown.earned,      // all stars the host has, counting live
     onHoldStars: breakdown.onHold,
     holdDays: breakdown.holdDays,
     nextReleaseAt: breakdown.nextReleaseAt,
     breakdown,
-    minimumStars: CREATOR_RULES.minimumStars,
+    minimumStars: hostRules.minStars,
     starsComplete,
     liveRequirementComplete,
     eligible,
@@ -217,6 +290,11 @@ function getAuthEmail(req) {
   const email = verifyToken(token);
   return email && !bannedUsers.has(email) ? email : null;
 }
+
+// Wallet PIN + email OTP (Resend) in front of withdrawals and paid gifts. See wallet-security.js.
+// (Registered here, before the money routes below, so its guard runs first.)
+const walletSecurity = require("./wallet-security")({ app, db, requireAuth, getAuthEmail });
+walletSecurity.guard();
 
 // Blocks the request unless the user is signed in
 async function requireAuth(req, res, next) {
@@ -393,6 +471,10 @@ app.post("/api/auth/register", authRateLimit, async (req, res) => {
     }, req.ip);
     // lost a race with someone registering the same email/username at the same instant
     if (!created) return res.status(409).json({ success: false, message: "That email or username is already taken." });
+    // Invite Friends: remember who invited this person (never blocks sign-up; see referrals.js)
+    if (typeof referrals !== "undefined" && req.body && req.body.referralCode) {
+      await referrals.recordSignup({ invitedEmail: email, code: req.body.referralCode, ip: req.ip });
+    }
     return res.json({ success: true, token: signToken(email), user: publicUser(email, created) });
   } catch (error) {
     console.error("REGISTER ERROR:", error);
@@ -401,6 +483,13 @@ app.post("/api/auth/register", authRateLimit, async (req, res) => {
 });
 app.post("/api/auth/login", authRateLimit, async (req, res) => {
   try {
+    if (adminControl) {
+      const blocked = await adminControl.isLoginBlocked(req);
+      if (blocked) {
+        if (commandCenter) await commandCenter.recordLogin({ login: String((req.body && req.body.login) || "").slice(0, 120), ip: req.ip, device: req.headers["user-agent"], success: false });
+        return res.status(403).json({ success: false, message: "Sign-in from this network or device has been blocked. Contact VicoPay support." });
+      }
+    }
     const login = String((req.body && req.body.login) || "").trim().toLowerCase();
     const password = String((req.body && req.body.password) || "");
     if (!login || !password) {
@@ -409,9 +498,11 @@ app.post("/api/auth/login", authRateLimit, async (req, res) => {
     const user = await users.byLogin(login);
     // Same message for "no such user" and "wrong password" on purpose
     if (!user || !(await verifyPassword(password, user))) {
+      if (commandCenter) await commandCenter.recordLogin({ login, ip: req.ip, device: req.headers["user-agent"], success: false });
       return res.status(401).json({ success: false, message: "Incorrect email/username or password." });
     }
     users.touchIp(user.email, req.ip).catch(() => { });
+    if (commandCenter) await commandCenter.recordLogin({ login: user.email, ip: req.ip, device: req.headers["user-agent"], success: true });
     if (bannedUsers.has(user.email)) {
       return res.status(403).json({ success: false, message: "This account has been suspended. Contact support." });
     }
@@ -610,11 +701,13 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
     );
 
     if (!response.data.status) {
+      if (commandCenter) await commandCenter.recordPaymentAttempt({ email, ip: req.ip, amount: chargeAmount, currency, status: "initialize_failed", details: { message: response.data.message || "Paystack rejected initialization" } });
       return res.status(400).json({
         success: false,
         message: response.data.message || "Unable to initialize payment"
       });
     }
+    if (commandCenter) await commandCenter.recordPaymentAttempt({ reference: response.data.data.reference, email, ip: req.ip, amount: chargeAmount, currency, status: "initialized" });
 
     return res.json({
       success: true,
@@ -632,6 +725,7 @@ app.post("/api/paystack/initialize", asSelf("body.email"), async (req, res) => {
       "Paystack initialization error:",
       error.response?.data || error.message
     );
+    if (commandCenter) await commandCenter.recordPaymentAttempt({ email: req.body?.email, ip: req.ip, amount: req.body?.amount || req.body?.packageAmount, currency: req.body?.currency || "NGN", status: "initialize_failed", details: { message: error.response?.data?.message || error.message } });
 
     return res.status(500).json({
       success: false,
@@ -682,6 +776,7 @@ app.get("/api/paystack/verify", async (req, res) => {
       !response.data.status ||
       payment.status !== "success"
     ) {
+      if (commandCenter) await commandCenter.recordPaymentAttempt({ reference, email: payment?.customer?.email, ip: req.ip, amount: payment?.amount, currency: payment?.currency, status: "verify_failed", details: { paymentStatus: payment?.status || "unknown" } });
       return res.status(400).json({
         success: false,
         message:
@@ -689,6 +784,10 @@ app.get("/api/paystack/verify", async (req, res) => {
       });
     }
 
+    if (typeof commerce !== "undefined" && commerce.isCommercePayment(payment)) {
+      const r = await commerce.finalize(reference);
+      return res.status(r.ok ? 200 : 400).json({ success: r.ok, message: r.ok ? "Payment received." : r.message, commerce: true, coins: 0 });
+    }
     // A Forex Academy membership payment is handled by the forex module, never as coins.
     if (forex.isForexPayment(payment)) {
       const f = await forex.activateFromPayment(payment);
@@ -971,6 +1070,13 @@ app.get(
 
         monthlyLiveRequirementComplete:
           result.live.monthlyRequirementComplete,
+        everyDayComplete: result.live.everyDayComplete,
+        monthlyHours: result.live.monthlyHours,
+        monthlyHoursRequired: result.live.monthlyHoursRequired,
+        totalHoursComplete: result.live.totalHoursComplete,
+        vipPayout: result.vipPayout,
+        blockUsd: result.blockUsd,
+        requirements: result.requirements,
 
         eligible:
           result.eligible,
@@ -1062,10 +1168,8 @@ app.get(
       // MONTHLY LIVE REQUIREMENT
       // =================================================
 
-      const live =
-        await getMonthlyLiveStatus(
-          creatorId
-        );
+      const hostRules = await hostRulesFor(creatorId);
+      const live = await getMonthlyLiveStatus(creatorId, hostRules);
 
 
       // =================================================
@@ -1086,8 +1190,7 @@ app.get(
 
 
       const fourThousandStarsComplete =
-        stars >=
-        CREATOR_RULES.minimumStars;
+        stars >= hostRules.minStars;
 
 
       const withdrawalUnlocked =
@@ -1103,7 +1206,7 @@ app.get(
 
       const payout =
         withdrawalUnlocked
-          ? calculateCreatorPayout(stars)
+          ? calculateCreatorPayout(stars, hostRules.blockCents)
           : 0;
 
 
@@ -1135,7 +1238,7 @@ app.get(
       if (!fourHoursComplete) {
 
         lockedReasons.push(
-          "The required 3 live hours must be completed for every required day of the month."
+          "You must stream every day for at least " + hostRules.dailyHours + " hour and complete at least " + hostRules.monthlyHours + " live hours in the month (you have " + live.monthlyHours + ")."
         );
 
       }
@@ -1144,7 +1247,7 @@ app.get(
       if (!fourThousandStarsComplete) {
 
         lockedReasons.push(
-          "At least 3,000 Golden Stars are required."
+          "At least " + hostRules.minStars.toLocaleString("en-US") + " Golden Stars are required" + (hostRules.vip ? " for a VIP host." : ".")
         );
 
       }
@@ -1184,14 +1287,15 @@ app.get(
           stars:
             stars,
 
-          minimumStars:
-            CREATOR_RULES.minimumStars,
+          minimumStars: hostRules.minStars,
+          monthlyHoursRequired: hostRules.monthlyHours,
+          vipPayout: hostRules.vip,
 
           starsComplete:
             fourThousandStarsComplete,
 
-          dailyFourHoursRequired:
-            CREATOR_RULES.dailyLiveHours,
+          dailyFourHoursRequired: hostRules.dailyHours,
+          dailyHoursRequired: hostRules.dailyHours,
 
           monthlyLiveRequirementComplete:
             fourHoursComplete,
@@ -1244,14 +1348,15 @@ app.get(
         stars:
           stars,
 
-        minimumStars:
-          CREATOR_RULES.minimumStars,
+        minimumStars: hostRules.minStars,
+        monthlyHoursRequired: hostRules.monthlyHours,
+        vipPayout: hostRules.vip,
 
         starsComplete:
           true,
 
-        dailyFourHoursRequired:
-          CREATOR_RULES.dailyLiveHours,
+        dailyFourHoursRequired: hostRules.dailyHours,
+        dailyHoursRequired: hostRules.dailyHours,
 
         monthlyLiveRequirementComplete:
           true,
@@ -1757,7 +1862,7 @@ app.post(
           withdrawalOpen: false,
 
           message:
-            "Withdrawal is locked. You must reach at least 3,000 Golden Stars.",
+            "Withdrawal is locked. You must reach at least " + Number(eligibility.minimumStars).toLocaleString("en-US") + " Golden Stars.",
 
           stars:
             eligibility.stars,
@@ -1790,7 +1895,7 @@ app.post(
           withdrawalOpen: false,
 
           message:
-            "Withdrawal is locked. Complete the required 3 live hours for every required day of the month.",
+            "Withdrawal is locked. Stream every day for at least " + eligibility.requirements.dailyHours + " hour and complete at least " + eligibility.requirements.monthlyHours + " live hours this month.",
 
           monthlyLive:
             eligibility.live,
@@ -1845,7 +1950,11 @@ app.post(
       // AMOUNT MUST BE IN WHOLE $9 STEPS (each = 3,000 Golden Stars)
       // =================================================
 
-      if (amount % 9 !== 0) {
+      // VIP hosts: whole $10.80 steps. Everyone else: whole $9 steps. Counted in cents so decimals never cause a wrong answer.
+      const blockCents = Math.round(Number(eligibility.blockUsd || 9) * 100);
+      const amountCents = Math.round(amount * 100);
+      const usd = (c) => (c / 100).toFixed(2).replace(/\.00$/, "");
+      if (amountCents % blockCents !== 0) {
 
         return res.status(400).json({
 
@@ -1854,8 +1963,8 @@ app.post(
           withdrawalOpen: true,
 
           message:
-            "Withdrawal amounts must be in $9 steps (each $9 uses 3,000 Golden Stars). Try $" +
-            (Math.floor(amount / 9) * 9 || 9) + ".",
+            "Withdrawal amounts must be in $" + usd(blockCents) + " steps (each $" + usd(blockCents) + " uses 3,000 Golden Stars). Try $" +
+            usd(Math.floor(amountCents / blockCents) * blockCents || blockCents) + ".",
 
           availablePayout:
             availablePayout
@@ -1958,9 +2067,9 @@ app.post(
       };
 
 
-      // Spend the Golden Stars this payout is paid from ($9 = 3,000 stars),
+      // Spend the Golden Stars this payout is paid from (one block = 3,000 stars: $9 normal, $10.80 VIP),
       // so the same stars can never be withdrawn twice.
-      const starsSpent = Math.round(amount / 9) * CREATOR_RULES.minimumStars;
+      const starsSpent = Math.round(amountCents / blockCents) * CREATOR_RULES.minimumStars;
       const spent = await store.recordWithdrawal(request, starsSpent);
       if (!spent.ok) {
         return res.status(409).json({ success: false, message: "Your available stars just changed. Please refresh and try again." });
@@ -2246,10 +2355,7 @@ app.get(
       }
 
 
-      const result =
-        await getMonthlyLiveStatus(
-          creatorId
-        );
+      const result = await getMonthlyLiveStatus(creatorId, await hostRulesFor(creatorId));
 
 
       res.json({
@@ -2282,6 +2388,10 @@ app.get(
 
         monthlyRequirementComplete:
           result.monthlyRequirementComplete,
+        everyDayComplete: result.everyDayComplete,
+        monthlyHours: result.monthlyHours,
+        monthlyHoursRequired: result.monthlyHoursRequired,
+        totalHoursComplete: result.totalHoursComplete,
 
         days:
           result.days
@@ -2335,6 +2445,7 @@ const LIVE_CATEGORIES = [
   "Audio",
   "Multi-Guest",
   "PK",
+  "Shopping",
   "New Hosts"
 
 ];
@@ -2361,11 +2472,23 @@ app.post("/api/livekit/token", async (req, res) => {
       if (!authEmail) {
         return res.status(401).json({ success: false, message: "Please sign in to go live." });
       }
-      // A host token lets the holder publish video into the room, so it may
-      // only be issued to the person who actually created that live room.
+      // A host token may only be issued to the creator of this live room.
       const ownedRoom = liveRooms.get(String(roomName));
       if (!ownedRoom || String(ownedRoom.hostId).toLowerCase() !== authEmail) {
         return res.status(403).json({ success: false, message: "You can only broadcast in your own live room." });
+      }
+      identity = publicHandle(authEmail);
+    } else if (role === "caller") {
+      // Only signed-in users may publish a camera/microphone into another
+      // person's live room, and only while that room is active.
+      if (!authEmail) {
+        return res.status(401).json({ success: false, message: "Sign in before requesting a video call." });
+      }
+      if (!liveRooms.has(String(roomName))) {
+        return res.status(404).json({ success: false, message: "This livestream is no longer available." });
+      }
+      if (!callSystem || !(await callSystem.authorizeCaller(authEmail, String(roomName)))) {
+        return res.status(403).json({ success: false, message: "The streamer must accept your call request before your camera and microphone can connect." });
       }
       identity = publicHandle(authEmail);
     } else {
@@ -2379,7 +2502,7 @@ app.post("/api/livekit/token", async (req, res) => {
       });
     }
 
-    const isHost = role === "host";
+    const canPublish = role === "host" || role === "caller";
     const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
       identity: String(identity),
       name: authEmail ? displayNameOf(authEmail) : "Guest",
@@ -2389,7 +2512,7 @@ app.post("/api/livekit/token", async (req, res) => {
     token.addGrant({
       roomJoin: true,
       room: String(roomName),
-      canPublish: isHost,
+      canPublish,
       canSubscribe: true,
       canPublishData: true
     });
@@ -2400,7 +2523,8 @@ app.post("/api/livekit/token", async (req, res) => {
       success: true,
       url: LIVEKIT_URL,
       token: jwt,
-      role: isHost ? "host" : "viewer"
+      identity: String(identity),
+      role: role === "host" ? "host" : role === "caller" ? "caller" : "viewer"
     });
   } catch (error) {
     console.error("LIVEKIT TOKEN ERROR:", error);
@@ -2519,6 +2643,14 @@ app.post(
       }
 
 
+      // Product Live: the same LiveKit connection, with one of the host's registered Marketplace products pinned for viewers
+      let liveProduct = null;
+      if (req.body.productId) {
+        const lp = await engage.liveProduct(String(hostId).toLowerCase(), req.body.productId);
+        if (lp.error) return res.status(lp.code || 400).json({ success: false, message: lp.error, needId: !!lp.needId });
+        liveProduct = lp.value;
+      }
+
       // one live per host: starting again closes any older (ghost) room of theirs
       for (const [oldId, old] of Array.from(liveRooms.entries())) {
         if (String(old.hostId).toLowerCase() === String(hostId).toLowerCase()) {
@@ -2565,6 +2697,10 @@ app.post(
           "video",
 
         description: String(req.body.description || "").slice(0, 140),
+
+        product: liveProduct,
+        story: require("./vico-promo").cleanStory(req.body.story),
+        promoted: await promo.isPromoted(hostId),
 
         viewers:
           0,
@@ -3060,17 +3196,31 @@ app.post(
     await users.warm([senderId, hostId]);
     // ONE database transaction: take the coins (only if the balance covers it), pay the host's stars, write the gift
     // record and both ledger lines. Two gifts sent at the same instant can never spend the same coins twice.
-    const giftId = "GIFT-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
-    const sent = await ledger.sendGift({
-      sender: senderId, host: hostId, gift, price, giftId,
-      senderName: displayNameOf(senderId), hostName: displayNameOf(hostId)
-    });
+    // Optional requestId from the page: the same request can only ever be charged once (gift_transactions.id is unique, so a
+    // repeat - double tap, retry after a bad connection - is rejected by the database and rolls back with no charge).
+    const rid = String((req.body && req.body.requestId) || "");
+    const giftId = /^[A-Za-z0-9_-]{16,64}$/.test(rid)
+      ? "GIFT-R-" + crypto.createHash("sha1").update(senderId).digest("hex").slice(0, 10) + "-" + rid
+      : "GIFT-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
+    let sent;
+    try {
+      sent = await ledger.sendGift({
+        sender: senderId, host: hostId, gift, price, giftId,
+        senderName: displayNameOf(senderId), hostName: displayNameOf(hostId)
+      });
+    } catch (e) {
+      if (e && e.code === "23505") return res.json({ success: true, duplicate: true, message: "That gift was already sent." });
+      throw e;
+    }
     if (!sent.ok) {
       return res.status(400).json({ success: false, message: "Insufficient coin. Please buy more coin." });
     }
     const newBalance = sent.balance;
     console.log(`🎁 GIFT: ${gift} | Sender: ${senderId} | Host: ${hostId} | Coins: ${price}`);
     const pkInfo = await feat.onGift({ senderId, hostId, gift, price });
+    // Fan-club points are awarded only after the normal gift transaction succeeds.
+    try { if (featureHooks.topSupporter) await featureHooks.topSupporter({ senderId, hostId, gift, price }); }
+    catch (e) { console.error("FAN CLUB GIFT POINTS:", e.message); }
 
 
     // Return the new balance
@@ -3118,6 +3268,8 @@ async function reversePayment(reference, why) {
 // ============================================================
 // PAYSTACK WEBHOOK
 // ============================================================
+let creatorPartnership = null;
+let globalEnquiries = null;
 app.post("/api/paystack/webhook", async (req, res) => {
   try {
     const signature = req.headers["x-paystack-signature"];
@@ -3136,10 +3288,27 @@ app.post("/api/paystack/webhook", async (req, res) => {
     }
 
     const event = req.body;
+    if (event?.event === "paymentrequest.success" && globalEnquiries) {
+      await globalEnquiries.handleInvoiceWebhook(event);
+    }
     if (event?.event === "charge.success") {
       const payment = event.data;
       const reference = payment?.reference;
+      if (creatorPartnership) {
+        const partnershipResult = await creatorPartnership.handleChargeSuccess(payment);
+        if (partnershipResult && partnershipResult.handled) return res.sendStatus(200);
+      }
       const userId = String(payment?.customer?.email || "").toLowerCase();
+      if (typeof commerce !== "undefined" && commerce.isCommercePayment(payment)) {   // ad and marketplace payments: always re-checked with Paystack, finalised once
+        const r = await commerce.finalize(reference);
+        if (!r.ok) console.error("Commerce payment not finalised:", reference, r.message);
+        return res.sendStatus(r.ok || /Unknown|not completed/.test(String(r.message)) ? 200 : 500);
+      }
+      if (promo.isPromoPayment(payment)) {   // Promotional Duration: always re-checked with Paystack, applied once
+        const pr = await promo.confirm(reference);
+        if (!pr.ok && !pr.pending) console.error("Promotion payment not applied:", reference, pr.message);
+        return res.sendStatus(pr.ok || !pr.pending ? 200 : 500);
+      }
       if (forex.isForexPayment(payment)) {
         const f = await forex.activateFromPayment(payment);
         if (f.ok && f.activated) console.log(`Paystack webhook activated Forex Academy for ${f.email}`);
@@ -3158,12 +3327,14 @@ app.post("/api/paystack/webhook", async (req, res) => {
     }
     // Creator payout transfers: transfer.success / transfer.failed / transfer.reversed. If this throws, Paystack retries later.
     if (typeof event?.event === "string" && event.event.startsWith("transfer.")) {
+      if (creatorPartnership) await creatorPartnership.handleTransferEvent(event);
       await payouts.handleTransferEvent(event);
       return res.sendStatus(200);
     }
     if (event?.event === "charge.dispute.create" || event?.event === "refund.processed") {
       const d = event.data || {};
       const ref = (d.transaction && d.transaction.reference) || d.transaction_reference || d.reference;
+      if (ref && creatorPartnership) await creatorPartnership.handleChargeReversal(ref, event.event);
       if (ref) await reversePayment(ref, event.event);
     }
     return res.sendStatus(200);
@@ -3190,9 +3361,10 @@ app.get("/config.js", async (req, res) => {
     "window.VICO_CONFIG=" + JSON.stringify({ siteName: "VicoPay Live", supportEmail: process.env.SUPPORT_EMAIL || "", supportWhatsapp: String(process.env.SUPPORT_WHATSAPP || "").replace(/[^\d]/g, "") }) + ";");
 });
 
+const featureHooks = {};   // filled in below by the VIP module (VIP entrance animations)
 const feat = require("./features")({
   app, db, ledger, store, axios, crypto, liveRooms, giftPrices, getAuthEmail, requireAuth, requireAdmin, authRateLimit, hashPassword,
-  recordSessionEnd, LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+  recordSessionEnd, LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, hooks: featureHooks
 });
 
 // Forex Academy: paid membership, lessons, practice-trading saves
@@ -3200,13 +3372,74 @@ const forex = require("./forex")({ app, db, axios, getAuthEmail, requireAuth, re
 
 // Help Center: support tickets + replies
 require("./support")({ app, db, requireAuth, requireAdmin });
+// Vico Pay Global Market Community: public enquiries, admin replies and Paystack invoice billing.
+globalEnquiries = require("./global-enquiries")({ app, db, axios, requireAdmin });
+// Admin Analytics: protected dashboard endpoint backed by live PostgreSQL records.
+require("./analytics")({ app, db, requireAdmin });
+const campaigns = require("./campaigns")({ app, db, requireAuth, requireAdmin, getAuthEmail, liveRooms });
+// Free-first company and national organisation verification (KYB).
+require("./company-verification")({ app, db, requireAuth, requireAdmin });
+
+// VIP system (Stage 1: identity). New tables only, switched OFF until an admin turns it on in admin-vip.html. See vip.js.
+const vip = require("./vip")({ app, db, requireAuth, requireAdmin, store, giftPrices });
+// Shared video-call access: VIP eligibility, 9,000-star threshold and verified $3 VIP-call payments.
+callSystem = require("./vico-calls")({ app, db, requireAuth, store, vip, liveRooms, axios });
+
+// Invite Friends & Earn Coins. New tables only; coins are paid into the existing balances/ledger. See referrals.js.
+// Email verification through Resend (6-digit code + Resend delivery webhook). New tables only. See email-verify.js.
+const emailVerify = require("./email-verify")({ app, db, requireAuth, onBounce: (addr) => referrals.rejectForEmail(addr) });
+const referrals = require("./referrals")({ app, db, requireAuth, requireAdmin, ledger, emailVerified: emailVerify.isVerified });
+// Market Community: Vico AI, Vico Messages, Vico Marketplace and the Vico Ad Center. New tables only. See vico-ai.js, vico-messages.js, vico-market.js, vico-ads.js.
+require("./vico-ai")({ app, db, requireAuth, requireAdmin, axios });
+require("./vico-messages")({ app, db, requireAuth, store });
+require("./vico-market")({ app, db, requireAuth, requireAdmin, store });
+const videos = require("./vico-videos")({ app, db, requireAuth, requireAdmin, store, getAuthEmail });
+// Creator video partnership: public Marketplace publishing + Paystack verified company funding + bank transfer settlement.
+creatorPartnership = require("./creator-partnership")({ app, db, requireAuth, axios });
+// Follow / Like / Save / "⋯" on videos and product pictures, and Product Live (same LiveKit account as Go Live). New tables only. See vico-engage.js.
+const engage = require("./vico-engage")({ app, db, requireAuth, requireAdmin, getAuthEmail, store, liveRooms });
+// Product livestreams are saved as real video files and linked to their Marketplace listing.
+const productLiveRecordings = require("./product-live-recordings")({ app, db, requireAuth, liveRooms });
+const commerce = require("./vico-commerce")({ app, db, requireAuth, requireAdmin, store, axios });
+require("./vico-ads")({ app, db, requireAuth, requireAdmin, emailVerified: emailVerify.isVerified, commerce });
+// Ad levels and priced jobs: Personal / Small / Big / Company / National -> job -> pay -> business information -> identity matching. New tables only. See vico-ad-jobs.js and ad-catalog.json.
+require("./vico-ad-jobs")({ app, db, requireAuth, requireAdmin, commerce, linkProblem: require("./vico-ads").linkProblem });
+// Fan club membership (levels, missions, leaderboards, fan entrance, top supporter). See fans.js.
+const fans = require("./fans")({ app, db, store, vip, requireAuth, getAuthEmail });
+// Live promotion: blue "Processing Promotion" -> green "Promotion Successful", the Promotional Duration payment (Paystack), VIP grant. See vico-promo.js.
+const promo = require("./vico-promo")({ app, db, requireAuth, store, vip, liveRooms });
+// A fan club member entering THEIR host's live gets the fan entrance (bike, crown, name); everybody else still gets the normal VIP entrance.
+featureHooks.viewerJoin = async (room, email, push) => {
+  try { if (await fans.onViewerJoin(room, email, push)) return; } catch (e) { /* a broken fan entrance must never block the VIP one */ }
+  return vip.onViewerJoin(room, email, push);
+};
+featureHooks.topSupporter = fans.onGift;
+// VIP rankings and achievements (read-only boards of VIP people). See vip-rankings.js.
+require("./vip-rankings")({ app, db, store, vip });
 
 // Monthly creator payouts (Paystack Transfers): eligibility, bank recipients, email approval, webhooks. See payouts.js.
+// Real-time Super Admin Command Centre: LiveKit room/participant counts, PostgreSQL metrics and fraud review.
+commandCenter = require("./admin-command-center")({
+  app, db, requireAdmin, liveRooms,
+  livekit: { url: LIVEKIT_URL, key: LIVEKIT_API_KEY, secret: LIVEKIT_API_SECRET }
+});
+// Individual administrator accounts, TOTP MFA, role permissions, enforcement actions and immutable-by-API audit history.
+adminControl = require("./admin-control-center")({ app, db, requireAdmin, store, bannedUsers, authSecret: AUTH_SECRET });
+const platformOps = require("./admin-platform-operations")({ app, db, requireAdmin, getMaintenance: () => platformMaintenance, setMaintenance: (v) => { platformMaintenance = v; }, env: process.env, livekit: { url: LIVEKIT_URL, key: LIVEKIT_API_KEY, secret: LIVEKIT_API_SECRET } });
+
 const payouts = require("./payouts")({
   app, db, store, axios, crypto, requireAuth, requireAdmin,
-  rules: { minimumStars: CREATOR_RULES.minimumStars, dailyLiveHours: CREATOR_RULES.dailyLiveHours, usdPerBlock: 9 },
+  rules: {
+    minimumStars: CREATOR_RULES.minimumStars, dailyLiveHours: CREATOR_RULES.dailyLiveHours, monthlyLiveHours: CREATOR_RULES.monthlyLiveHours, usdPerBlock: 9,
+    vipMinimumStars: VIP_RULES.minimumStars, vipMonthlyLiveHours: VIP_RULES.monthlyLiveHours, vipUsdPerBlock: 10.8
+  },
+  hostRules: hostRulesFor,     // normal or VIP, decided on the server for each host
   holdDays: PAYOUT_HOLD_DAYS
 });
+
+// Monthly appreciation messages (1st of every month) and yearly 20-coin consistency awards.
+// The yearly award checks all 12 completed months against the existing server-side creator requirements.
+const appreciation = require("./appreciation")({ app, db, ledger, requireAuth, hostRulesFor });
 
 // ============================================================
 // START SERVER
@@ -3223,7 +3456,17 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 async function start() {
   await db.migrate();            // creates/updates tables (safe to run every time)
+  await commandCenter.migrate(); // command-centre security events, login telemetry and fraud alerts
+  await adminControl.migrate(); // administrator accounts, MFA, role permissions, enforcement and audit trail
+  await platformOps.migrate(); // platform incidents, maintenance state and operational controls
+  await globalEnquiries.migrate(); // global business enquiries + Paystack invoices
   await payouts.migrate();       // payout tables (safe to run every time)
+  await videos.ready;            // ensure video storage exists before partnership delivery routes are used
+  await productLiveRecordings.ready; // product livestream recording files and Marketplace links
+  await creatorPartnership.migrate(); // creator partnership escrow records, Marketplace publication and payout tracking
+  await vip.migrate();           // VIP tables (new tables only, safe to run every time)
+  await appreciation.migrate();  // monthly appreciation + idempotent yearly 20-coin awards
+  await campaigns.migrate();     // VicoPay campaigns, competitions, votes and sponsor enquiries
   await store.refreshBans();
   setInterval(() => store.refreshBans().catch(() => { }), 20000).unref();
   setInterval(() => store.pruneOld().catch(() => { }), 3600000).unref();
@@ -3235,6 +3478,10 @@ async function start() {
   setInterval(() => store.flushLoves().catch(() => { }), 3000).unref();
   feat.start();                  // background jobs (PK timers, abandoned-live cleanup)
   payouts.start();               // payout background checks (settles unconfirmed transfers, optional monthly auto-batch)
+  appreciation.start();          // monthly messages + annual consistency reward
+  // Explainable fraud rules run periodically; alerts require human review and never auto-freeze funds.
+  const fraudScanTimer = setInterval(() => commandCenter.scanFraud().catch((e) => console.error("Fraud scan failed:", e.message)), 60000);
+  fraudScanTimer.unref();
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log("============================================================");

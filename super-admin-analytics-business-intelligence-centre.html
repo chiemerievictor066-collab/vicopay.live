@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VicoPay · Analytics & Business Intelligence</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--panel2:#19243b;--line:#293653;--txt:#edf3ff;--muted:#9eabc3;--cyan:#48d7d0;--green:#63e6a2;--amber:#ffd071;--red:#ff8294;--purple:#a78bfa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,Segoe UI,Arial}header{padding:22px 26px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:19px;font-weight:800}.brand span{color:var(--cyan)}.sub,.muted{color:var(--muted)}.sub{font-size:12px;margin-top:3px}.demo{font-size:11px;border:1px solid #735b27;background:#302716;color:var(--amber);padding:7px 11px;border-radius:20px;font-weight:700}
+main{max-width:1480px;margin:auto;padding:23px 26px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}select,button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:inherit}button{cursor:pointer}button.primary{background:#087f83;border-color:#119fa0}button:hover{filter:brightness(1.15)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:15px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px}.label{font-size:12px;color:var(--muted)}.value{font-size:25px;font-weight:800;margin:7px 0 2px}.hint{font-size:11px;color:var(--green)}
+.cols{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-bottom:15px}.panel h2{font-size:15px;margin:0 0 13px}.chart{height:210px;display:flex;align-items:end;gap:10px;border-bottom:1px solid var(--line);padding:10px 4px 0}.barwrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px}.bars{height:170px;display:flex;align-items:end;gap:3px}.bar{width:17px;min-height:4px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--cyan),#167e92)}.bar.purple{background:linear-gradient(180deg,var(--purple),#5949a5)}.axis{font-size:10px;color:var(--muted)}.legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:10px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:9px}.detail div{background:var(--panel2);padding:11px;border-radius:8px}.detail b{display:block;font-size:17px;margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:15px}.wrap{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{padding:10px 9px;text-align:left;border-bottom:1px solid var(--line);font-size:12px}th{color:var(--muted);font-weight:600}.status{font-size:10px;border-radius:20px;padding:4px 8px;background:#153c31;color:#80efb7}.status.warn{background:#493719;color:#ffdc85}.note{margin-top:15px;padding:13px;border:1px solid #665329;background:#292316;color:#ead8a5;border-radius:11px;font-size:12px}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.cols,.grid2{grid-template-columns:1fr}}@media(max-width:560px){main{padding:14px}.cards{grid-template-columns:1fr 1fr}header{padding:16px}}
+</style></head><body>
+<header><div><div class="brand"><span>Vico</span>Pay · Business Intelligence</div><div class="sub">Super Admin / Platform Analytics & Executive Reporting</div></div><div class="demo">DEMO DATA · NOT CONNECTED TO PRODUCTION</div></header>
+<main>
+<div class="toolbar"><select id="period"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select><select id="segment"><option>All platform activity</option><option>Live streaming</option><option>Gifting</option><option>Marketplace</option><option>Coin purchases</option></select><button class="primary" id="export">Export executive report CSV</button></div>
+<section class="cards">
+<div class="card"><div class="label">Gross platform revenue</div><div class="value" id="revenue">₦32.8m</div><div class="hint">↑ 14.2% vs comparison period</div></div>
+<div class="card"><div class="label">Registered users</div><div class="value">184,260</div><div class="hint">↑ 8.7% growth</div></div>
+<div class="card"><div class="label">Daily active users</div><div class="value">21,840</div><div class="hint">11.9% of registered users</div></div>
+<div class="card"><div class="label">Monthly active creators</div><div class="value">4,812</div><div class="hint">↑ 10.4% growth</div></div>
+</section>
+<section class="cols">
+<div class="panel"><h2>Revenue & activity trend</h2><div class="muted" style="font-size:11px">Illustrative weekly values · indexed units</div><div class="chart" id="chart"></div><div class="legend"><span><i class="dot" style="background:var(--cyan)"></i>Current period</span><span><i class="dot" style="background:var(--purple)"></i>Comparison period</span></div></div>
+<div class="panel"><h2>Engagement snapshot</h2><div class="detail">
+<div><span class="muted">Live sessions</span><b>18,420</b></div><div><span class="muted">Live watch hours</span><b>62,840</b></div>
+<div><span class="muted">Gift transactions</span><b>148,290</b></div><div><span class="muted">Marketplace orders</span><b>6,842</b></div>
+<div><span class="muted">New registrations</span><b>14,610</b></div><div><span class="muted">7-day returning users</span><b>38.6%</b></div>
+</div></div>
+</section>
+<section class="grid2">
+<div class="panel"><h2>Revenue mix</h2><div class="wrap"><table><thead><tr><th>Revenue stream</th><th>Gross volume</th><th>Share</th><th>Change</th></tr></thead><tbody>
+<tr><td>Coin purchases</td><td>₦21.4m</td><td>65.2%</td><td class="hint">+16.8%</td></tr>
+<tr><td>Marketplace commissions</td><td>₦6.8m</td><td>20.7%</td><td class="hint">+9.1%</td></tr>
+<tr><td>Creator / live services</td><td>₦3.1m</td><td>9.5%</td><td class="hint">+12.4%</td></tr>
+<tr><td>Other platform fees</td><td>₦1.5m</td><td>4.6%</td><td class="hint">+3.2%</td></tr>
+</tbody></table></div><p class="muted" style="font-size:11px">Gross volume is not net profit. Excludes operating costs, taxes, chargebacks and payout liabilities.</p></div>
+<div class="panel"><h2>Growth & retention funnel</h2><div class="wrap"><table><thead><tr><th>Metric</th><th>Users</th><th>Rate</th></tr></thead><tbody>
+<tr><td>Registered</td><td>184,260</td><td>100%</td></tr>
+<tr><td>Completed onboarding</td><td>151,490</td><td>82.2%</td></tr>
+<tr><td>First coin purchase</td><td>46,870</td><td>25.4%</td></tr>
+<tr><td>Sent first gift</td><td>39,210</td><td>21.3%</td></tr>
+<tr><td>Started first live stream</td><td>8,640</td><td>4.7%</td></tr>
+</tbody></table></div></div>
+</section>
+<section class="panel"><h2>Platform performance indicators</h2><div class="wrap"><table><thead><tr><th>Indicator</th><th>Sample value</th><th>Target / interpretation</th><th>State</th></tr></thead><tbody>
+<tr><td>Payment success rate</td><td>96.8%</td><td>Target ≥ 98%</td><td><span class="status warn">Needs attention</span></td></tr>
+<tr><td>Coin credit reconciliation</td><td>99.7%</td><td>Target 100% matched</td><td><span class="status warn">Investigate gaps</span></td></tr>
+<tr><td>Marketplace fulfilment on time</td><td>91.4%</td><td>Target ≥ 95%</td><td><span class="status warn">Needs attention</span></td></tr>
+<tr><td>Support first response</td><td>18 min</td><td>Target under 30 min</td><td><span class="status">Within target</span></td></tr>
+<tr><td>Moderation urgent response</td><td>6 min</td><td>Target under 10 min</td><td><span class="status">Within target</span></td></tr>
+</tbody></table></div></section>
+<div class="note"><b>Reporting integrity:</b> This is a standalone dashboard preview with fictional sample values. It does not query VicoPay production data. Revenue, GMV, wallet liabilities, creator earnings and net profit are different measures and must not be combined. Production reports should use documented metric definitions, a consistent timezone, deduplicated event IDs, ledger-backed financial totals, explicit date boundaries, and reconciliation against Paystack settlements and marketplace order records.</div>
+</main>
+<script>
+const current=[32,38,35,47,44,58,68],previous=[27,31,30,36,38,43,51];
+function draw(){let m=75;document.getElementById("chart").innerHTML=current.map((v,i)=>`<div class="barwrap"><div class="bars"><div class="bar" style="height:${v/m*165}px"></div><div class="bar purple" style="height:${previous[i]/m*165}px"></div></div><span class="axis">W${i+1}</span></div>`).join("")}
+document.getElementById("period").onchange=e=>{let p=e.target.value;document.querySelector(".sub").textContent="Super Admin / Platform Analytics & Executive Reporting · "+e.target.options[e.target.selectedIndex].text+" (sample view)";document.getElementById("revenue").textContent=p==="7"?"₦7.6m":p==="90"?"₦96.2m":p==="365"?"₦384.5m":"₦32.8m";};
+document.getElementById("segment").onchange=e=>{document.querySelector(".muted").textContent="Illustrative weekly values · "+e.target.value};
+document.getElementById("export").onclick=()=>{let rows=[["Metric","Sample value"],["Gross platform revenue NGN","32800000"],["Registered users","184260"],["Daily active users","21840"],["Monthly active creators","4812"],["Live sessions","18420"],["Live watch hours","62840"],["Gift transactions","148290"],["Marketplace orders","6842"],["Payment success rate","96.8%"],["Coin credit reconciliation","99.7%"]];let csv=rows.map(r=>r.join(",")).join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="vicopay-executive-analytics-demo.csv";a.click();URL.revokeObjectURL(a.href)};
+draw();
+</script></body></html>

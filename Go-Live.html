@@ -324,6 +324,33 @@ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
 .host-comment-wrap .dk:hover{border-color:#57e5ff}
 .dk.gift b{position:absolute;top:-7px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#ffc83d;color:#3a2600;font-size:11px;display:grid;place-items:center}
 @media(max-width:650px){.host-comment-wrap .dk{padding:0;width:40px}.host-comment-wrap .dk span{display:none}.host-comment-wrap{gap:6px}}
+
+/* Vico in-stream caller picture-in-picture */
+.host-call-pip{position:absolute;z-index:35;right:14px;top:92px;width:clamp(100px,24%,170px);aspect-ratio:3/4;border:2px solid #57e5ff;border-radius:16px;overflow:hidden;background:#061a4a;box-shadow:0 8px 24px #0009,0 0 18px #0787ed88;display:none}
+.host-call-pip.on{display:block}.host-call-pip video{width:100%;height:100%;object-fit:cover}.host-call-pip b{position:absolute;bottom:5px;left:5px;right:5px;background:#03133ddd;padding:5px;border-radius:8px;text-align:center;font-size:11px}
+.host-call-pip button{position:absolute;top:5px;right:5px;border:0;border-radius:50%;width:26px;height:26px;background:#e3264f;color:#fff;font-weight:900}
+.host-call-request{position:fixed;inset:0;z-index:9999;background:#020a1fc9;backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.host-call-request.on{display:flex}.host-call-card{width:min(100%,340px);padding:22px;border-radius:22px;background:linear-gradient(145deg,#0b2d72,#11134d);border:1px solid #57b8ff;box-shadow:0 18px 55px #000b;text-align:center;color:#fff}
+.host-call-card h3{margin:0 0 8px}.host-call-card p{color:#c4dcff;font-size:13px}.host-call-card .actions{display:flex;gap:10px}.host-call-card button{flex:1;border:0;border-radius:14px;padding:12px;color:#fff;font-weight:900;background:#087fe8}.host-call-card button.no{background:#e3264f}
+
+
+/* ===== Moving chat: stays in the lower-left, scrolls, fades out before the middle of the screen, never hides the whole left side ===== */
+.stage-bottom .messages{display:flex!important;flex-direction:column;gap:6px;width:min(72%,380px);max-width:min(72%,380px)!important;max-height:min(36vh,320px)!important;overflow-y:auto!important;overflow-x:hidden;margin-bottom:8px!important;pointer-events:auto;overscroll-behavior:contain;scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 18%,#000 46%);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 18%,#000 46%)}
+.stage-bottom .messages::-webkit-scrollbar{display:none}
+.stage-bottom .messages .msg{flex:none;animation:vlpIn .25s ease-out}
+@keyframes vlpIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#vlpSlot{margin:0 0 8px;width:min(72%,380px)}
+/* page layer: anything the host opens (gifts, wallet, profile...) appears on top of the live, the live itself keeps running */
+#pageLayer{position:fixed;inset:0;z-index:190;display:none;flex-direction:column;background:#fff}
+#pageLayer.on{display:flex}
+#pageLayer .plbar{flex:none;display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;background:linear-gradient(90deg,#031c5d,#0646b8);color:#fff}
+#pageLayer .plbar button{border:0;border-radius:20px;padding:9px 16px;background:#fff;color:#0646b8;font-weight:900;font-size:14px}
+#pageLayer .plbar span.t{font-weight:800;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pageLayer .plbar span.l{font-size:12px;font-weight:800;background:#ff315e;border-radius:12px;padding:4px 10px;white-space:nowrap}
+#pageLayer iframe{flex:1;width:100%;border:0;background:#fff}
+#storyModal textarea{min-height:120px;resize:vertical}
+#storyModal .cnt{font-size:12px;color:#66809a;text-align:right;margin-top:4px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
 <script src="auth.js"></script>
@@ -331,6 +358,7 @@ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
 <script src="vico-ui.js"></script>
 </head>
 <body>
+<div class="host-call-request" id="hostCallRequest"><div class="host-call-card"><h3>📹 Incoming Vico Video Call</h3><p id="hostCallRequestText">A viewer wants to speak with you face-to-face.</p><div class="actions"><button class="no" id="hostCallDecline">Decline</button><button id="hostCallAccept">Accept call</button></div></div></div>
 
 <header class="topbar">
   <div class="logo">VicoPay <span>Live</span></div>
@@ -356,6 +384,7 @@ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
   <main class="main">
     <section class="live-stage">
       <video id="camera" autoplay muted playsinline></video>
+      <div class="host-call-pip" id="hostCallPip"><video id="hostCallVideo" autoplay playsinline></video><b id="hostCallName">Video caller</b><button id="hostCallEnd" title="End call">×</button></div>
       <div id="effectOverlay"></div>
       <div id="placeholder" class="camera-placeholder">
         <div class="placeholder-content">
@@ -393,9 +422,10 @@ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
         <div class="messages" id="stageMessages">
           
         </div>
+        <div id="vlpSlot"></div>
         <div class="action-row dock">
           <div class="dock-row">
-            <button id="startLiveBtn" class="dock-live" type="button" onclick="startLive()">🔴 Start Live</button>
+            <button id="startLiveBtn" class="dock-live" type="button" onclick="askStory()">🔴 Start Live</button>
             <button id="endLiveBtn" class="dock-live ending" type="button" onclick="endLive()" disabled>⏹ End Live</button>
             <span id="liveStatus" class="live-status"><span class="dot"></span> Not live</span>
           </div>
@@ -476,9 +506,12 @@ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
     <label>Live title</label>
     <input id="setupTitle" value="My VicoPay Live" maxlength="70">
     <label>Category</label>
-    <select id="setupCategory"><option>Chat</option><option>Music</option><option>Dance</option><option>Gaming</option><option>Entertainment</option><option>Education</option><option>Comedy</option><option>Sports</option><option>Audio</option><option>Multi-Guest</option><option>Popular</option><option>New Hosts</option></select>
+    <select id="setupCategory"><option>Chat</option><option>Music</option><option>Dance</option><option>Gaming</option><option>Entertainment</option><option>Education</option><option>Comedy</option><option>Sports</option><option>Audio</option><option>Multi-Guest</option><option>Popular</option><option>Shopping</option><option>New Hosts</option></select>
     <label>Description</label>
     <textarea id="setupDescription" rows="3" placeholder="Tell viewers what your live is about..."></textarea>
+    <label>Sell one of your registered products in this live (optional)</label>
+    <select id="setupProduct"><option value="">No product</option></select>
+    <p id="setupProdNote" style="font-size:12px;margin:6px 0 0"></p>
     <div class="modal-grid">
       <button onclick="saveLiveSetup()">✓ Save Information</button>
       <button onclick="startCameraFromSetup()">🔴 Start Live</button>
@@ -486,6 +519,16 @@ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
   </div>
 </div>
 
+<div class="modal" id="storyModal">
+  <div class="modal-card">
+    <div class="modal-head"><h2>✍️ Tell people about yourself</h2><button class="close" type="button" onclick="closeModal('storyModal')">×</button></div>
+    <p>Write what you want people to know about you. It will show under the chat while you are live.</p>
+    <textarea id="storyText" maxlength="500" placeholder="Example: Hi, I am Ada from Lagos. I sell skincare and I go live every evening."></textarea>
+    <div class="cnt"><span id="storyCnt">0</span>/500</div>
+    <div class="modal-grid"><button type="button" onclick="confirmStory(false)">Skip</button><button type="button" onclick="confirmStory(true)">🔴 Start Live</button></div>
+  </div>
+</div>
+<div id="pageLayer" role="dialog" aria-label="Page"><div class="plbar"><button type="button" id="plBack">← Back to my live</button><span class="t" id="plTitle"></span><span class="l">🔴 You are still live</span></div><iframe id="plFrame" title="Page" referrerpolicy="same-origin"></iframe></div>
 <div class="modal" id="shareModal">
   <div class="modal-card">
     <div class="modal-head"><h2>↗️ Share Live</h2><button class="close" onclick="closeModal('shareModal')">×</button></div>
@@ -733,7 +776,10 @@ function renderChatMessage(msg, isMine){
     const stageMsg=document.createElement("div");
     stageMsg.className="msg";
     stageMsg.innerHTML="<b>"+(isMine?"You":safeName)+"</b>"+hostBadge+" "+safeText;
+    const atBottom=stage.scrollHeight-stage.scrollTop-stage.clientHeight<48;   // if the host scrolled up to read older chat, do not pull them down
     stage.appendChild(stageMsg);
+    while(stage.children.length>120)stage.removeChild(stage.firstChild);
+    if(atBottom||isMine)stage.scrollTop=stage.scrollHeight;
   }
 }
 
@@ -806,6 +852,22 @@ function showToast(text){
 
 function openLiveSetup(){
   document.getElementById("liveSetupModal").classList.add("open");
+  loadSetupProducts();
+}
+// Product Live: the host's registered Marketplace products (same LiveKit connection as a normal live)
+let setupProductsLoaded=false;
+async function loadSetupProducts(){
+  if(setupProductsLoaded)return;
+  const sel=document.getElementById("setupProduct"),note=document.getElementById("setupProdNote");
+  try{
+    const r=await fetch(API_BASE+"/api/live/product/mine");const d=await r.json();
+    if(!r.ok||!d.success)return;
+    setupProductsLoaded=true;
+    (d.products||[]).forEach(function(p){const o=document.createElement("option");o.value=p.id;o.textContent=p.title+" - ₦"+Number(p.price).toLocaleString();sel.appendChild(o);});
+    if(!d.products.length)note.innerHTML='You have no active products yet. <a href="vico-ad-center.html" style="color:#0646b8;font-weight:700">Register one in the Ad Center</a>.';
+    else if(!d.canGoLive){sel.disabled=true;note.innerHTML='Your ID check must be approved before you can sell a product in a live. <a href="vico-ad-center.html" style="color:#0646b8;font-weight:700">Finish it in the Ad Center</a>.';}
+    else note.textContent="Viewers will see this product pinned on your live with a Buy Now button.";
+  }catch(e){}
 }
 
 function saveLiveSetup(){
@@ -833,7 +895,7 @@ function saveLiveSetup(){
 
 async function startCameraFromSetup(){
   saveLiveSetup();
-  setTimeout(()=>startLive(),50);
+  setTimeout(()=>askStory(),50);
 }
 
 function openShare(){
@@ -904,6 +966,10 @@ loadWallet();
 let vicoLiveKitRoom = null;
 let vicoLiveRoomId = null;
 let vicoLiveKitTracks = [];
+let pendingStory = "";
+let vicoPendingCaller = null;
+let vicoActiveCaller = null;
+let vicoActiveCallId = null;
 
 function toggleLive() {
   if (vicoLiveKitRoom) return endLive();
@@ -923,7 +989,8 @@ async function startLive() {
   }
 
   const title = document.getElementById("setupTitle")?.value.trim() || localStorage.getItem("vicoPayLiveTitle") || "VicoPay Live";
-  const category = document.getElementById("setupCategory")?.value || localStorage.getItem("vicoPayLiveCategory") || "Trending";
+  let category = document.getElementById("setupCategory")?.value || localStorage.getItem("vicoPayLiveCategory") || "Trending";
+  if ((document.getElementById("setupProduct")||{}).value) category = "Shopping";
 
   try {
     if (!window.LivekitClient) throw new Error("Live video library did not load.");
@@ -945,6 +1012,8 @@ async function startLive() {
         category,
         liveType: "video",
         description: (document.getElementById("setupDescription")||{}).value || localStorage.getItem("vicoPayLiveDescription") || "",
+        productId: (document.getElementById("setupProduct")||{}).value || undefined,
+        story: pendingStory,
         name: localStorage.getItem("vicoPayDisplayName") || String(hostId)
       })
     });
@@ -952,6 +1021,23 @@ async function startLive() {
     if (!createResponse.ok || !created.success) throw new Error(created.message || "Could not create live room.");
 
     vicoLiveRoomId = created.room.roomId;
+    // If this broadcast was launched from a VicoPay competition, attach the
+    // real LiveKit room to the creator's registered event entry.
+    const campaignId = new URLSearchParams(location.search).get("campaignId");
+    if (campaignId) {
+      const campaignToken = localStorage.getItem("vicoPayToken") || "";
+      const attached = await fetch(API_BASE + "/api/campaigns/" + encodeURIComponent(campaignId) + "/live/attach", {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + campaignToken },
+        body: JSON.stringify({ roomId: vicoLiveRoomId })
+      });
+      const attachData = await attached.json();
+      if (!attached.ok || !attachData.success) throw new Error(attachData.message || "Could not connect this live to the competition.");
+      localStorage.setItem("vicoCampaignLive", JSON.stringify({ eventId: campaignId, roomId: vicoLiveRoomId, watchUrl: attachData.watchUrl }));
+      const notice = document.createElement("div"); notice.textContent = "🏆 Competition live connected — viewers can watch from the event page.";
+      notice.style.cssText = "position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:99999;background:#0c7b55;color:#fff;padding:10px 16px;border-radius:12px;font-weight:800;max-width:90%;text-align:center";
+      document.body.appendChild(notice); setTimeout(() => notice.remove(), 6500);
+    }
+    if (window.vicoOnLiveStarted) window.vicoOnLiveStarted(created.room);
 
     const LK = window.LivekitClient;
     vicoLiveKitRoom = new LK.Room({ adaptiveStream: true, dynacast: true });
@@ -972,11 +1058,42 @@ async function startLive() {
     // Real shared chat: anyone in this LiveKit room (viewers included)
     // who sends a chat message arrives here — this is what makes chat
     // actually shared instead of only visible on the sender's screen.
-    vicoLiveKitRoom.on(LK.RoomEvent.DataReceived, (payload) => {
+    vicoLiveKitRoom.on(LK.RoomEvent.DataReceived, (payload, participant) => {
       try {
         const msg = JSON.parse(new TextDecoder().decode(payload));
         if (msg.type === "chat") renderChatMessage(msg, false);
+        if (msg.type === "call_request" && participant && msg.callId && !vicoActiveCaller && !vicoPendingCaller) {
+          fetch(API_BASE + "/api/calls/request/" + encodeURIComponent(msg.callId)).then(r=>r.json().then(d=>({ok:r.ok,d}))).then(({ok,d})=>{
+            if (!ok || !d.success || d.call.status !== "requested" || d.call.callerIdentity !== participant.identity) return;
+            vicoPendingCaller = participant.identity; window.vicoPendingCallId = msg.callId;
+            document.getElementById("hostCallRequestText").textContent = (participant.name || msg.displayName || "A viewer") + " wants to join your livestream by video call.";
+            document.getElementById("hostCallRequest").classList.add("on");
+          }).catch(()=>{});
+        }
+        if (msg.type === "call_end" && participant && participant.identity === vicoActiveCaller) {
+          if (vicoActiveCallId) fetch(API_BASE+"/api/calls/end",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({callId:vicoActiveCallId})}).catch(()=>{});
+          vicoActiveCallId = null; vicoActiveCaller = null;
+          document.getElementById("hostCallPip").classList.remove("on");
+          document.getElementById("hostCallVideo").srcObject = null;
+        }
       } catch (e) { /* ignore malformed data messages */ }
+    });
+    vicoLiveKitRoom.on(LK.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+      if (participant && track.kind === LK.Track.Kind.Video) {
+        vicoActiveCaller = participant.identity;
+        const pip = document.getElementById("hostCallPip");
+        track.attach(document.getElementById("hostCallVideo"));
+        document.getElementById("hostCallName").textContent = participant.name || "Video caller";
+        pip.classList.add("on");
+      }
+    });
+    vicoLiveKitRoom.on(LK.RoomEvent.ParticipantDisconnected, (participant) => {
+      if (participant && participant.identity === vicoActiveCaller) {
+        vicoActiveCaller = null;
+        document.getElementById("hostCallPip").classList.remove("on");
+        document.getElementById("hostCallVideo").srcObject = null;
+      }
+      updateViewerCount();
     });
 
     await vicoLiveKitRoom.connect(created.livekit.url, created.livekit.token);
@@ -1029,11 +1146,48 @@ async function startLive() {
   }
 }
 
+async function sendHostCallDecision(type) {
+  if (!vicoLiveKitRoom || !vicoPendingCaller) return;
+  const identity = vicoPendingCaller;
+  try {
+    if (window.vicoPendingCallId) {
+      const decisionResponse = await fetch(API_BASE + "/api/calls/decision", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({callId:window.vicoPendingCallId,decision:type==="call_accept"?"accept":"decline"})});
+      const decisionData = await decisionResponse.json();
+      if (!decisionResponse.ok || !decisionData.success) throw new Error(decisionData.message || "Could not update call request.");
+    }
+    await vicoLiveKitRoom.localParticipant.publishData(
+      new TextEncoder().encode(JSON.stringify({type, to:identity})),
+      {reliable:true, destinationIdentities:[identity]}
+    );
+  } catch (e) { showToast("Could not send the call response."); return; }
+  if (type === "call_accept") { vicoActiveCaller = identity; vicoActiveCallId = window.vicoPendingCallId; }
+  vicoPendingCaller = null; window.vicoPendingCallId = null;
+  document.getElementById("hostCallRequest").classList.remove("on");
+}
+document.getElementById("hostCallAccept").addEventListener("click", () => sendHostCallDecision("call_accept"));
+document.getElementById("hostCallDecline").addEventListener("click", () => sendHostCallDecision("call_decline"));
+document.getElementById("hostCallEnd").addEventListener("click", async () => {
+  if (vicoActiveCallId) fetch(API_BASE+"/api/calls/end",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({callId:vicoActiveCallId})}).catch(()=>{});
+  vicoActiveCallId = null;
+  if (vicoLiveKitRoom && vicoActiveCaller) {
+    try { await vicoLiveKitRoom.localParticipant.publishData(
+      new TextEncoder().encode(JSON.stringify({type:"call_end",to:vicoActiveCaller})),
+      {reliable:true,destinationIdentities:[vicoActiveCaller]}
+    ); } catch(e) {}
+  }
+  if (window.vicoPendingCallId) fetch(API_BASE+"/api/calls/end",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({callId:window.vicoPendingCallId})}).catch(()=>{});
+  vicoActiveCaller = null;
+  document.getElementById("hostCallPip").classList.remove("on");
+  document.getElementById("hostCallVideo").srcObject = null;
+});
 async function endLive() {
   if (!confirm("End this live session?")) return;
   const hostId = getUserId();
 
   try {
+    if (vicoActiveCallId) await fetch(API_BASE+"/api/calls/end",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({callId:vicoActiveCallId})}).catch(()=>{});
+    if (window.vicoPendingCallId) await fetch(API_BASE+"/api/calls/decision",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({callId:window.vicoPendingCallId,decision:"decline"})}).catch(()=>{});
+    vicoActiveCallId=null; window.vicoPendingCallId=null;
     if (vicoLiveKitRoom) await vicoLiveKitRoom.disconnect();
     if (vicoLiveRoomId) {
       await fetch(API_BASE + "/api/live/end/" + encodeURIComponent(vicoLiveRoomId), {
@@ -1045,6 +1199,9 @@ async function endLive() {
   } finally {
     vicoLiveKitRoom = null;
     vicoLiveRoomId = null;
+    vicoPendingCaller = null; vicoActiveCaller = null; vicoActiveCallId = null;
+    document.getElementById("hostCallPip")?.classList.remove("on");
+    document.getElementById("hostCallRequest")?.classList.remove("on");
     if (window.VicoFX) VicoFX.stopPreview();
     if (stream) stream.getTracks().forEach(track => track.stop());
     stream = null;
@@ -1060,6 +1217,7 @@ async function endLive() {
     }
     const endButton = document.getElementById("endLiveBtn");
     if (endButton) endButton.disabled = true;
+    if (window.vicoOnLiveEnded) window.vicoOnLiveEnded();
     showToast("🔴 Live session ended.");
   }
 }
@@ -1103,6 +1261,68 @@ async function endLive() {
   }
   function api(path){return fetch(API_BASE+path).then(function(r){return r.json().catch(function(){return {};}).then(function(d){d._ok=r.ok&&d.success!==false;return d;});});}
   paint();pull();setInterval(pull,20000);
+})();
+</script>
+<script src="vico-live-panel.js"></script>
+<script>
+// ===== Promotion button, story and live clock under the moving chat; story question; page layer =====
+(function(){
+  var panel=VicoLivePanel.create({role:"host",onPromo:openPromo,onVip:function(){openLayer("vip-profile.html","VIP");}});
+  document.getElementById("vlpSlot").appendChild(panel.el);
+  var promoted=false;
+  function refreshPromo(announce){
+    fetch(API_BASE+"/api/promo/status",{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
+      if(!d||!d.success)return; var was=promoted; promoted=!!d.promoted; panel.set({promoted:promoted});
+      if(announce&&promoted&&!was)showToast("🎉 Promotion successful! You can now open your VIP features.");
+    }).catch(function(){});
+  }
+  function openPromo(){
+    var w=window.open("promotion-duration.html?from=live","vicoPromo");   // a separate tab: your live keeps running here
+    if(!w)showToast("Allow pop-ups for this site, then tap Processing Promotion again.");
+  }
+  // the payment tab tells this tab it is done (the live never left this page)
+  window.addEventListener("message",function(e){if(e.origin===location.origin&&e.data&&e.data.type==="vico-promo-success")refreshPromo(true);});
+  try{var bc=new BroadcastChannel("vico-promo");bc.onmessage=function(e){if(e.data&&e.data.type==="promoted")refreshPromo(true);};}catch(x){}
+  window.addEventListener("storage",function(e){if(e.key==="vicoPromoOk")refreshPromo(true);});
+  refreshPromo(false);setInterval(function(){refreshPromo(true);},30000);
+  window.vicoOnLiveStarted=function(room){panel.reset();panel.set({story:room.story||pendingStory||"",startedAt:room.createdAt,promoted:room.promoted!==undefined?room.promoted:promoted});refreshPromo(false);};
+  window.vicoOnLiveEnded=function(){panel.set({story:""});panel.end();setTimeout(function(){panel.reset();},4000);};
+
+  // ----- the story question, asked when the host taps Start Live -----
+  var st=document.getElementById("storyText"),cnt=document.getElementById("storyCnt");
+  st.addEventListener("input",function(){cnt.textContent=st.value.length;});
+  window.askStory=function(){
+    if(vicoLiveKitRoom){showToast("🔴 Your live is already connected.");return;}
+    st.value=localStorage.getItem("vicoLiveStory")||"";cnt.textContent=st.value.length;
+    closeModal("liveSetupModal");document.getElementById("storyModal").classList.add("open");setTimeout(function(){st.focus();},50);
+  };
+  window.confirmStory=function(save){
+    pendingStory=save?st.value.trim().slice(0,500):"";
+    if(save)localStorage.setItem("vicoLiveStory",pendingStory);
+    closeModal("storyModal");startLive();
+  };
+
+  // ----- Keep the live running: anything the host opens appears on top of the live, inside this same page -----
+  var layer=document.getElementById("pageLayer"),frame=document.getElementById("plFrame"),title=document.getElementById("plTitle");
+  function openLayer(url,label){title.textContent=label||"";frame.src=url;layer.classList.add("on");}
+  function closeLayer(){layer.classList.remove("on");frame.src="about:blank";refreshPromo(true);}
+  window.openLayer=openLayer;document.getElementById("plBack").onclick=closeLayer;
+  frame.addEventListener("load",function(){
+    try{var p=frame.contentWindow.location.pathname;if(/go-?live/i.test(p)){closeLayer();showToast("You are already live on this page.");return;}
+      var t=frame.contentDocument&&frame.contentDocument.title;if(t&&!title.textContent)title.textContent=t.replace(/\s*[-|].*$/,"");}catch(e){}
+  });
+  document.addEventListener("click",function(e){
+    var a=e.target.closest&&e.target.closest("a[href]");if(!a||layer.contains(a))return;
+    var h=a.getAttribute("href");if(!h||h.charAt(0)==="#"||/^(javascript|mailto|tel):/i.test(h))return;
+    var u;try{u=new URL(h,location.href);}catch(x){return;}
+    if(u.origin!==location.origin||/go-?live/i.test(u.pathname))return;
+    e.preventDefault();openLayer(u.pathname.replace(/^\//,"")+u.search+u.hash,(a.getAttribute("title")||a.textContent||"").replace(/\s+/g," ").trim());
+  },true);
+  // a successful promotion returns here from the payment page: nothing else to do, the live was never closed
+  if(/[?&]promo=ok/.test(location.search))setTimeout(function(){refreshPromo(true);},500);
+  // "Start Your VIP Live Now" on the success page: open the VIP features on top of this live
+  window.addEventListener("message",function(e){if(e.origin===location.origin&&e.data&&e.data.type==="vico-open-vip"){refreshPromo(true);openLayer("vip-profile.html","VIP");}});
+  if(/[?&]vip=1/.test(location.search))setTimeout(function(){refreshPromo(true);openLayer("vip-profile.html","VIP");},600);
 })();
 </script>
 </body>

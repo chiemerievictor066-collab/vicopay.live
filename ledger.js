@@ -59,6 +59,24 @@ module.exports = function makeLedger(db) {
     });
   }
 
+  // ---------- 1b. Bonus coins (referral rewards) ----------
+  // Pays coins into the SAME balances row / ledger as everything else. `guard(t, ts)` runs inside the same database transaction and
+  // must return true to go ahead (it is where the caller records its own "paid once" row, so a reward can never be paid twice).
+  async function creditBonus({ email, coins, kind, reference, memo, guard }) {
+    email = lc(email); coins = Math.floor(Number(coins));
+    if (!email || !(coins > 0)) return { credited: false, reason: "bad_amount" };
+    return db.tx(async (t) => {
+      const ts = Date.now();
+      if (guard && !(await guard(t, ts))) return { credited: false, reason: "already_paid" };
+      const b = await t.get(
+        "INSERT INTO balances (user_id, coins, updated_at) VALUES (?,?,?) ON CONFLICT (user_id) DO UPDATE SET coins = balances.coins + EXCLUDED.coins, updated_at = EXCLUDED.updated_at RETURNING coins",
+        [email, coins, ts]);
+      const id = await txn(t, kind || "bonus", null, email, coins, reference, memo || "Bonus coins", ts);
+      await entry(t, id, email, "coin", coins, Number(b.coins), memo || "Bonus coins", ts);
+      return { credited: true, balance: Number(b.coins), txnId: id };
+    });
+  }
+
   // ---------- 2. Gift: viewer pays coins, host earns Golden Stars ----------
   async function sendGift({ sender, host, gift, price, giftId, senderName, hostName }) {
     sender = lc(sender); host = lc(host);
@@ -180,5 +198,5 @@ module.exports = function makeLedger(db) {
   }
   const lastAudit = () => audit ? { ...audit, checkedAt: auditAt } : { ok: null, pending: true };
 
-  return { getBalance, creditPurchase, sendGift, joinFanClub, reversePayment, statement, verify, verifyCached, lastAudit, Abort };
+  return { getBalance, creditPurchase, creditBonus, sendGift, joinFanClub, reversePayment, statement, verify, verifyCached, lastAudit, Abort };
 };

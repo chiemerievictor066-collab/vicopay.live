@@ -69,6 +69,11 @@ html,body{height:100%;margin:0;background:#020a1f;color:#fff;font-family:var(--f
 @media(max-height:820px){.rb .ic{width:38px;height:38px;font-size:18px}.rail{gap:6px}}
 @media(max-height:720px){.rb{font-size:0}.rb .ic{width:36px;height:36px;font-size:17px}.rail{gap:5px}}
 
+.plive{position:absolute;left:12px;bottom:calc(66px + env(safe-area-inset-bottom));width:calc(100% - 78px);display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:18px;background:rgba(255,255,255,.96);color:#14224d;box-shadow:0 8px 22px rgba(0,0,0,.35);z-index:6}
+.plive img,.plive .pi{width:46px;height:46px;border-radius:12px;object-fit:cover;background:#e3eefc;flex:none;display:grid;place-items:center;font-size:22px}
+.plive .pt{flex:1;min-width:0}.plive .pt b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.plive .pt span{font-weight:900;font-size:15px;color:#4318b8}.plive .pt em{font-style:normal;font-size:10.5px;font-weight:800;background:#fef3c7;color:#92400e;border-radius:6px;padding:1px 6px;margin-right:6px}
+.plive a{flex:none;text-decoration:none;border-radius:16px;padding:10px 14px;background:linear-gradient(135deg,#7c2df0,#5b21b6);color:#fff;font-weight:800;font-size:13.5px}
+.slide.hasp .chat{bottom:calc(128px + env(safe-area-inset-bottom));max-height:24%}
 .chat{position:absolute;left:12px;bottom:calc(66px + env(safe-area-inset-bottom));width:calc(100% - 78px);max-height:30%;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;-webkit-mask-image:linear-gradient(180deg,transparent,#000 28%);mask-image:linear-gradient(180deg,transparent,#000 28%)}
 .msgs{overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:5px}
 .msgs::-webkit-scrollbar{display:none}
@@ -131,10 +136,37 @@ html,body{height:100%;margin:0;background:#020a1f;color:#fff;font-family:var(--f
 .pkcard .sc2{font-size:20px;font-weight:900;color:var(--gold)}
 .empty{position:fixed;inset:0;display:none;place-items:center;text-align:center;padding:30px;z-index:10;background:#020a1f}
 .empty.on{display:grid}.empty h2{margin:0 0 8px}.empty p{color:#a9c9ea;margin:0 0 20px}
+
+/* Vico in-live video call: portrait-first PiP, with controls below the stream */
+.call-pip{position:absolute;z-index:12;right:64px;top:calc(112px + env(safe-area-inset-top));width:clamp(88px,27%,132px);aspect-ratio:3/4;border:2px solid #6ee7ff;border-radius:16px;overflow:hidden;background:#07194a;box-shadow:0 8px 28px #0009,0 0 18px #168bff88;display:none}
+.call-pip.on{display:block}.call-pip video{width:100%;height:100%;object-fit:cover;display:block}.call-pip .pip-name{position:absolute;left:4px;right:4px;bottom:4px;padding:4px 6px;border-radius:9px;background:#03133ddd;font-size:10px;font-weight:900;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.call-layer{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:22px;background:#020a1fc9;backdrop-filter:blur(8px)}
+.call-layer.on{display:flex}.call-card{width:min(100%,330px);border:1px solid #4b9cff;border-radius:22px;padding:20px;background:linear-gradient(145deg,#0b2d72,#11134d);box-shadow:0 18px 50px #0009;text-align:center}
+.call-card h3{margin:0 0 7px;font-size:19px}.call-card p{margin:0 0 16px;color:#c4dcff;font-size:13px;line-height:1.45}
+.call-card .call-actions{display:flex;gap:10px}.call-card button{flex:1;border:0;border-radius:15px;padding:12px 10px;font-weight:900;color:#fff;background:#087fe8}.call-card button.secondary{background:#28416f}.call-card button.danger{background:#e3264f}
+.call-controls{position:absolute;z-index:14;left:50%;bottom:calc(66px + env(safe-area-inset-bottom));transform:translateX(-50%);display:none;gap:10px;align-items:center}
+.call-controls.on{display:flex}.call-controls button{width:46px;height:46px;border:1px solid #ffffff55;border-radius:50%;background:#061a4ddd;color:#fff;font-size:19px;box-shadow:0 5px 18px #0007}.call-controls button.end{background:#e3264f;border:0}
+.call-controls button.off{background:#65738d}
+.rb.call .ic{background:linear-gradient(135deg,#17b8ed,#0867e8);border-color:#9ceaff}
+@media(max-width:390px){.call-pip{right:58px;width:25%}.call-controls{gap:7px}.call-controls button{width:42px;height:42px}}
+
+
+/* ===== Moving chat + promotion panel: lower-left only, scrolls, fades out before the middle of the screen ===== */
+.lstack{position:absolute;left:12px;bottom:calc(66px + env(safe-area-inset-bottom));width:calc(100% - 78px);max-height:66%;display:flex;flex-direction:column;gap:7px;z-index:6;pointer-events:none}
+.slide.hasp .lstack{bottom:calc(128px + env(safe-area-inset-bottom))}
+.lstack .chat{position:static!important;width:auto!important;max-height:none!important;overflow:visible!important;-webkit-mask-image:none!important;mask-image:none!important;pointer-events:none}
+.lstack .msgs{max-height:min(34dvh,300px);overflow-y:auto;pointer-events:auto;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 18%,#000 46%);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 18%,#000 46%)}
+.lstack .msgs::-webkit-scrollbar{display:none}
+.lstack .msgs .m{flex:none;animation:vlpIn .25s ease-out}
+@keyframes vlpIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.lstack .vlp-slot{pointer-events:none}.lstack .vlp-slot .vlp{pointer-events:none}.lstack .vlp-slot .vlp-story,.lstack .vlp-slot .vlp-more{pointer-events:auto}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
 <script src="auth.js"></script>
 <script src="vico-ui.js"></script>
+<script src="vico-live-panel.js"></script>
+<script src="vico-watch-discovery.js" defer></script>
 </head>
 <body>
 <div id="feed" class="feed" aria-label="Live videos. Swipe or scroll for the next live."></div>
@@ -205,21 +237,28 @@ function slideHTML(r){
       '<button class="rb" data-act="pk"><span class="ic">⚔️</span>PK</button>' +
       '<button class="rb" data-act="fans"><span class="ic">💜</span>Fans</button>' +
       '<button class="rb" data-act="people"><span class="ic">👥</span>Followers</button>' +
+      '<button class="rb call" data-act="call"><span class="ic">📹</span>Video Call</button>' +
       '<button class="rb" data-act="share"><span class="ic">↗️</span>Share</button>' +
       '<a class="rb" href="Go-Live.html"><span class="ic">🎥</span>Go Live</a>' +
     '</div>' +
-    '<div class="chat"><div class="msgs" aria-live="polite"></div></div>' +
+    (r.product ? '<div class="plive"><span class="pi">' + (r.product.imageUrl ? '<img alt="" src="' + U.esc(r.product.imageUrl) + '">' : '🛍️') + '</span><div class="pt"><b>' + U.esc(r.product.title) + '</b><span><em>Selling live</em>₦' + Number(r.product.price).toLocaleString() + '</span></div><a href="vico-product.html?id=' + encodeURIComponent(r.product.id) + '" target="_blank" rel="noopener">Buy Now</a></div>' : '') +
+    '<div class="lstack"><div class="chat"><div class="msgs" aria-live="polite"></div></div><div class="vlp-slot"></div></div>' +
     '<div class="bar2"><input maxlength="200" placeholder="Say something…" aria-label="Chat message"><button data-act="send" aria-label="Send">➤</button><button data-act="gift" aria-label="Gift">🎁</button></div>' +
+    '<div class="call-pip"><video playsinline autoplay muted></video><span class="pip-name">Video caller</span></div>' +
+    '<div class="call-controls"><button data-call="mic" aria-label="Mute microphone">🎙️</button><button data-call="camera" aria-label="Turn camera off">📷</button><button class="end" data-call="end" aria-label="End call">☎</button></div>' +
+    '<div class="call-layer"><div class="call-card"><h3>📹 Vico Video Call</h3><p class="call-copy">Request a face-to-face call with this streamer while the livestream continues.</p><div class="call-actions"><button class="secondary" data-call="cancel">Cancel</button><button data-call="request">Request call</button></div></div></div>' +
     '<div class="fx"></div><div class="status"></div><button class="v-btn snd" data-act="sound">🔊 Tap for sound</button>' +
     '<div class="ov"><div><h3>This live has ended</h3><p>Thanks for watching. Swipe up for the next live.</p><button class="v-btn" data-act="nextlive">Next live ↓</button> <a class="v-btn ghost" href="live-room.html">Back</a></div></div>' +
   '</div>';
 }
 function addSlide(r){
   if (S.has(r.roomId)) return S.get(r.roomId);
-  const el = document.createElement("section"); el.className = "slide"; el.dataset.room = r.roomId; el.innerHTML = slideHTML(r);
+  const el = document.createElement("section"); el.className = "slide" + (r.product ? " hasp" : ""); el.dataset.room = r.roomId; el.innerHTML = slideHTML(r);
   feed.appendChild(el);
-  const st = { room: r, el, lk: null, lkOpp: null, oppId: null, lastEv: 0, battle: null, info: null, ended: false, audio: [], loves: 0 };
+  const st = { room: r, el, lk: null, lkOpp: null, oppId: null, lastEv: 0, battle: null, info: null, ended: false, audio: [], loves: 0, callActive: false, callPending: false, callMic: true, callCamera: true, callId: null };
   S.set(r.roomId, st); paintFollow(st); io.observe(el);
+  st.panel = VicoLivePanel.create({ role: "viewer" }); $(".vlp-slot", el).appendChild(st.panel.el);
+  st.panel.set({ promoted: r.promoted, story: r.story || "", startedAt: r.createdAt });
   $("input", el).addEventListener("keydown", e => { if (e.key === "Enter") sendChat(st); });
   return st;
 }
@@ -237,6 +276,12 @@ async function viewerToken(roomId){
 }
 function attachTrack(st, track, which){
   const L = LK();
+  if (which === "caller" && track.kind === L.Track.Kind.Video) {
+    const box = $(".call-pip", st.el), v = $("video", box);
+    box.classList.add("on"); track.attach(v);
+    $(".pip-name", box).textContent = "Video caller";
+    return;
+  }
   if (track.kind === L.Track.Kind.Video) {
     const box = $(which === "main" ? ".vid.main" : ".vid.opp", st.el), v = $("video", box);
     track.attach(v);
@@ -248,16 +293,34 @@ function attachTrack(st, track, which){
 }
 function wireRoom(st, room, which){
   const L = LK();
-  room.on(L.RoomEvent.TrackSubscribed, t => attachTrack(st, t, which));
+  room.on(L.RoomEvent.TrackSubscribed, (t, pub, participant) => {
+    const isCaller = participant && participant.identity !== st.room.handle;
+    if (isCaller && t.kind === L.Track.Kind.Video) {
+      st.callActive = true;
+      attachTrack(st, t, "caller");
+    } else attachTrack(st, t, which);
+  });
   room.on(L.RoomEvent.TrackUnsubscribed, t => t.detach());
   if (which !== "main") return;
   room.on(L.RoomEvent.DataReceived, (payload, p) => {
     try {
       const m = JSON.parse(new TextDecoder().decode(payload));
-      if (m.type !== "chat" || !m.text) return;
-      // only the real host connection may show the HOST badge; names come from the server-signed token, not the message
-      addMsg(st, { name: (p && p.name) || m.name, text: String(m.text).slice(0, 200), isHost: !!p && p.identity === st.room.handle });
+      if (m.type === "chat" && m.text) {
+        addMsg(st, { name: (p && p.name) || m.name, text: String(m.text).slice(0, 200), isHost: !!p && p.identity === st.room.handle });
+        return;
+      }
+      if (m.type === "call_accept" && m.to === myCallIdentity(st)) startAcceptedCall(st);
+      if (m.type === "call_decline" && m.to === myCallIdentity(st)) {
+        st.callPending = false; hideCallLayer(st); U.toast("The streamer is unavailable for a call right now.");
+      }
+      if (m.type === "call_end" && m.to === myCallIdentity(st)) endCallerCall(st, false);
     } catch (e) {}
+  });
+  room.on(L.RoomEvent.ParticipantDisconnected, p => {
+    if (p && p.identity !== st.room.handle) {
+      $(".call-pip", st.el).classList.remove("on");
+      st.callActive = false;
+    }
   });
   room.on(L.RoomEvent.AudioPlaybackStatusChanged, () => $(".snd", st.el).classList.toggle("on", !room.canPlaybackAudio));
   room.on(L.RoomEvent.Reconnecting, () => setStatus(st, "Reconnecting…"));
@@ -266,7 +329,9 @@ function wireRoom(st, room, which){
 }
 function attachExisting(st, room, which){
   const L = LK();
-  room.remoteParticipants.forEach(p => p.trackPublications.forEach(pub => { if (pub.isSubscribed && pub.track) attachTrack(st, pub.track, which); }));
+  room.remoteParticipants.forEach(p => p.trackPublications.forEach(pub => {
+    if (pub.isSubscribed && pub.track) attachTrack(st, pub.track, p.identity !== st.room.handle && pub.kind === "video" ? "caller" : which);
+  }));
   if (which === "main") $(".snd", st.el).classList.toggle("on", !room.canPlaybackAudio);
 }
 async function connect(st, my){
@@ -274,6 +339,7 @@ async function connect(st, my){
   try {
     if (!LK()) throw new Error("The video library did not load. Check your internet and refresh.");
     const d = await viewerToken(st.room.roomId); if (my !== gen) return;
+    st.viewerIdentity = d.identity || "";
     const room = new (LK().Room)({ adaptiveStream: true, dynacast: true });
     st.lk = room; wireRoom(st, room, "main");
     await room.connect(d.url, d.token);
@@ -300,7 +366,9 @@ async function syncOpp(st, b){
 function deactivate(st){
   st.leaving = true;
   try { if (st.lk) st.lk.disconnect(); if (st.lkOpp) st.lkOpp.disconnect(); } catch (e) {}
-  st.lk = st.lkOpp = null; st.oppId = null; st.battle = null;
+  st.lk = st.lkOpp = null; st.oppId = null; st.battle = null; st.callActive = false; st.callPending = false;
+  if ($(".call-controls", st.el)) $(".call-controls", st.el).classList.remove("on");
+  if ($(".call-pip", st.el)) $(".call-pip", st.el).classList.remove("on");
   st.audio.forEach(a => { try { a.srcObject = null; a.remove(); } catch (e) {} }); st.audio = [];
   $$("video", st.el).forEach(v => { v.srcObject = null; });
   $(".poster", st.el).style.opacity = ".85"; st.el.classList.remove("inpk"); setStatus(st, ""); $(".snd", st.el).classList.remove("on");
@@ -308,6 +376,82 @@ function deactivate(st){
 }
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
+function myCallIdentity(st){
+  return st && st.viewerIdentity ? String(st.viewerIdentity) : "";
+}
+function hideCallLayer(st){ $(".call-layer", st.el).classList.remove("on"); }
+function showCallLayer(st, title, copy, actions){
+  const layer = $(".call-layer", st.el);
+  $("h3", layer).textContent = title; $(".call-copy", layer).textContent = copy;
+  $(".call-actions", layer).innerHTML = actions;
+  layer.classList.add("on");
+}
+async function requestVideoCall(st){
+  if (needLogin()) return;
+  if (st.info && st.info.isOwner) { U.toast("You are the streamer in this live."); return; }
+  if (!st.lk || st.lk.state !== LK().ConnectionState.Connected) { U.toast("Please wait for the livestream to connect."); return; }
+  if (st.callPending || st.callActive) { U.toast("A call request is already active."); return; }
+  const access = await U.api("/api/calls/access/" + enc(st.room.handle));
+  if (!access._ok) { U.toast(access.message || "Could not check call access."); return; }
+  if (!access.isLive) { U.toast("This streamer is not available for calls right now."); return; }
+  if (access.requiresPayment) {
+    showCallLayer(st, "VIP video call access", "Your star balance is " + U.num(access.stars) + ". The fee for your star level is $" + Number(access.feeUsd).toFixed(2) + " to request this VIP call.", '<button class="secondary" data-call="cancel">Not now</button><button data-call="pay">Pay $' + Number(access.feeUsd).toFixed(2) + '</button>');
+    return;
+  }
+  showCallLayer(st, "📹 Request a video call", "Your camera and microphone will only be shared after the streamer accepts.", '<button class="secondary" data-call="cancel">Cancel</button><button data-call="request">Send request</button>');
+}
+async function sendCallRequest(st){
+  if (!st.lk) return;
+  const d = await U.api("/api/calls/request", {method:"POST", body:{roomId:st.room.roomId, source:st.room.product?"product-live":"live"}});
+  if (!d._ok) { U.toast(d.message || "Could not send the call request."); return; }
+  st.callId=d.callId; st.callPending = true;
+  const payload = { type:"call_request", callId:d.callId, displayName:(me && me.displayName) || "Vico user" };
+  await st.lk.localParticipant.publishData(new TextEncoder().encode(JSON.stringify(payload)), { reliable:true });
+  showCallLayer(st, "Request sent", "Waiting for the streamer to accept your video call…", '<button class="secondary" data-call="cancel">Cancel request</button>');
+}
+async function startAcceptedCall(st){
+  if (!st.callPending || !cur || cur !== st) return;
+  try {
+    st.callPending = false; hideCallLayer(st);
+    setStatus(st, "Connecting your camera…");
+    const d = await U.api("/api/livekit/token", { method:"POST", body:{ roomName:st.room.roomId, identity:"call", role:"caller" } });
+    if (!d._ok) throw new Error(d.message || "Could not start the call.");
+    if (st.lk) await st.lk.disconnect();
+    const room = new (LK().Room)({ adaptiveStream:true, dynacast:true });
+    st.lk = room; wireRoom(st, room, "main");
+    await room.connect(d.url, d.token);
+    await room.localParticipant.enableCameraAndMicrophone();
+    const cam = room.localParticipant.getTrackPublication(LK().Track.Source.Camera);
+    if (cam && cam.videoTrack) {
+      const box = $(".call-pip", st.el); box.classList.add("on");
+      cam.videoTrack.attach($("video", box)); $(".pip-name", box).textContent = "You";
+    }
+    st.callActive = true; st.callMic = true; st.callCamera = true;
+    $(".call-controls", st.el).classList.add("on");
+    setStatus(st, "");
+    U.toast("You are connected to the streamer.");
+  } catch (e) {
+    console.error("Vico call:", e); U.toast(e.message || "Could not connect the call.");
+    hideCallLayer(st); st.callPending = false;
+  }
+}
+async function endCallerCall(st, notify){
+  if (st.callId) U.api("/api/calls/end", {method:"POST",body:{callId:st.callId}}).catch(()=>{});
+  if (notify && st.lk) {
+    try { await st.lk.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"call_end"})), {reliable:true}); } catch(e){}
+  }
+  try { if (st.lk) await st.lk.disconnect(); } catch(e){}
+  st.lk = null; st.callActive = false; st.callPending = false;
+  $(".call-controls", st.el).classList.remove("on");
+  const pip = $(".call-pip", st.el); pip.classList.remove("on"); $("video",pip).srcObject = null;
+  if (cur === st && !st.ended) {
+    try {
+      const d = await viewerToken(st.room.roomId);
+      const room = new (LK().Room)({adaptiveStream:true,dynacast:true});
+      st.lk = room; wireRoom(st,room,"main"); await room.connect(d.url,d.token); attachExisting(st,room,"main");
+    } catch(e){ setStatus(st,"Call ended. Reconnect to the live to continue watching."); }
+  }
+}
 async function activate(id){
   const st = S.get(id); if (!st || cur === st) return;
   const my = ++gen;
@@ -322,6 +466,7 @@ async function loadInfo(st){
   const d = await U.api("/api/live/info/" + enc(st.room.roomId));
   if (!d._ok) { markEnded(st); return; }
   st.info = d; Object.assign(st.room, d.room); paintFollow(st);
+  if (st.panel) st.panel.set({ promoted: d.room.promoted, story: d.room.story || "", startedAt: d.room.createdAt });
   $(".own", st.el).classList.toggle("on", !!d.isOwner);
   if (d.isOwner) $(".follow", st.el).style.display = "none";
   if (d.loggedIn && !me) U.api("/api/me").then(x => { if (x._ok) me = x; });
@@ -330,7 +475,7 @@ async function loadChat(st){
   const d = await U.api("/api/live/chat/" + enc(st.room.roomId) + "?limit=25");
   if (d.messages && cur === st && !$(".msgs", st.el).children.length) d.messages.forEach(m => addMsg(st, { name: m.name, text: m.text, isHost: m.isHost }));
 }
-function markEnded(st){ st.ended = true; $(".ov", st.el).classList.add("on"); if (st.lk) deactivate(st); }
+function markEnded(st){ st.ended = true; if (st.panel) st.panel.end(); $(".ov", st.el).classList.add("on"); if (st.lk) deactivate(st); }
 
 /* ---------- live pulse: viewers, views, loves, gifts, PK ---------- */
 async function poll(){
@@ -340,11 +485,13 @@ async function poll(){
   if (d.ended) { markEnded(st); return; }
   $(".vc", st.el).textContent = U.num(d.viewers); $(".vw", st.el).textContent = U.num(d.views); $(".vl", st.el).textContent = Number(d.views) === 1 ? "view" : "views"; $(".lc", st.el).textContent = U.num(d.loves);
   if (d.stars !== undefined) paintStars($(".starm", st.el), d.stars);
+  if (d.promoted !== undefined && st.panel) st.panel.set({ promoted: d.promoted });
   (d.events || []).forEach(ev => {
     if ((d.now || Date.now()) - ev.ts > 12000) { st.lastEv = Math.max(st.lastEv || 0, ev.id); return; }   // do not replay old gifts when a live opens
     st.lastEv = Math.max(st.lastEv, ev.id);
     if (ev.type === "gift") { fly(st, ev); if (ev.stars != null) paintStars($(".starm", st.el), ev.stars, ev.starsAdded); }
     if (ev.type === "love") { const n = Math.min(ev.total || 1, 6); for (let i = 0; i < n; i++) setTimeout(() => heart(st), i * 140); }
+    if (ev.type === "vip_join" && window.VicoEntrance) VicoEntrance.play(ev, st.el);   // VIP entrance: car, then crown, with the sliding notice
     if (ev.type === "pk_start") addMsg(st, { sys: true, text: "⚔️ PK battle started!" });
     if (ev.type === "pk_end") addMsg(st, { sys: true, text: ev.winner === "draw" ? "⚔️ PK ended in a draw" : "🏆 PK winner: " + ev.winner });
   });
@@ -522,12 +669,36 @@ feed.addEventListener("click", e => {
     case "pk": openPK(st); break;
     case "fans": openFans(st); break;
     case "people": openPeople(st, "followers"); break;
+    case "call": requestVideoCall(st); break;
     case "share": shareLive(st); break;
     case "more": openMore(st); break;
     case "send": sendChat(st); break;
     case "nextlive": go(1); break;
     case "sound": if (st.lk) st.lk.startAudio().then(() => $(".snd", st.el).classList.remove("on")); break;
     case "close": location.href = "live-room.html"; break;
+  }
+});
+feed.addEventListener("click", async e => {
+  const b = e.target.closest("[data-call]"), slide = e.target.closest(".slide");
+  if (!b || !slide) return;
+  const st = S.get(slide.dataset.room); if (!st || st !== cur) return;
+  const action = b.dataset.call;
+  if (action === "cancel") { if(st.callId) U.api("/api/calls/cancel",{method:"POST",body:{callId:st.callId}}); st.callPending = false; hideCallLayer(st); return; }
+  if (action === "request") { await sendCallRequest(st); return; }
+  if (action === "pay") {
+    const d = await U.api("/api/calls/payment/initialize", {method:"POST",body:{targetHandle:st.room.handle,roomId:st.room.roomId,source:st.room.product?"product-live":"live"}});
+    if (d._ok && d.authorizationUrl) location.href=d.authorizationUrl; else U.toast(d.message || "Could not start payment.");
+    return;
+  }
+  if (action === "end") { await endCallerCall(st, true); return; }
+  if (!st.lk || !st.callActive) return;
+  if (action === "mic") {
+    st.callMic = !st.callMic; await st.lk.localParticipant.setMicrophoneEnabled(st.callMic);
+    b.classList.toggle("off", !st.callMic); b.textContent = st.callMic ? "🎙️" : "🔇";
+  }
+  if (action === "camera") {
+    st.callCamera = !st.callCamera; await st.lk.localParticipant.setCameraEnabled(st.callCamera);
+    b.classList.toggle("off", !st.callCamera); b.textContent = st.callCamera ? "📷" : "🚫";
   }
 });
 feed.addEventListener("dblclick", e => { const s = e.target.closest(".videos,.fx,.shade"); if (s && cur) love(cur); });
@@ -573,5 +744,6 @@ window.addEventListener("beforeunload", () => { if (cur) try { cur.lk && cur.lk.
 boot();
 </script>
 <script src="vico-gifts.js"></script>
+<script src="vip-entrance.js"></script>
 </body>
 </html>

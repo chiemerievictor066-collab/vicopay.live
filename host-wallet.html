@@ -476,7 +476,11 @@ footer {
 
         <p>
             You must complete
-            <strong>3 hours of live time today.</strong>
+            <strong id="dailyReqText">1 hour of live time today.</strong>
+        </p>
+        <p style="font-size:13px;opacity:.8;margin-top:-4px">
+            Every day, 1 hour counts toward your monthly live hours. After you finish your 1 hour you are free to keep
+            living &mdash; the extra hours that same day are not added (you can still earn stars). A new day starts a new 1 hour.
         </p>
 
         <div class="progress-background">
@@ -497,8 +501,8 @@ footer {
                 hours completed
             </span>
 
-            <strong>
-                3 hours required
+            <strong id="dailyReqLabel">
+                1 hour required
             </strong>
 
         </div>
@@ -537,6 +541,23 @@ footer {
 
             <div id="requiredDays">
                 Loading...
+            </div>
+
+        </div>
+
+
+        <div class="requirement">
+
+            <div class="requirement-name">
+                ⏳ Total Live Hours This Month
+            </div>
+
+            <div
+                id="monthlyHoursStatus"
+                class="pending">
+
+                0 / 30 hours
+
             </div>
 
         </div>
@@ -620,54 +641,72 @@ footer {
 
         <h2>💵 Monthly Payout Rules</h2>
 
-        <div class="payout-row">
-
-            <span>
-                3,000 Golden Stars
-            </span>
-
-            <strong>
-                $9
-            </strong>
-
+        <div id="vipTag" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:12px;background:linear-gradient(90deg,#5b3a00,#c8901a);color:#fff;font-weight:900">
+            👑 You are a VIP host — the VIP requirements and VIP payout table apply to you.
         </div>
 
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px">
+            <tr style="color:#9fb3c8;text-align:left"><th style="padding:6px 4px">Requirement</th><th style="padding:6px 4px">Normal host</th><th style="padding:6px 4px">VIP host</th></tr>
+            <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Stars per month</td><td>3,000</td><td>12,000</td></tr>
+            <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Days streamed</td><td>every day</td><td>every day</td></tr>
+            <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Streaming hours per day</td><td>at least 1 hour</td><td>at least 1 hour</td></tr>
+            <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Total live-stream hours per month</td><td>30 hours</td><td>30 hours</td></tr>
+        </table>
+
+        <h3 style="margin:14px 0 8px;font-size:15px">Normal host</h3>
 
         <div class="payout-row">
-
-            <span>
-                6,000 Golden Stars
-            </span>
-
-            <strong>
-                $18
-            </strong>
-
+            <span>3,000 Golden Stars</span>
+            <strong>$9</strong>
+        </div>
+        <div class="payout-row">
+            <span>6,000 Golden Stars</span>
+            <strong>$18</strong>
+        </div>
+        <div class="payout-row">
+            <span>9,000 Golden Stars</span>
+            <strong>$27</strong>
         </div>
 
+        <h3 style="margin:18px 0 8px;font-size:15px">👑 VIP host</h3>
 
         <div class="payout-row">
-
-            <span>
-                9,000 Golden Stars
-            </span>
-
-            <strong>
-                $27
-            </strong>
-
+            <span>12,000 Golden Stars</span>
+            <strong>$43.20</strong>
+        </div>
+        <div class="payout-row">
+            <span>15,000 Golden Stars</span>
+            <strong>$54.00</strong>
+        </div>
+        <div class="payout-row">
+            <span>18,000 Golden Stars</span>
+            <strong>$64.80</strong>
+        </div>
+        <div class="payout-row">
+            <span>21,000 Golden Stars</span>
+            <strong>$75.60</strong>
+        </div>
+        <div class="payout-row">
+            <span>24,000 Golden Stars</span>
+            <strong>$86.40</strong>
+        </div>
+        <div class="payout-row">
+            <span>30,000 Golden Stars</span>
+            <strong>$108.00</strong>
         </div>
 
         <p>
             Payouts are made in <strong>complete blocks of 3,000 stars</strong>.
-            For example 4,000 stars is paid as 3,000 stars ($9), and 7,000 stars
-            is paid as 6,000 stars ($18). The stars left over after the last
+            <strong>Normal host:</strong> 4,000 stars is paid as 3,000 stars ($9), and 7,000 stars
+            is paid as 6,000 stars ($18).
+            <strong>VIP host:</strong> 13,000 or 14,500 stars is paid as 12,000 stars ($43.20),
+            and 15,000 stars is paid as 15,000 stars ($54.00). The stars left over after the last
             complete block are not paid.
         </p>
 
         <p>
-            The host must also go live for <strong>3 hours every day</strong>
-            of the month.
+            The host must also go live <strong>every day of the month for at least 1 hour</strong>
+            and complete at least <strong>30 live hours in the month</strong>.
         </p>
 
     </section>
@@ -705,8 +744,8 @@ footer {
             class="notice"
             id="withdrawMessage">
 
-            Complete your daily live requirements
-            and reach 3,000 Golden Stars.
+            Complete your daily and monthly live requirements
+            and reach the Golden Stars requirement.
 
         </div>
 
@@ -814,11 +853,14 @@ async function loadWallet(){
 }
 
 /* -----------------------------------------------
-   STARS: 10 coins = 5 stars. They count live as gifts arrive
+   STARS: Gift-earned stars update live as gifts arrive
    (stars still on hold are shown too; only released stars can be withdrawn)
 ------------------------------------------------ */
+const usdText = (n) => "$" + (Math.round(n * 100) % 100 === 0 ? Math.round(n) : n.toFixed(2));
 function paintWalletStars(monthly){
-    const MIN = Number(monthly.minimumStars || 3000);
+    const BLOCK = 3000;                                        // a payout block is always 3,000 stars
+    const MIN = Number(monthly.minimumStars || 3000);          // stars needed: 3,000 normal host, 12,000 VIP host
+    const blockUsd = Number(monthly.blockUsd || 9);            // $9.00 normal, $10.80 VIP, per block
     const have = Number(monthly.earnedStars != null ? monthly.earnedStars : (monthly.stars || 0));
     const free = Number(monthly.stars || 0);                 // released, can be withdrawn
     const hold = Math.max(0, Number(monthly.onHoldStars || 0));
@@ -829,14 +871,17 @@ function paintWalletStars(monthly){
     let pct = (have / MIN) * 100; if (pct > 100) pct = 100;
     document.getElementById("starBar").style.width = pct + "%";
 
-    const blocks = Math.floor(have / MIN), counted = blocks * MIN, left = have - counted, toNext = MIN - left;
+    const reached = have >= MIN;
+    const blocks = reached ? Math.floor(have / BLOCK) : 0, counted = blocks * BLOCK, left = have - counted;
+    const toNext = reached ? (BLOCK - (have % BLOCK)) : (MIN - have);
     const box = document.getElementById("blockInfo");
     if (box) box.innerHTML =
-        "⭐ Stars you have: <b>" + have.toLocaleString() + "</b> <span style='opacity:.7'>(10 coins = 5 stars)</span><br>" +
-        "✅ Counted for payment: <b>" + counted.toLocaleString() + "</b> stars = <b>$" + (blocks * 9) + "</b>" +
-        (blocks ? " (" + blocks + " block" + (blocks === 1 ? "" : "s") + " of " + MIN.toLocaleString() + ")" : "") + "<br>" +
+        "⭐ Stars you have: <b>" + have.toLocaleString() + "</b><br>" +
+        "✅ Counted for payment: <b>" + counted.toLocaleString() + "</b> stars = <b>" + usdText(blocks * blockUsd) + "</b>" +
+        (blocks ? " (" + blocks + " block" + (blocks === 1 ? "" : "s") + " of " + BLOCK.toLocaleString() + ")" : "") + "<br>" +
         "➖ Left over, not paid yet: <b>" + left.toLocaleString() + "</b><br>" +
-        "🎯 Stars needed for your next $9: <b>" + (left === 0 && blocks ? MIN : toNext).toLocaleString() + "</b>" +
+        (reached ? "🎯 Stars needed for your next " + usdText(blockUsd) + ": <b>" + toNext.toLocaleString() + "</b>"
+                 : "🎯 Stars needed to reach the monthly requirement: <b>" + toNext.toLocaleString() + "</b>") +
         (hold > 0 ? "<br>⏳ Still on hold (released after " + Number(monthly.holdDays || 7) + " days): <b>" + hold.toLocaleString() + "</b><br>💰 Ready to withdraw now: <b>" + free.toLocaleString() + "</b>" : "");
 
     const starStatus = document.getElementById("starRequirementStatus");
@@ -847,6 +892,8 @@ function paintWalletStars(monthly){
     } else {
         starStatus.className = "pending";
     }
+    const mp = document.querySelector(".stars-box p strong:last-of-type");     // "Minimum required every month: N Golden Stars"
+    if (mp) mp.textContent = MIN.toLocaleString() + " Golden Stars";
 }
 /* only the stars refresh by themselves every few seconds, so the number grows while gifts come in */
 async function refreshStars(){
@@ -880,9 +927,19 @@ function renderWallet(monthly, withdrawal){
         Number(monthly.daysInMonth || 0) + " days";
 
     /* Daily progress bar */
-    let dailyPercent = (Number(monthly.todayHours || 0) / (monthly.dailyRequiredHours || 3)) * 100;
+    let dailyPercent = (Number(monthly.todayHours || 0) / (monthly.dailyRequiredHours || 1)) * 100;
     if (dailyPercent > 100) dailyPercent = 100;
     document.getElementById("dailyProgress").style.width = dailyPercent + "%";
+
+    /* Requirement wording and the monthly hours: normal host 30h, VIP host 30h, both at least 1 hour every day */
+    const dReq = Number(monthly.dailyRequiredHours || 1), mReq = Number(monthly.monthlyHoursRequired || 30), mHave = Number(monthly.monthlyHours || 0);
+    const hrs = (n) => n + " hour" + (n === 1 ? "" : "s");
+    document.getElementById("dailyReqText").textContent = hrs(dReq) + " of live time today.";
+    document.getElementById("dailyReqLabel").textContent = hrs(dReq) + " required";
+    const mh = document.getElementById("monthlyHoursStatus");
+    mh.textContent = mHave.toFixed(2).replace(/\.00$/, "") + " / " + mReq + " hours" + (monthly.totalHoursComplete ? " ✓" : "");
+    mh.className = monthly.totalHoursComplete ? "completed" : "pending";
+    document.getElementById("vipTag").style.display = monthly.vipPayout ? "block" : "none";
 
     /* Daily requirement status */
     const dailyStatus = document.getElementById("dailyRequirementStatus");
@@ -928,11 +985,11 @@ function renderWallet(monthly, withdrawal){
         if (withdrawal && Array.isArray(withdrawal.lockedReasons) && withdrawal.lockedReasons.length) {
             message.textContent = withdrawal.lockedReasons.join(" ");
         } else if (!monthly.starsComplete) {
-            message.textContent = "You need at least 3,000 Golden Stars.";
+            message.textContent = "You need at least " + Number(monthly.minimumStars || 3000).toLocaleString() + " Golden Stars" + (monthly.vipPayout ? " as a VIP host." : ".");
         } else if (!monthly.monthlyLiveRequirementComplete) {
-            message.textContent = "You have reached the star requirement, but you have not completed the required 3-hour live sessions for every day of this month.";
+            message.textContent = "You have reached the star requirement, but you must also go live every day of this month for at least " + hrs(dReq) + " and complete " + mReq + " live hours in the month (you have " + mHave.toFixed(2).replace(/\.00$/, "") + ").";
         } else {
-            message.textContent = "Complete your daily live requirements and reach 3,000 Golden Stars.";
+            message.textContent = "Complete your daily and monthly live requirements and reach " + Number(monthly.minimumStars || 3000).toLocaleString() + " Golden Stars.";
         }
     }
 }

@@ -187,18 +187,21 @@ loginForm.addEventListener("submit",async function(event){
   loginButton.textContent="Creating account...";
   message.className="message";
 
+  var refCode="";try{var rr=new URLSearchParams(location.search).get("ref");if(rr)localStorage.setItem("vicoRef",rr.toUpperCase());refCode=localStorage.getItem("vicoRef")||"";}catch(e){}
   try{
     const response=await fetch(window.location.origin+"/api/auth/register",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email:email,password:password,username:username})
+      body:JSON.stringify({email:email,password:password,username:username,referralCode:refCode})
     });
     const data=await response.json();
     if(!response.ok||!data.success){ throw new Error(data.message||"Unable to create account."); }
 
+    try{localStorage.removeItem("vicoRef");}catch(e){}
+    var nextPage=refCode?"verify-email.html?auto=1&next=welcome-page.html":"welcome-page.html";
     VicoAuth.setSession(data.token,data.user,true);
     showMessage("Account created! Opening VicoPay Live...","success");
-    setTimeout(function(){ window.location.href="welcome-page.html"; },700);
+    setTimeout(function(){ window.location.href=nextPage; },700);
   }catch(error){
     showMessage(error.message||"Unable to create account.","error");
     loginButton.disabled=false;

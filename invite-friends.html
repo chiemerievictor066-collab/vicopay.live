@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invite Friends - Vico Pay Live</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#3a1280 0,#0b0620 45%,#05020f 100%);color:#fff;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+.wrap{width:min(760px,100%);margin:0 auto;padding:14px 14px 60px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.back{width:40px;height:40px;border-radius:50%;border:1px solid #5b2fb3;background:#150a33;color:#fff;font-size:20px;cursor:pointer}
+.brand{font-weight:900;font-size:22px;margin:0 auto 0 4px}.brand b{color:#f5c542}.brand small{display:block;font-size:11px;font-weight:600;color:#c9b8f0}
+.hero{display:flex;align-items:center;gap:6px;margin:8px 0 14px}
+.hero h1{margin:0;font-size:clamp(30px,8vw,46px);line-height:1.05}.hero h1 span{color:#f5c542;display:block}
+.hero p{color:#e6dcff;font-size:15px;max-width:340px}
+.hero img{width:min(40vw,220px);animation:float 3.6s ease-in-out infinite;filter:drop-shadow(0 8px 24px rgba(168,85,247,.55))}
+@keyframes float{50%{transform:translateY(-8px)}}
+.card{border:1.5px solid #6d3bd0;background:linear-gradient(180deg,rgba(34,12,76,.9),rgba(12,5,30,.95));border-radius:22px;padding:18px;margin:26px 0 14px;position:relative}
+.tag{position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f5c542,#c98a00);color:#2a1700;font-weight:900;font-size:14px;padding:6px 20px;border-radius:12px;white-space:nowrap}
+.code{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:6px}
+.code b{font-size:clamp(26px,8vw,38px);letter-spacing:2px}
+.btn{border:0;border-radius:16px;padding:13px 16px;font:inherit;font-weight:900;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.gold{background:linear-gradient(135deg,#f9d24f,#d99a00);color:#2a1700}.purple{background:linear-gradient(135deg,#8b4dff,#4b1fb0);color:#fff;border:1px solid #a78bfa}
+.ghost{background:transparent;color:#f5c542;border:2px solid #f5c542}
+.link{margin-top:12px;background:#2d1370;border-radius:30px;padding:11px 16px;font-size:13px;word-break:break-all;color:#e9ddff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 22px}
+.sec{margin-top:26px}
+.rewards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
+.rw{border:1.5px solid #5b2fb3;border-radius:18px;background:#14092f;padding:14px 8px;text-align:center;position:relative}
+.rw .g{font-size:34px}.rw .f{font-size:14px;color:#e6dcff;margin-top:4px}.rw .c{font-size:22px;font-weight:900;color:#f5c542}
+.rw.done{border-color:#22c55e;box-shadow:0 0 18px rgba(34,197,94,.3)}.rw.done::after{content:"✓ Reached";position:absolute;top:8px;right:8px;font-size:11px;font-weight:800;color:#4ade80}
+.bar{height:12px;border-radius:8px;background:#26104f;margin-top:14px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8b4dff,#f5c542);transition:width .8s}
+.bartext{font-size:13px;color:#d6c7ff;margin-top:6px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
+@media(min-width:620px){.stats{grid-template-columns:repeat(4,1fr)}}
+.st{background:#14092f;border:1px solid #4a2a8f;border-radius:18px;padding:14px 6px;text-align:center}
+.st .ic{font-size:28px}.st .l{font-size:13px;color:#e6dcff;margin-top:4px}.st .n{font-size:28px;font-weight:900;margin-top:2px}.st.coin .n{color:#f5c542}
+h2{font-size:19px;margin:0 0 10px;color:#f5c542;text-align:center}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.step{background:#14092f;border:1px solid #4a2a8f;border-radius:16px;padding:14px;text-align:center;font-size:13.5px;color:#e6dcff}
+.step em{display:flex;width:28px;height:28px;margin:0 auto 8px;align-items:center;justify-content:center;border-radius:50%;background:#7c3aed;font-style:normal;font-weight:900}
+.hist{border:1.5px solid #f5c542;border-radius:18px;overflow:hidden;background:#0f0626}
+.hist table{width:100%;border-collapse:collapse;font-size:13.5px}
+.hist th{background:#2d1370;color:#d6c7ff;text-align:left;padding:10px 12px;font-size:12.5px}.hist td{padding:11px 12px;border-top:1px solid #26104f}
+.pill{border-radius:10px;padding:3px 10px;font-size:12px;font-weight:900;display:inline-block}
+.p-pending{background:#92400e}.p-qualified{background:#16a34a}.p-rewarded{background:#d99a00;color:#2a1700}.p-rejected{background:#b91c1c}
+.empty{padding:22px;text-align:center;color:#c9b8f0;font-size:14px}
+.share{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.rules{border:1px solid #5b2fb3;border-radius:18px;background:#1a0b3a;padding:16px;font-size:13.5px;color:#e6dcff}
+.rules li{margin:6px 0}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:11px 18px;border-radius:12px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+#toast.on{opacity:1}#toast.bad{background:#dc2626}
+.off{padding:14px;border-radius:14px;background:#7c2d12;margin:10px 0;text-align:center;display:none}
+.rwh{font-size:13.5px}.rwh div{display:flex;justify-content:space-between;padding:9px 4px;border-top:1px solid #26104f}.rwh div:first-child{border-top:0}
+</style></head><body>
+<div class="wrap">
+  <div class="top"><button class="back" onclick="history.length>1?history.back():location.href='home.html'" aria-label="Back">‹</button>
+    <div class="brand">Vico Pay <b>Live</b><small>Live · Connect · Earn</small></div></div>
+
+  <div class="hero"><div><h1>Invite Friends. Earn Rewards. <span>Grow Together.</span></h1>
+    <p>Bring your friends to Vico Pay Live and earn exciting rewards when they join and become active.</p></div>
+    <img src="vipfx-emoji4.webp" alt=""></div>
+  <div class="off" id="verifyBar" style="background:#4c1d95;border:1px solid #a78bfa">Please verify your email so your account is fully active. <a href="verify-email.html?auto=1&next=invite-friends.html" style="color:#ffd76a;font-weight:900">Verify now</a></div>
+  <div class="off" id="off">Invite rewards are paused right now. You can still share your link.</div>
+
+  <div class="card"><div class="tag">☆ Your Unique Invite Code</div>
+    <div class="code"><b id="code">…</b><button class="btn ghost" onclick="copyCode()">📋 Copy Invite Code</button></div>
+    <div class="link" id="link">Loading your link…</div></div>
+  <div class="two"><button class="btn purple" onclick="shareLink()">🔗 Share Invite Link</button><button class="btn gold" onclick="document.getElementById('shareSec').scrollIntoView({behavior:'smooth'})">👤 Invite Friends</button></div>
+
+  <div class="card" style="margin-top:30px"><div class="tag">🎁 Earn Vico Coins for Successful Referrals</div>
+    <div class="rewards" id="rewards"></div>
+    <div class="bar"><i id="bar"></i></div><div class="bartext" id="bartext"></div></div>
+
+  <div class="stats">
+    <div class="st"><div class="ic">👥</div><div class="l">Total Invites</div><div class="n" id="sTotal">0</div></div>
+    <div class="st"><div class="ic">✅</div><div class="l">Successful Referrals</div><div class="n" id="sOk">0</div></div>
+    <div class="st"><div class="ic">⏳</div><div class="l">Pending Referrals</div><div class="n" id="sPend">0</div></div>
+    <div class="st coin"><div class="ic">🪙</div><div class="l">Total Coins Earned</div><div class="n" id="sCoins">0</div></div>
+  </div>
+
+  <div class="sec card"><div class="tag">⚙ How It Works</div>
+    <div class="steps">
+      <div class="step"><em>1</em>Share your personal referral link with friends.</div>
+      <div class="step"><em>2</em>Your friends register using your referral link or code.</div>
+      <div class="step"><em>3</em>They complete the required account verification and become qualified active users.</div>
+      <div class="step"><em>4</em>Your reward is credited to your Vico Pay Live wallet when the conditions are met.</div>
+    </div></div>
+
+  <div class="sec"><h2>Referral History</h2>
+    <div class="hist"><table><thead><tr><th>Friend's Username</th><th>Join Date</th><th>Status</th><th>Reward</th></tr></thead><tbody id="hist"></tbody></table></div></div>
+
+  <div class="sec"><h2>Reward History</h2><div class="hist"><div class="rwh" id="rwh" style="padding:6px 14px"></div></div></div>
+
+  <div class="sec" id="shareSec"><h2>Share With Friends</h2>
+    <div class="share">
+      <button class="btn purple" onclick="via('wa')">💬 WhatsApp</button>
+      <button class="btn purple" onclick="via('fb')">f Facebook</button>
+      <button class="btn purple" onclick="via('tg')">✈ Telegram</button>
+      <button class="btn gold" onclick="copyLink()">🔗 Copy Link</button>
+      <button class="btn ghost" onclick="shareLink()">⤴ Other Apps</button>
+    </div></div>
+
+  <div class="sec rules"><b style="color:#f5c542">Referral Rules</b>
+    <ul><li>Only genuine new accounts qualify.</li><li>A referral must be linked to the correct inviter during registration.</li>
+    <li>Self-referrals are prohibited.</li><li>Duplicate and fraudulent accounts do not qualify.</li>
+    <li>Rewards are issued only after the qualification conditions are satisfied.</li><li>Each successful referral can only generate one reward.</li>
+    <li>Administrators can configure referral conditions and rewards.</li></ul></div>
+</div>
+<div id="toast"></div>
+<script src="auth.js"></script>
+<script>
+var D=null;
+function $(i){return document.getElementById(i);}
+function toast(m,bad){var t=$("toast");t.textContent=m;t.className="on"+(bad?" bad":"");clearTimeout(toast.t);toast.t=setTimeout(function(){t.className="";},2400);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function msg(){return "Join me on Vico Pay Live! Sign up with my invite link (code "+D.code+"): "+D.link;}
+function copyText(t,ok){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast(ok);},function(){toast("Could not copy.",1);});}else{var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");toast(ok);}catch(e){toast("Could not copy.",1);}a.remove();}}
+function copyCode(){if(D)copyText(D.code,"Invite code copied.");}
+function copyLink(){if(D)copyText(D.link,"Invite link copied.");}
+function shareLink(){if(!D)return;if(navigator.share){navigator.share({title:"Vico Pay Live",text:msg(),url:D.link}).catch(function(){});}else{copyText(D.link,"Link copied. Your device has no share sheet.");}}
+function via(k){if(!D)return;var u={wa:"https://wa.me/?text="+encodeURIComponent(msg()),fb:"https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(D.link),tg:"https://t.me/share/url?url="+encodeURIComponent(D.link)+"&text="+encodeURIComponent(msg())}[k];window.open(u,"_blank","noopener");}
+function render(d){
+  D=d; $("code").textContent=d.code; $("link").textContent=d.link; $("off").style.display=d.enabled?"none":"block";$("verifyBar").style.display=d.emailVerified===false?"block":"none";
+  var s=d.stats; $("sTotal").textContent=s.totalInvites; $("sOk").textContent=s.successful; $("sPend").textContent=s.pending; $("sCoins").textContent=s.coinsEarned.toLocaleString();
+  $("rewards").innerHTML=d.milestones.map(function(m){return '<div class="rw'+(m.reached?' done':'')+'"><div class="g">🎁</div><div class="f">'+m.count+' Friends</div><div class="c">'+m.total+' Coins</div></div>';}).join("");
+  var next=d.milestones.filter(function(m){return !m.reached;})[0], last=d.milestones[d.milestones.length-1];
+  if(next){var prev=0;d.milestones.forEach(function(m){if(m.reached)prev=m.count;});$("bar").style.width=Math.min(100,Math.round(((s.successful-prev)/(next.count-prev))*100))+"%";
+    $("bartext").textContent=s.successful+" of "+next.count+" friends for your next reward ("+(next.count-s.successful)+" to go).";}
+  else{$("bar").style.width="100%";$("bartext").textContent="You reached every reward milestone. Thank you!";}
+  var lab={pending:"Pending",qualified:"Qualified",rewarded:"Rewarded",rejected:"Rejected"};
+  $("hist").innerHTML=d.history.length?d.history.map(function(h){return "<tr><td>"+esc(h.username)+"</td><td>"+new Date(h.joined).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"})+'</td><td><span class="pill p-'+h.status+'">'+lab[h.status]+"</span></td><td>"+(h.reward?'<b style="color:#f5c542">+'+h.reward+" 🪙</b>":"—")+"</td></tr>";}).join(""):'<tr><td colspan="4" class="empty">No friends invited yet. Share your link to get started.</td></tr>';
+  $("rwh").innerHTML=d.rewards.length?d.rewards.map(function(r){return "<div><span>"+r.count+" friends reached · "+new Date(r.at).toLocaleDateString()+'</span><b style="color:#f5c542">+'+r.coins+" coins</b></div>";}).join(""):'<div class="empty" style="display:block;border:0">No rewards yet. Your first reward comes at '+(d.milestones[0]?d.milestones[0].count:5)+" qualified friends.</div>";
+}
+fetch("/api/referrals/me").then(function(r){return r.json();}).then(function(d){if(!d.success)throw new Error(d.message||"Could not load.");render(d);}).catch(function(e){$("link").textContent="Could not load your invite details. Please refresh.";toast(e.message,1);});
+</script></body></html>
