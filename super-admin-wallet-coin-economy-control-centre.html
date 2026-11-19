@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VicoPay · Wallet & Coin Economy Control Centre</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--panel2:#19243b;--line:#293653;--txt:#edf3ff;--muted:#9eabc3;--cyan:#48d7d0;--green:#63e6a2;--amber:#ffd071;--red:#ff8294}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,Segoe UI,Arial}header{padding:22px 26px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:19px;font-weight:800}.brand span{color:var(--cyan)}.sub,.muted{color:var(--muted)}.sub{font-size:12px;margin-top:3px}.demo{font-size:11px;border:1px solid #735b27;background:#302716;color:var(--amber);padding:7px 11px;border-radius:20px;font-weight:700}
+main{max-width:1450px;margin:auto;padding:23px 26px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}input,select,button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:inherit}input{min-width:220px}button{cursor:pointer}button:hover{filter:brightness(1.15)}button.primary{background:#087f83;border-color:#119fa0}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:15px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px}.label{font-size:12px;color:var(--muted)}.value{font-size:25px;font-weight:800;margin:7px 0 2px}.hint{font-size:11px;color:var(--green)}
+.cols{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-bottom:15px}.panel h2{font-size:15px;margin:0 0 13px}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.flow div{padding:12px 9px;background:var(--panel2);border-radius:9px;text-align:center}.flow b{display:block;font-size:16px;margin:5px 0}.flow small{color:var(--muted)}
+table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{padding:10px 9px;text-align:left;border-bottom:1px solid var(--line);font-size:12px}th{color:var(--muted);font-weight:600}.wrap{overflow:auto}.status{font-size:10px;border-radius:20px;padding:4px 8px;background:#153c31;color:#80efb7}.status.review{background:#493719;color:#ffdc85}.status.alert{background:#48232e;color:#ff9dac}.positive{color:var(--green)}.negative{color:var(--red)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}.notice{margin-top:15px;padding:13px;border:1px solid #665329;background:#292316;color:#ead8a5;border-radius:11px;font-size:12px}.small{font-size:11px}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.cols,.split{grid-template-columns:1fr}}@media(max-width:560px){main{padding:14px}.cards{grid-template-columns:1fr 1fr}.flow{grid-template-columns:repeat(2,1fr)}header{padding:16px}}
+</style></head><body>
+<header><div><div class="brand"><span>Vico</span>Pay · Wallet & Coin Economy</div><div class="sub">Super Admin / Financial Integrity & Coin Circulation</div></div><div class="demo">DEMO DATA · NOT CONNECTED TO PRODUCTION</div></header>
+<main>
+<div class="toolbar"><input id="search" placeholder="Search account or reference…" aria-label="Search account or reference"><select id="kind"><option value="all">All ledger activity</option><option>Coin purchase</option><option>Gift sent</option><option>Creator credit</option><option>Refund</option><option>Withdrawal</option></select><select id="state"><option value="all">All statuses</option><option>Completed</option><option>Pending</option><option>Failed</option><option>Reversed</option></select><button class="primary" id="csv">Export ledger CSV</button></div>
+<section class="cards">
+<div class="card"><div class="label">Coins purchased (sample period)</div><div class="value">8.42m</div><div class="hint">↑ 9.6% vs previous period</div></div>
+<div class="card"><div class="label">Coins currently in wallets</div><div class="value">24.76m</div><div class="hint">Illustrative outstanding balance</div></div>
+<div class="card"><div class="label">Gift coins spent</div><div class="value">6.18m</div><div class="hint">Across sample transactions</div></div>
+<div class="card"><div class="label">Unreconciled payment records</div><div class="value" style="color:var(--amber)">23</div><div class="hint" style="color:var(--amber)">Requires finance review</div></div>
+</section>
+<section class="cols">
+<div class="panel"><h2>Coin economy movement</h2><div class="flow">
+<div><small>Coin purchases</small><b class="positive">+8.42m</b><small>Coins credited</small></div>
+<div><small>Gift spending</small><b>-6.18m</b><small>Viewer wallets</small></div>
+<div><small>Creator credits</small><b>+4.33m</b><small>Creator ledger</small></div>
+<div><small>Platform share</small><b>1.85m</b><small>Illustrative split</small></div>
+</div><p class="muted small">Movement categories are illustrative. Coin issuance, gift debits, creator credits and platform commission must reconcile to the configured VicoPay ledger rules.</p></div>
+<div class="panel"><h2>Financial integrity checks</h2>
+<table><tbody>
+<tr><td>Payment reference uniqueness</td><td><span class="status">Sample pass</span></td></tr>
+<tr><td>Wallet ledger debit / credit balance</td><td><span class="status review">Review required</span></td></tr>
+<tr><td>Paystack settlement reconciliation</td><td><span class="status review">23 unmatched</span></td></tr>
+<tr><td>Gift reversal handling</td><td><span class="status">Sample pass</span></td></tr>
+<tr><td>Withdrawal transfer verification</td><td><span class="status alert">3 exceptions</span></td></tr>
+</tbody></table></div>
+</section>
+<section class="panel" style="margin-bottom:15px"><h2>Wallet ledger activity</h2><div class="wrap"><table><thead><tr><th>Timestamp</th><th>Account</th><th>Activity</th><th>Coin delta</th><th>NGN value</th><th>Status</th><th>Reference</th></tr></thead><tbody id="ledger"></tbody></table></div></section>
+<section class="split">
+<div class="panel"><h2>Coin package performance</h2><div class="wrap"><table><thead><tr><th>Package</th><th>Coins</th><th>Purchases</th><th>Gross (sample)</th></tr></thead><tbody><tr><td>Starter</td><td>100</td><td>2,840</td><td>₦284,000</td></tr><tr><td>Popular</td><td>500</td><td>1,960</td><td>₦1,960,000</td></tr><tr><td>Premium</td><td>1,200</td><td>1,110</td><td>₦3,330,000</td></tr><tr><td>Ultimate</td><td>5,000</td><td>420</td><td>₦4,200,000</td></tr></tbody></table></div></div>
+<div class="panel"><h2>Reconciliation queue</h2><div class="wrap"><table><thead><tr><th>Issue</th><th>Count</th><th>Priority</th><th>Recommended check</th></tr></thead><tbody>
+<tr><td>Successful gateway / missing coin credit</td><td>8</td><td><span class="status alert">High</span></td><td>Verify webhook + ledger reference</td></tr>
+<tr><td>Duplicate payment reference</td><td>2</td><td><span class="status alert">High</span></td><td>Check idempotency constraint</td></tr>
+<tr><td>Pending transfer beyond SLA</td><td>9</td><td><span class="status review">Medium</span></td><td>Query transfer status</td></tr>
+<tr><td>Wallet balance drift</td><td>4</td><td><span class="status review">Medium</span></td><td>Rebuild balance from ledger</td></tr>
+</tbody></table></div></div>
+</section>
+<div class="notice"><b>Production safety:</b> This is a standalone preview with fictional data. It does not access real wallets, Paystack, PostgreSQL or payment webhooks, and no financial action is executed. In production, use an append-only double-entry ledger, unique idempotency keys for every payment and gift, immutable gateway references, transactional wallet updates, verified Paystack webhook signatures, daily settlement reconciliation, and audited role-based access. Never edit a user's coin balance directly to “fix” a mismatch—post a compensating ledger entry with an approved reason.</div>
+</main>
+<script>
+const records=[
+["17 Nov 2026 13:41","@amara_live","Creator credit","+12,400","₦6,200","Completed","LED-90281"],
+["17 Nov 2026 13:39","@viewerdan","Gift sent","-2,000","₦1,000","Completed","GFT-90278"],
+["17 Nov 2026 13:36","@viewerdan","Coin purchase","+5,000","₦2,500","Pending","PAY-90274"],
+["17 Nov 2026 13:28","@kingtobi","Withdrawal","-50,000","₦25,000","Pending","WD-90263"],
+["17 Nov 2026 13:11","@nnekastar","Refund","-500","₦250","Reversed","REF-90251"],
+["17 Nov 2026 12:58","@newviewer","Coin purchase","+1,000","₦500","Failed","PAY-90243"],
+["17 Nov 2026 12:46","@zaraofficial","Creator credit","+8,600","₦4,300","Completed","LED-90231"],
+["17 Nov 2026 12:32","@musa_vibes","Gift sent","-750","₦375","Completed","GFT-90220"],
+["17 Nov 2026 12:19","@lilyrose","Coin purchase","+500","₦250","Completed","PAY-90208"],
+["17 Nov 2026 11:55","@kingtobi","Creator credit","+9,200","₦4,600","Completed","LED-90187"],
+["17 Nov 2026 11:31","@viewerlola","Coin purchase","+2,000","₦1,000","Completed","PAY-90161"],
+["17 Nov 2026 11:10","@amara_live","Withdrawal","-20,000","₦10,000","Pending","WD-90144"]
+];
+function render(){let q=document.getElementById("search").value.toLowerCase(),k=document.getElementById("kind").value,s=document.getElementById("state").value;let rows=records.filter(r=>(r.join(" ").toLowerCase().includes(q))&&(k==="all"||r[2]===k)&&(s==="all"||r[5]===s));document.getElementById("ledger").innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="${r[3][0]==='-'?'negative':'positive'}">${r[3]}</td><td>${r[4]}</td><td><span class="status ${r[5]==='Pending'?'review':r[5]==='Failed'?'alert':''}">${r[5]}</span></td><td>${r[6]}</td></tr>`).join("")||'<tr><td colspan="7">No matching ledger entries.</td></tr>'}
+document.getElementById("search").oninput=render;document.getElementById("kind").onchange=render;document.getElementById("state").onchange=render;
+document.getElementById("csv").onclick=()=>{let rows=[["Timestamp","Account","Activity","Coin delta","NGN value","Status","Reference"],...records.filter(r=>r.join(" ").toLowerCase().includes(document.getElementById("search").value.toLowerCase()))];let csv=rows.map(r=>r.join(",")).join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="vicopay-wallet-ledger-demo.csv";a.click();URL.revokeObjectURL(a.href)};render();
+</script></body></html>

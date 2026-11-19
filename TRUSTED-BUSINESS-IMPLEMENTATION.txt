@@ -1,0 +1,42 @@
+VICO PAY LIVE — TRUSTED BUSINESS / BUSINESS CENTER UPDATE
+
+WHAT CHANGED
+- Added a third Business Center tab: Big Business, alongside Company Products and National Products.
+- Added Follow, Like, Share and View counters to product cards.
+- Follow uses the existing Vico account follow system.
+- Likes use the existing product_likes table and are unique per signed-in account per listing.
+- Views are recorded when a signed-in user opens a product detail page. A viewer is counted once per listing (unique account), so refreshing does not inflate the number.
+- Added customer reviews to product detail pages. Only customers with a completed order for that exact product can submit a review. Reviews are pending until admin moderation.
+- Added Vico Trusted Business progress page: vico-trusted-business.html.
+- Added admin trust/review moderation page: admin-trusted-business.html, linked from admin.html.
+
+TRUST ELIGIBILITY RULES IMPLEMENTED
+- At least 1,000 followers for the seller account.
+- At least 1,000,000 likes aggregated across the seller's active marketplace products.
+- At least 20 approved customer reviews.
+- Average approved review rating at least 4.0 / 5.
+- After these milestones, the account is queued and a notification links to vico-trusted-business.html.
+- The Vico Trusted Business badge is NOT automatically awarded by counts alone. Admin must complete business, delivery, reputation and fraud checks and manually approve the account. This avoids falsely certifying a company just because it has high engagement.
+
+ADMIN
+- Open /admin-trusted-business.html and enter the existing ADMIN_KEY.
+- Review milestone applications and approve / reject / place under review.
+- Moderate pending customer reviews in the same page.
+
+CUSTOMER
+- Open /vico-trusted-business.html to see live milestone progress and trust status.
+- Product detail pages now show reviews and a review submission area.
+
+DATABASE
+The vico-engage.js module creates these PostgreSQL tables automatically:
+- product_views
+- product_reviews
+- trusted_business_status
+Existing product_likes, follows and notifications are reused.
+
+IMPORTANT LIMITATIONS
+- Likes and views count signed-in Vico accounts. One account counts once per listing; this reduces refresh and repeat-click inflation, but does not by itself prove that an account is a genuine person.
+- Reviews require a completed Vico order and admin moderation. The admin must still assess suspicious patterns and complaints.
+- The current view metric counts unique signed-in product detail viewers, not simultaneous live watchers.
+- No artificial starting counts or fake engagement are inserted.
+- This ZIP was syntax-checked and existing market/commerce/company-verification tests passed. It has not been connected to the user's live Render/PostgreSQL deployment in this environment.
