@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Animal Filters - VicoPay Live</title>
+<script src="vico-animal-filters.js"></script>
+<style>
+body{margin:0;min-height:100vh;background:linear-gradient(180deg,#eaf5ff,#cfe5ff);font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#0b2a5b;display:flex;flex-direction:column;align-items:center}
+.w{width:min(520px,100%);padding:18px 14px 40px}h1{margin:6px 0 4px;font-size:26px}p{margin:0 0 14px;color:#4a628a;font-weight:600;line-height:1.45}
+.cam{position:relative;border-radius:24px;overflow:hidden;background:#0b2a5b;aspect-ratio:3/4;box-shadow:0 16px 40px rgba(15,75,181,.25)}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+.cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#cfe6ff;font-weight:700;text-align:center;padding:20px}
+.row{display:flex;gap:10px;margin-top:14px}.row button{flex:1;height:50px;border:0;border-radius:14px;font:800 16px system-ui,Arial;cursor:pointer;color:#fff;background:linear-gradient(135deg,#1d6fe8,#0f4bb5)}.row button.g{background:#fff;color:#0f4bb5;border:1.5px solid #b8d4f7}
+.note{margin-top:14px;font-size:13px;font-weight:600;color:#4a628a}
+</style></head>
+<body><div class="w">
+<h1>🐾 Try the Animal Filters</h1><p>Start your camera, then tap <b>Filters</b> and pick an animal. This is exactly what viewers see when you go live.</p>
+<div class="cam"><video id="v" autoplay playsinline muted></video><div class="ph" id="ph">Tap “Start camera”</div></div>
+<div class="row"><button id="go" type="button">Start camera</button><button class="g" type="button" data-vico-filters>🐾 Filters</button></div>
+<div class="note">The first time you choose a filter, face tracking is downloaded (about 5 MB). You need an internet connection.</div>
+</div>
+<script>
+document.getElementById("go").onclick=function(){var b=this;b.disabled=true;
+  navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:720},height:{ideal:960}},audio:false}).then(function(s){var v=document.getElementById("v");v.srcObject=s;document.getElementById("ph").style.display="none";b.textContent="Camera on";VicoAnimals.open();})
+  .catch(function(){b.disabled=false;document.getElementById("ph").textContent="Could not open the camera. Allow camera access and try again.";});};
+</script></body></html>

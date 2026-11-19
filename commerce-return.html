@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Checking your payment - Vico Pay Live</title>
+<link rel="stylesheet" href="gm.css">
+<style>.box{width:min(460px,100%);margin:14vh auto;padding:28px;text-align:center}.box h1{margin:0 0 6px;font-size:24px;color:var(--gm-purple)}.box p{color:var(--gm-muted);font-weight:700}.sp{font-size:44px}</style></head>
+<body class="gm"><div class="gm-card box"><div class="sp" id="ic">⏳</div><h1 id="h">Checking your payment…</h1><p id="p">Please wait. We are asking Paystack to confirm it. Do not close this page.</p><a class="gm-btn" id="go" href="global-market-community.html" style="display:none;margin-top:10px">Continue</a></div>
+<script src="auth.js"></script>
+<script>
+var q=new URLSearchParams(location.search),ref=q.get("reference")||q.get("trxref"),back=q.get("back")||"vico-wallet.html";if(!/^[a-z0-9_-]+\.html(#[a-z]+)?$/i.test(back))back="vico-wallet.html";
+function end(ok,h,p){document.getElementById("ic").textContent=ok?"✅":"⚠️";document.getElementById("h").textContent=h;document.getElementById("p").textContent=p;var g=document.getElementById("go");g.href=back;g.style.display="inline-flex";}
+function check(n){fetch("/api/commerce/verify?reference="+encodeURIComponent(ref||"")).then(function(r){return r.json();}).then(function(d){
+  if(d.success){end(true,"Payment successful","Your payment is confirmed.");setTimeout(function(){location.href=back;},1800);}
+  else if(n<4&&/not completed|Could not check/.test(d.message||"")){setTimeout(function(){check(n+1);},2500);}
+  else end(false,"Payment not confirmed",d.message||"We could not confirm this payment. If money left your account, it will be matched automatically; contact support if it does not.");}).catch(function(){end(false,"Could not check","Please open your wallet or the Ad Center to see the latest status.");});}
+if(!ref)end(false,"No payment found","Open your wallet or the Ad Center to see your payments.");else check(0);
+</script></body></html>

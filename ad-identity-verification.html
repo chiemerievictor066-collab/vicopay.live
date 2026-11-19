@@ -1,0 +1,107 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Identity Verification | Vico Pay Live</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f2f7ff;color:#19345f;font-family:Arial,sans-serif}.top{background:linear-gradient(100deg,#062a75,#087fe8);color:white;padding:15px 4%}.brand{max-width:800px;margin:auto;font-size:18px;font-weight:900}.brand b{display:inline-grid;place-items:center;background:linear-gradient(145deg,#8ceaff,#7041d8);width:38px;height:38px;border-radius:12px;margin-right:9px}.brand small{display:block;margin-left:49px;font-size:10px;color:#cdeaff;letter-spacing:1px}.wrap{width:min(760px,92%);margin:26px auto 45px}.panel{background:white;border:1px solid #dce9f8;border-radius:20px;padding:clamp(20px,4vw,32px);box-shadow:0 14px 38px #174b8510}.step{display:inline-block;background:#eaf5ff;color:#1767b5;padding:8px 11px;border-radius:25px;font-size:11px;font-weight:900;letter-spacing:.7px}h1{font-size:clamp(26px,5vw,36px);color:#10285b;margin:14px 0 8px}.sub{font-size:14px;line-height:1.6;color:#657995;margin:0 0 20px}label{display:block;font-size:12px;font-weight:800;color:#29466f;margin:15px 0 7px}input,textarea,select{width:100%;border:1px solid #d5e2f1;border-radius:11px;padding:12px 13px;background:white;color:#17345e;font:14px Arial}textarea{min-height:95px;resize:vertical}.btn{width:100%;border:0;border-radius:12px;padding:14px;background:linear-gradient(100deg,#087fe8,#21b6ef);color:white;font-size:14px;font-weight:900;cursor:pointer;margin-top:20px}.btn:disabled{opacity:.6}.note{font-size:11px;color:#687d99;line-height:1.6;background:#f1f7ff;border:1px solid #deebfa;border-radius:12px;padding:12px;margin-top:15px}.status{font-size:12px;line-height:1.5;margin-top:12px;color:#31577e}.check{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:#526b8e;line-height:1.5;margin-top:14px}.check input{width:auto;margin-top:2px}.footer{text-align:center;color:#8190a6;font-size:11px;margin-top:18px}.capture-card{border:1px solid #dce9f8;border-radius:15px;padding:15px;margin:15px 0;background:#fbfdff}.capture-card h3{margin:0 0 6px;color:#173d78;font-size:15px}.capture-card p{font-size:12px;line-height:1.5;color:#647994;margin:0 0 12px}.card-guide{width:min(100%,330px);aspect-ratio:1.586/1;margin:12px auto;border:2px dashed #1685e9;border-radius:13px;background:linear-gradient(135deg,#e9f5ff,#f5f0ff);display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;color:#27639d;font-size:12px;font-weight:800}.capture-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.action{border:1px solid #b9d8f5;background:#edf7ff;color:#075eae;border-radius:11px;padding:12px 8px;font-weight:800;font-size:13px;cursor:pointer}.action.upload{background:white;color:#36577c;border-color:#d5e2f1}.selected{font-size:11px;color:#18734a;margin-top:9px;min-height:15px}.hidden-picker{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}@media(max-width:480px){.row2{grid-template-columns:1fr!important}.capture-actions{grid-template-columns:1fr}.wrap{margin-top:18px}}
+</style></head><body><script src="auth.js"></script><script>VicoAuth.requireLogin();</script><header class="top"><div class="brand"><b>V</b>Vico Pay Live<small>VICO AD CENTER</small></div></header><main class="wrap">
+<section class="panel">
+<span class="step">STEP 3 OF 3 · IDENTITY VERIFICATION</span>
+<h1>Verify your identity</h1>
+<p class="sub">You can take a photo directly with your phone camera or choose an existing photo/file. Your details must match your business information exactly. Place your ID inside the guide frame so all four edges and the text are visible.</p>
+<div class="note" id="stageBox" style="display:none;font-size:13px"></div>
+<div class="note" style="background:#fff7e6;border-color:#f3dba5;color:#7a5a12"><b>Must match exactly:</b> your name, phone number and location below must be exactly the same as the business information you saved in Step 2. If anything differs, verification will be rejected and you will be asked to correct it.</div>
+<form id="form">
+<label>Full legal name (must match your ID) *</label><input name="legalName" required autocomplete="name" placeholder="Name exactly as printed on your ID">
+<label>Phone number (same as business information) *</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+234…">
+<label>Date of birth *</label><input name="dateOfBirth" type="date" required>
+<label>Choose identity document *</label>
+<select name="idType" required><option value="">Select ID type</option><option>National identity card</option><option>International passport</option><option>Driver's licence</option><option>Voter's card</option></select>
+<label>ID number (if needed)</label><input name="idNumber" autocomplete="off" placeholder="Number printed on your ID">
+
+<div class="capture-card">
+<h3>1. Front of your ID card / photo page *</h3>
+<p>Use Take photo to open your phone camera, or Upload to select a picture or PDF already on your phone.</p>
+<div class="card-guide">PLACE THE FRONT OF YOUR ID INSIDE THIS FRAME<br>Show all four edges clearly</div>
+<div class="capture-actions">
+<button class="action" type="button" data-camera="front">📷 Take photo</button>
+<button class="action upload" type="button" data-upload="front">↥ Upload photo / PDF</button>
+</div>
+<input class="hidden-picker" id="frontCamera" type="file" accept="image/*" capture="environment">
+<input class="hidden-picker" id="frontUpload" type="file" accept="image/jpeg,image/png,image/webp,application/pdf">
+<div class="selected" id="frontSelected">No ID photo selected yet.</div>
+</div>
+
+<div class="capture-card">
+<h3>2. Back of your ID (if it has a back)</h3>
+<p>Take a clear photo of the back, or upload an existing image.</p>
+<div class="card-guide">PLACE THE BACK OF YOUR ID INSIDE THIS FRAME</div>
+<div class="capture-actions">
+<button class="action" type="button" data-camera="back">📷 Take photo</button>
+<button class="action upload" type="button" data-upload="back">↥ Upload photo</button>
+</div>
+<input class="hidden-picker" id="backCamera" type="file" accept="image/*" capture="environment">
+<input class="hidden-picker" id="backUpload" type="file" accept="image/jpeg,image/png,image/webp">
+<div class="selected" id="backSelected">No back photo selected. You can leave this blank if your ID has no back.</div>
+</div>
+
+<div class="capture-card">
+<h3>3. Your selfie / face photo *</h3>
+<p>Look directly at the camera, use good lighting and keep your face fully visible.</p>
+<div class="capture-actions">
+<button class="action" type="button" data-camera="selfie">🤳 Take selfie</button>
+<button class="action upload" type="button" data-upload="selfie">↥ Upload selfie</button>
+</div>
+<input class="hidden-picker" id="selfieCamera" type="file" accept="image/*" capture="user">
+<input class="hidden-picker" id="selfieUpload" type="file" accept="image/jpeg,image/png,image/webp">
+<div class="selected" id="selfieSelected">No selfie selected yet.</div>
+</div>
+
+<div class="row2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Country (same as business information) *</label><input name="country" required value="Nigeria"></div><div><label>City / state (same as business information) *</label><input name="city" required placeholder="Lagos, Lagos State"></div></div>
+<label>Residential address *</label><textarea name="residentialAddress" required placeholder="House number, street, town/city, state, country"></textarea>
+<label class="check"><input id="consent" type="checkbox" required><span>I confirm the information and documents are genuine and belong to me or the authorized advertiser. I consent to their use for identity verification under Vico's privacy policy.</span></label>
+<button class="btn" id="submit" type="submit">Submit identity documents for review</button>
+<div class="status" id="status" role="status"></div>
+</form>
+<div class="note"><b>Camera note:</b> On supported phones, Take photo opens the camera. If the browser or device does not support direct camera capture, use Upload photo / PDF instead. Camera access needs a secure (https) website address.</div>
+<div class="note"><b>Accepted photo IDs:</b> National identity card, international passport, driver's licence or voter's card, where legally accepted. A bank statement is proof of address in some checks, not a government photo ID.</div>
+<div class="note"><b>Protect people's identity:</b> Vico compares these details with your saved business information and then a person from the Vico team reviews your documents. Your photos are encrypted, are seen only by the review team, and are deleted once a decision is made.</div>
+</section>
+<div class="footer">© 2026 Vico Pay Live · Secure advertiser verification</div></main><script>
+const form=document.getElementById('form'),status=document.getElementById('status'),submitBtn=document.getElementById('submit'),stageBox=document.getElementById('stageBox');
+const chosen={front:null,back:null,selfie:null};let ORDER=null;
+function shrink(file,maxDim,q){return new Promise((ok,no)=>{const img=new Image(),u=URL.createObjectURL(file);
+ img.onload=()=>{let w=img.naturalWidth,h=img.naturalHeight,k=Math.min(1,maxDim/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);URL.revokeObjectURL(u);c.toBlob(b=>b?ok(b):no(Error('Could not read that photo.')),'image/jpeg',q);};
+ img.onerror=()=>{URL.revokeObjectURL(u);no(Error('Could not read that photo. Please use a JPG, PNG or WebP photo.'));};img.src=u;});}
+function chooseFile(kind,file){
+ if(!file)return;
+ const allowed=kind==='front'?['image/jpeg','image/png','image/webp','application/pdf']:['image/jpeg','image/png','image/webp'];
+ if(!allowed.includes(file.type)){status.textContent='Please choose a supported image'+(kind==='front'?' or PDF.':'.');return;}
+ if(file.size>25*1024*1024){status.textContent='That file is too large. Please take a new photo.';return;}
+ chosen[kind]=file;document.getElementById(kind+'Selected').textContent='✓ Selected: '+file.name;status.textContent='';
+}
+document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.camera+'Camera').click()));
+document.querySelectorAll('[data-upload]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.upload+'Upload').click()));
+['front','back','selfie'].forEach(kind=>{[kind+'Camera',kind+'Upload'].forEach(id=>document.getElementById(id).addEventListener('change',e=>chooseFile(kind,e.target.files[0])));});
+function lock(html){form.querySelectorAll('input,textarea,button,select').forEach(e=>e.disabled=true);stageBox.style.display='block';stageBox.innerHTML=html;}
+(async()=>{try{const r=await fetch('/api/ads/orders/current',{credentials:'same-origin'}),d=await r.json();ORDER=d;
+ if(!d.order||d.stage==='payment'||d.stage==='none'){lock('No paid advert found. <a href="ad-sense-home.html" style="color:#087fe8">Choose a level and a job, then pay first →</a>');return;}
+ if(d.stage==='profile'){location.href='ad-business-information.html';return;}if(d.order&&['big-business','company','national'].includes(d.order.tier)){location.href='ad-organisation-verification.html';return;}
+ if(d.stage==='review'){lock('⏳ <b>Your documents are being checked.</b> The Vico team will review them and you will get a notification. Nothing more is needed from you now.');return;}
+ if(d.stage==='verified'){lock('✅ <b>Your identity is verified.</b> The Vico team will now prepare your advert ('+d.order.level+' — '+d.order.job+').');return;}
+ if(d.identity&&d.identity.status==='rejected'){stageBox.style.display='block';stageBox.style.background='#fee2e2';stageBox.style.borderColor='#fca5a5';stageBox.style.color='#991b1b';stageBox.textContent='Your last documents were not accepted: '+(d.identity.reason||'please try again')+'. Please submit them again.';}
+ else {stageBox.style.display='block';stageBox.textContent='Advert: '+d.order.level+' — '+d.order.job+'. Enter your details exactly as on your ID and exactly as in your business information.';}
+}catch(e){status.textContent=e.message;}})();
+async function put(url,blob){const r=await fetch(url,{method:'PUT',body:blob,credentials:'same-origin',headers:{'Content-Type':blob.type||'application/octet-stream'}});let d={};try{d=await r.json();}catch(_){}if(!r.ok||!d.success)throw Error(d.message||'Could not upload a document.');}
+form.addEventListener('submit',async e=>{
+ e.preventDefault();if(!form.reportValidity())return;if(!ORDER||!ORDER.order)return;
+ if(!chosen.front){status.textContent='Please take or upload a photo of the front of your ID.';return;}
+ if(!chosen.selfie){status.textContent='Please take or upload your selfie.';return;}
+ submitBtn.disabled=true;
+ try{const id=ORDER.order.id,names={front:'front of your ID',back:'back of your ID',selfie:'selfie'};
+  for(const kind of ['front','back','selfie']){const f=chosen[kind];if(!f)continue;status.textContent='Uploading '+names[kind]+' securely…';
+   const blob=f.type==='application/pdf'?f:await shrink(f,2000,0.9);await put('/api/ads/orders/'+id+'/identity/'+kind,blob);}
+  status.textContent='Checking your details…';
+  const body={};for(const k of ['legalName','dateOfBirth','idType','idNumber','residentialAddress','phone','country','city'])body[k]=form.elements[k].value;
+  const r=await fetch('/api/ads/identity-verification',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)});const d=await r.json();
+  if(!r.ok||!d.success)throw Error(d.message||'Submission failed.');
+  form.reset();lock('⏳ <b>'+(d.message||'Documents submitted. Your verification is pending review.')+'</b>');status.textContent='';
+ }catch(err){status.textContent=err.message;submitBtn.disabled=false;}
+});
+</script></body></html>

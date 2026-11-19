@@ -10,6 +10,7 @@ module.exports = function (ctx) {
     app, db, ledger, store, axios, crypto, liveRooms, giftPrices, getAuthEmail, requireAuth, requireAdmin,
     authRateLimit, hashPassword, recordSessionEnd, LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
   } = ctx;
+  const hooks = ctx.hooks || {};   // optional extension points (the VIP module plugs in here)
   const { users, publicHandle, displayNameOf, avatarUrl, bannedUsers, getHostStats } = store;
   const getStarBreakdown = store.starBreakdown;
   const resolveHandle = (h) => users.resolveHandle(h);
@@ -88,7 +89,7 @@ module.exports = function (ctx) {
       roomId: room.roomId, title: room.title, category: room.category, liveType: room.liveType,
       viewers: room.viewers, gifts: room.gifts, pkActive: !!room.pkActive, createdAt: room.createdAt,
       handle: publicHandle(host), displayName: displayNameOf(host), avatar: avatarUrl(host),
-      description: room.description || "", views: (uniq.get(room.roomId) || new Set()).size,
+      description: room.description || "", product: room.product || null, story: room.story || "", promoted: !!room.promoted, views: (uniq.get(room.roomId) || new Set()).size,
       followers: p.counts.get(host) || 0,
       isFollowing: viewer ? p.mine.has(host) : false,
       thumb: t ? "/api/live/thumb/" + room.roomId + "?t=" + t.ts : null
@@ -142,7 +143,13 @@ module.exports = function (ctx) {
     const key = getAuthEmail(req) || ("g" + String(req.query.k || "").replace(/[^a-z0-9]/gi, "").slice(0, 24));
     if (key.length > 1 && key !== lc(room.hostId)) {
       if (!viewers.has(room.roomId)) viewers.set(room.roomId, new Map());
-      viewers.get(room.roomId).set(key, Date.now());
+      const vm = viewers.get(room.roomId), lastSeen = vm.get(key);
+      const justJoined = lastSeen === undefined || Date.now() - lastSeen > 25000;
+      vm.set(key, Date.now());
+      // a signed-in person (guest keys have no "@") has just opened this live: let the VIP module decide about an entrance animation
+      if (justJoined && hooks.viewerJoin && key.indexOf("@") > 0) {
+        Promise.resolve().then(() => hooks.viewerJoin(room, key, pushEvent)).catch(() => { /* an entrance must never break the live */ });
+      }
       if (!uniq.has(room.roomId)) uniq.set(room.roomId, new Set());
       uniq.get(room.roomId).add(key);
     }
@@ -154,7 +161,7 @@ module.exports = function (ctx) {
     }
     const since = Number(req.query.since) || 0;
     ok(res, {
-      viewers: countViewers(room.roomId), views: (uniq.get(room.roomId) || new Set()).size, loves: room.lovesN, stars: room.starsN || 0, starGoal: 3000,
+      viewers: countViewers(room.roomId), views: (uniq.get(room.roomId) || new Set()).size, loves: room.lovesN, stars: room.starsN || 0, starGoal: 3000, promoted: !!room.promoted,
       now: Date.now(),
       events: (events.get(room.roomId) || []).filter((e) => e.id > since),
       battle: battleOfHost(lc(room.hostId))
@@ -372,7 +379,7 @@ module.exports = function (ctx) {
     const host = lc(hostId), sender = lc(senderId);
     const room = roomOfHost(host);
     if (room) { room.gifts = (room.gifts || 0) + 1; room.giftCoins = (room.giftCoins || 0) + price; }
-    // the host's star total after this gift (10 coins = 5 stars), shown growing on the live screen
+    // the host's star total after this gift, shown growing on the live screen
     const starsAdded = store.starsOf(price);
     let starsNow = null;
     try { const w = await store.getWallet(host); starsNow = w.stars; if (room) room.starsN = starsNow; } catch (e) {}
@@ -498,6 +505,55 @@ module.exports = function (ctx) {
     } catch (e) { /* ignore */ }
   }
   const count = async (sql, params) => Number((await db.get(sql, params || [])).c);
+  // ---------- Admin analytics (real recorded database totals; no fabricated ad impressions/clicks) ----------
+  app.get("/api/admin/analytics", requireAdmin, async (req, res) => {
+    const allowed = [7, 30, 90, 365];
+    const days = allowed.includes(Number(req.query.days)) ? Number(req.query.days) : 30;
+    const since = Date.now() - days * 86400000;
+    const scalar = async (sql, params = []) => Number((await db.get(sql, params))?.value || 0);
+    const rows = async (sql, params = []) => db.all(sql, params);
+    try {
+      const [usersTotal, ordersTotal, ordersPaid, orderRevenue, listingsActive, videosTotal, videoViews, videoShares,
+        adCampaigns, companyAds, nationalAds, paidAdPayments, supportOpen, supportResolved, giftsCount, giftCoins,
+        liveHours, dailyRevenue, dailyOrders, topProducts] = await Promise.all([
+        scalar('SELECT COUNT(*) AS value FROM users'),
+        scalar('SELECT COUNT(*) AS value FROM market_orders'),
+        scalar("SELECT COUNT(*) AS value FROM market_orders WHERE status IN ('paid','shipped','completed','delivered')"),
+        scalar("SELECT COALESCE(SUM(amount_ngn),0) AS value FROM market_orders WHERE status IN ('paid','shipped','completed','delivered')"),
+        scalar("SELECT COUNT(*) AS value FROM market_listings WHERE status = 'active'"),
+        scalar("SELECT COUNT(*) AS value FROM videos WHERE status = 'ready'"),
+        scalar("SELECT COALESCE(SUM(views),0) AS value FROM videos WHERE status = 'ready'"),
+        scalar("SELECT COALESCE(SUM(shares),0) AS value FROM videos WHERE status = 'ready'"),
+        scalar('SELECT COUNT(*) AS value FROM ad_campaigns'),
+        scalar("SELECT COUNT(*) AS value FROM ad_campaigns WHERE lower(ad_type) = 'business'"),
+        scalar("SELECT COUNT(*) AS value FROM ad_campaigns WHERE country IS NOT NULL AND btrim(country) <> '' AND COALESCE(btrim(state), '') = '' AND COALESCE(btrim(city), '') = ''"),
+        scalar("SELECT COALESCE(SUM(amount_paid),0) AS value FROM ad_flow WHERE paid = 1"),
+        scalar("SELECT COUNT(*) AS value FROM support_tickets WHERE status IN ('open','answered')"),
+        scalar("SELECT COUNT(*) AS value FROM support_tickets WHERE status IN ('resolved','closed')"),
+        scalar('SELECT COUNT(*) AS value FROM gift_transactions'),
+        scalar('SELECT COALESCE(SUM(coin),0) AS value FROM gift_transactions'),
+        scalar('SELECT COALESCE(SUM(GREATEST(0, COALESCE(ended_at, last_beat, started_at) - started_at)),0) / 3600000.0 AS value FROM live_sessions WHERE started_at >= ?', [since]),
+        rows("SELECT to_char(to_timestamp(paid_at / 1000.0), 'YYYY-MM-DD') AS day, COALESCE(SUM(amount_ngn),0) AS amount FROM market_orders WHERE paid_at >= ? AND status IN ('paid','shipped','completed','delivered') GROUP BY 1 ORDER BY 1", [since]),
+        rows("SELECT to_char(to_timestamp(created_at / 1000.0), 'YYYY-MM-DD') AS day, COUNT(*) AS count FROM market_orders WHERE created_at >= ? GROUP BY 1 ORDER BY 1", [since]),
+        rows("SELECT title, COUNT(*) AS orders, COALESCE(SUM(amount_ngn),0) AS revenue FROM market_orders WHERE status IN ('paid','shipped','completed','delivered') GROUP BY title ORDER BY revenue DESC LIMIT 5")
+      ]);
+      const adViewsClicksTracked = false; // current ad delivery module explicitly says impression/click tracking is not live yet
+      res.json({ success: true, days, generatedAt: Date.now(), metrics: {
+        usersTotal, ordersTotal, ordersPaid, orderRevenueNgn: orderRevenue, listingsActive,
+        videosTotal, videoViews, videoShares, adCampaigns, companyAds, nationalAds, paidAdPaymentsNgn: paidAdPayments,
+        supportOpen, supportResolved, giftsCount, giftCoins, liveHours: Math.round(liveHours * 100) / 100,
+        adViewsClicksTracked
+      }, charts: {
+        revenue: dailyRevenue.map(r => ({ day: r.day, amount: Number(r.amount) })),
+        orders: dailyOrders.map(r => ({ day: r.day, count: Number(r.count) })),
+        topProducts: topProducts.map(r => ({ title: r.title, orders: Number(r.orders), revenue: Number(r.revenue) }))
+      }});
+    } catch (e) {
+      console.error('ADMIN ANALYTICS ERROR:', e.message);
+      res.status(500).json({ success: false, message: 'Analytics could not be loaded. Check that the database migrations have completed.' });
+    }
+  });
+
   app.get("/api/admin/overview", requireAdmin, async (req, res) => {
     const g = await store.giftTotals();
     ok(res, {
@@ -524,27 +580,6 @@ module.exports = function (ctx) {
     await store.setBan(email, ban, (req.body || {}).reason);
     if (ban) { const r = roomOfHost(email); if (r) killRoom(r); }
     ok(res, { email, banned: ban });
-  });
-  // blocked accounts with the reason and the date, for admin-blocked-users.html
-  app.get("/api/admin/users/blocked", requireAdmin, async (req, res) => {
-    const q = lc(req.query.q).trim();
-    const rows = await db.all("SELECT email, reason, banned_at AS \"bannedAt\" FROM user_flags WHERE banned = 1 ORDER BY banned_at DESC LIMIT 500");
-    const emails = rows.map((r) => r.email);
-    if (emails.length) await users.warm(emails);
-    let list = rows.map((r) => ({ email: r.email, displayName: displayNameOf(r.email), handle: publicHandle(r.email), reason: r.reason || "", bannedAt: r.bannedAt || null, live: !!roomOfHost(r.email) }));
-    if (q) list = list.filter((u) => (u.email + " " + u.displayName + " " + u.handle + " " + u.reason).toLowerCase().includes(q));
-    ok(res, { blocked: list });
-  });
-  // creators blocked from withdrawing (5 failed attempts), with a way to lift the block
-  app.get("/api/admin/withdrawal-blocked", requireAdmin, async (req, res) => {
-    const all = await store.listWithdrawalSecurity();
-    ok(res, { blocked: all.filter((s) => s.banned || s.disqualified).map((s) => ({ creatorId: s.creatorId, failedAttempts: s.failedAttempts, banned: !!s.banned, disqualified: !!s.disqualified, lastAttemptAt: s.lastAttemptAt })) });
-  });
-  app.post("/api/admin/withdrawal-blocked/clear", requireAdmin, async (req, res) => {
-    const id = lc((req.body || {}).creatorId);
-    if (!id) return fail(res, 400, "creatorId is required.");
-    await store.saveWithdrawalSecurity(id, { failedAttempts: 0, banned: false, disqualified: false, lastAttemptAt: null });
-    ok(res, { creatorId: id });
   });
   app.post("/api/admin/users/reset-link", requireAdmin, async (req, res) => {
     const email = lc((req.body || {}).email);

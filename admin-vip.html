@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex">
+<title>VIP - VicoPay Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050812;color:#e8eefc;font-family:Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid #22304b;background:#071025;flex-wrap:wrap}
+.logo{font-weight:900;font-size:21px;margin-right:auto}.logo span{color:#ffc83d}
+.wrap{width:min(1150px,96%);margin:20px auto}
+.panel{background:#0a1328;border:1px solid #203352;border-radius:14px;padding:16px;margin-bottom:16px}
+.panel h3{margin:0 0 4px;font-size:16px}.muted{color:#8fa7c5;font-size:13px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{border:1px solid #2a4066;background:#0a1328;color:#cfe3ff;border-radius:18px;padding:8px 15px;font:inherit;font-weight:700;cursor:pointer}.tab.on{background:#f5b400;border-color:#f5b400;color:#1a1305}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+input,select{padding:10px 14px;border-radius:10px;border:1px solid #2a4066;background:#050c1c;color:#fff;font:inherit}input.grow{flex:1;min-width:150px}
+.b{border:0;border-radius:12px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:#0787ed}
+.b.red{background:#e11d48}.b.gray{background:#334155}.b.green{background:#16a34a}.b.sm{padding:5px 11px;font-size:12px;border-radius:9px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 11px;text-align:left;border-bottom:1px solid #1b2b47;vertical-align:top}
+th{color:#8fa7c5;background:#0c1730}.tw{overflow-x:auto;border-radius:12px;background:#0a1328;border:1px solid #203352}
+.tag{background:#16a34a;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}.tag.o{background:#b45309}.tag.r{background:#e11d48}
+.gate{max-width:420px;margin:12vh auto;background:#0a1328;border:1px solid #203352;border-radius:16px;padding:26px}.gate input{width:100%;margin:12px 0}
+.err{color:#ff9fb5;font-size:13px;min-height:18px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}#toast.bad{background:#e11d48}
+label{font-size:12px;color:#8fa7c5;display:block;margin-bottom:3px}
+.f{display:flex;flex-direction:column}
+</style></head><body>
+<div id="gate" class="gate">
+  <h2 style="margin:0">Admin sign in</h2>
+  <p class="muted">Enter the ADMIN_KEY from your server's .env file. It is only kept in this tab.</p>
+  <input id="key" type="password" placeholder="ADMIN_KEY" onkeydown="if(event.key==='Enter')enter()">
+  <button class="b" style="width:100%;padding:11px" onclick="enter()">Open VIP admin</button>
+  <div class="err" id="err"></div>
+</div>
+
+<div id="app" style="display:none">
+<header><div class="logo">VicoPay <span>VIP Admin</span></div>
+  <a href="admin.html" class="b gray" style="text-decoration:none">← Dashboard</a>
+  <button class="b gray" onclick="sessionStorage.removeItem('vk');location.reload()">Lock</button></header>
+<div class="wrap">
+  <div class="panel">
+    <h3>VIP system</h3>
+    <div class="muted">While OFF, nobody sees any VIP feature and the normal app works exactly as before. Turn it ON only after you have checked the items below.</div>
+    <div class="row">
+      <b id="stateTxt">…</b>
+      <button class="b green" id="toggleBtn" onclick="toggle()">…</button>
+      <span class="muted">Auto-VIP is paused for a streamer who has at least</span>
+      <input id="maxRep" type="number" min="0" max="100" style="width:80px"> <span class="muted">open reports</span>
+      <button class="b gray sm" onclick="saveRep()">Save</button>
+    </div>
+    <div class="muted" style="margin-top:8px" id="counts"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-t="badge" onclick="tab('badge')">Badges</button>
+    <button class="tab" data-t="frame" onclick="tab('frame')">Frames</button>
+    <button class="tab" data-t="decor" onclick="tab('decor')">Decorations</button>
+    <button class="tab" data-t="fx" onclick="tab('fx')">Entrances</button>
+    <button class="tab" data-t="gifts" onclick="tab('gifts')">VIP gifts</button>
+    <button class="tab" data-t="users" onclick="tab('users')">VIP users</button>
+    <button class="tab" data-t="audit" onclick="tab('audit')">Audit log</button>
+  </div>
+
+  <div id="itemsView">
+    <div class="panel" id="form"></div>
+    <div class="tw"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </div>
+
+  <div id="fxView" style="display:none">
+    <div class="panel">
+      <h3>VIP entrance animations</h3>
+      <div class="muted">When a VIP opens a live, the videos play in this order, then the notice slides in from the right, stays 3 seconds and leaves to the left. If a person qualifies for several entrances, the one for the highest tier is used. Videos are the files named gift-&lt;name&gt;.mp4 in your site folder.</div>
+      <div class="row" id="fxForm"></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>Entrance</th><th>From tier</th><th>Videos (in order)</th><th>Notice</th><th>Status</th><th></th></tr></thead><tbody id="fxBody"></tbody></table></div>
+  </div>
+
+  <div id="giftsView" style="display:none">
+    <div class="panel">
+      <h3>VIP gifts</h3>
+      <div class="muted">Gifts are sold in coins and paid to the host as Golden Stars, exactly like normal gifts. 1 coin = ₦10, so ₦500 = 50 coins. A gift only appears once it has a price and is switched on, and only while the VIP system is ON.</div>
+      <div class="row" id="gForm"></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>Gift</th><th>Price</th><th>Sold</th><th>Status</th><th></th></tr></thead><tbody id="gBody"></tbody></table></div>
+  </div>
+
+  <div id="usersView" style="display:none">
+    <div class="panel">
+      <h3>Grant or change VIP</h3>
+      <div class="muted">Type an email, @handle or username. "Check" shows what the person would get automatically from real followers, Golden Stars and live hours.</div>
+      <div class="row">
+        <input id="gUser" class="grow" placeholder="Email or handle">
+        <select id="gTier"><option>silver</option><option>gold</option><option>diamond</option><option>royal</option><option>legend</option></select>
+        <input id="gDays" type="number" min="1" placeholder="Days (blank = no end)" style="width:170px">
+        <input id="gReason" class="grow" placeholder="Reason" maxlength="200">
+        <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="gVer"> Verified streamer</label>
+      </div>
+      <div class="row">
+        <button class="b gray" onclick="lookup()">Check</button>
+        <button class="b green" onclick="grant()">Grant VIP</button>
+        <button class="b red" onclick="revoke()">Revoke VIP</button>
+        <button class="b gray" onclick="resetUser()">Reset to normal</button>
+      </div>
+      <div class="muted" id="lookupOut" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <h3>Give one special item to one person</h3>
+      <div class="row">
+        <input id="uUser" class="grow" placeholder="Email or handle">
+        <select id="uType"><option value="badge">badge</option><option value="frame">frame</option><option value="decor">decoration</option></select>
+        <input id="uId" class="grow" placeholder="Item id (e.g. frame-royal-flame)">
+        <button class="b green" onclick="unlock(false)">Unlock</button>
+        <button class="b gray" onclick="unlock(true)">Take back</button>
+      </div>
+    </div>
+    <div class="tw"><table><thead><tr><th>User</th><th>Decision</th><th>Effective now</th><th>Followers</th><th>Stars</th><th>Live hours</th><th>Reports</th><th>Note</th></tr></thead><tbody id="uBody"></tbody></table></div>
+  </div>
+
+  <div id="auditView" style="display:none"><div class="tw"><table><thead><tr><th>When</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead><tbody id="aBody"></tbody></table></div></div>
+</div>
+</div>
+<div id="toast"></div>
+
+<script>
+var KEY = sessionStorage.getItem("vk") || "", CUR = "badge", ITEMS = [];
+function toast(t, bad) { var e = document.getElementById("toast"); e.textContent = t; e.className = "show" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { e.className = ""; }, 2600); }
+async function api(p, body) { var r = await fetch(p, { method: body ? "POST" : "GET", headers: { "Content-Type": "application/json", "x-admin-key": KEY }, body: body ? JSON.stringify(body) : undefined }); var d = await r.json().catch(function () { return {}; }); d._ok = r.ok; return d; }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function ago(t) { return t ? new Date(Number(t)).toLocaleString() : ""; }
+
+async function enter() {
+  KEY = document.getElementById("key").value.trim() || KEY;
+  var d = await api("/api/admin/vip/settings");
+  if (!d.success) { document.getElementById("err").textContent = "Wrong key."; return; }
+  sessionStorage.setItem("vk", KEY);
+  document.getElementById("gate").style.display = "none"; document.getElementById("app").style.display = "";
+  showSettings(d); tab("badge");
+}
+function showSettings(d) {
+  document.getElementById("stateTxt").textContent = d.enabled ? "VIP is ON" : "VIP is OFF";
+  document.getElementById("stateTxt").style.color = d.enabled ? "#4ade80" : "#fca5a5";
+  var b = document.getElementById("toggleBtn"); b.textContent = d.enabled ? "Turn OFF" : "Turn ON"; b.className = "b " + (d.enabled ? "red" : "green"); b.dataset.on = d.enabled ? "1" : "";
+  document.getElementById("maxRep").value = d.maxOpenReports;
+  document.getElementById("counts").textContent = d.approvedVips + " admin-approved VIPs • " + d.usersWithDecorations + " people have equipped something";
+}
+async function toggle() {
+  var on = !document.getElementById("toggleBtn").dataset.on;
+  if (on && !confirm("Turn the VIP system ON for everyone? Only eligible people get VIP; everyone else is unaffected.")) return;
+  var d = await api("/api/admin/vip/settings", { enabled: on }); if (!d.success) return toast(d.message || "Failed", true);
+  showSettings(await api("/api/admin/vip/settings")); toast(on ? "VIP is ON" : "VIP is OFF");
+}
+async function saveRep() { var d = await api("/api/admin/vip/settings", { maxOpenReports: Number(document.getElementById("maxRep").value) }); toast(d.success ? "Saved" : (d.message || "Failed"), !d.success); }
+
+var TIERS = ["silver", "gold", "diamond", "royal", "legend"];
+function tierSel(id, v) { return '<select id="' + id + '">' + TIERS.map(function (t) { return "<option" + (t === v ? " selected" : "") + ">" + t + "</option>"; }).join("") + "</select>"; }
+
+async function tab(t) {
+  CUR = t;
+  document.querySelectorAll(".tab").forEach(function (b) { b.classList.toggle("on", b.dataset.t === t); });
+  document.getElementById("itemsView").style.display = (t === "badge" || t === "frame" || t === "decor") ? "" : "none";
+  document.getElementById("giftsView").style.display = t === "gifts" ? "" : "none";
+  document.getElementById("fxView").style.display = t === "fx" ? "" : "none";
+  if (t === "gifts") return loadGifts();
+  if (t === "fx") return loadFx();
+  document.getElementById("usersView").style.display = t === "users" ? "" : "none";
+  document.getElementById("auditView").style.display = t === "audit" ? "" : "none";
+  if (t === "users") return loadUsers();
+  if (t === "audit") return loadAudit();
+  var d = await api("/api/admin/vip/items/" + t); ITEMS = d.items || []; drawForm(); drawTable();
+}
+
+function drawForm(it) {
+  it = it || {};
+  var h = '<h3>' + (it.id ? "Edit " : "Add ") + CUR + '</h3><div class="row">';
+  h += f("fId", "Id (letters, numbers, dashes)", '<input id="fId" value="' + esc(it.id || "") + '" ' + (it.id ? "readonly" : "") + ">");
+  h += f("fName", "Name", '<input id="fName" maxlength="40" value="' + esc(it.name || "") + '">');
+  if (CUR === "badge") {
+    h += f("", "Tier", tierSel("fTier", it.tier || "silver"));
+    h += f("", "Icon (emoji)", '<input id="fIcon" maxlength="8" style="width:80px" value="' + esc(it.icon || "") + '">');
+    h += f("", "Colour", '<input id="fColor" placeholder="#ffc83d" style="width:110px" value="' + esc(it.color || "") + '">');
+    h += f("", "Min followers", '<input id="fMinF" type="number" min="0" style="width:110px" value="' + (it.minFollowers || 0) + '">');
+    h += f("", "Min live hours", '<input id="fMinH" type="number" min="0" style="width:110px" value="' + (it.minLiveHours || 0) + '">');
+    h += f("", "Min Golden Stars (lifetime)", '<input id="fMinS" type="number" min="0" style="width:130px" value="' + (it.minStars || 0) + '">');
+    h += f("", "Earned automatically?", '<select id="fAuto"><option value="1"' + (Number(it.autoUnlock) ? " selected" : "") + '>Yes (followers + hours)</option><option value="0"' + (Number(it.autoUnlock) ? "" : " selected") + '>No, admin approves</option></select>');
+  } else if (CUR === "frame") {
+    h += f("", "Tier needed", tierSel("fTier", it.tierRequired || "silver"));
+    h += f("", "Style", '<select id="fStyle">' + ["silver-shine", "gold-pulse", "diamond-spin", "royal-flame", "legend-aurora", "rose-glow"].map(function (s) { return "<option" + (s === it.style ? " selected" : "") + ">" + s + "</option>"; }).join("") + "</select>");
+    h += f("", "Colour 1", '<input id="fC1" placeholder="#ffe27a" style="width:110px" value="' + esc(it.color1 || "") + '">');
+    h += f("", "Colour 2", '<input id="fC2" placeholder="#e0a100" style="width:110px" value="' + esc(it.color2 || "") + '">');
+    h += f("", "Animated?", '<select id="fAnim"><option value="1"' + (it.animated === 0 ? "" : " selected") + '>Yes</option><option value="0"' + (it.animated === 0 ? " selected" : "") + ">No</option></select>");
+  } else {
+    h += f("", "Kind", '<select id="fKind">' + ["name_color", "background", "crown", "title", "card"].map(function (k) { return "<option" + (k === it.kind ? " selected" : "") + ">" + k + "</option>"; }).join("") + "</select>");
+    h += f("", "Tier needed", tierSel("fTier", it.tierRequired || "silver"));
+    h += f("", "Value", '<input id="fVal" class="grow" style="min-width:230px" placeholder="#fff | gradient:#a,#b | 👑 | Title text | silver" value="' + esc(it.value || "") + '">');
+  }
+  h += f("", "Only given by admin?", '<select id="fAdm"><option value="0"' + (Number(it.adminOnly) ? "" : " selected") + '>No</option><option value="1"' + (Number(it.adminOnly) ? " selected" : "") + ">Yes</option></select>");
+  h += f("", "Order", '<input id="fSort" type="number" min="0" style="width:80px" value="' + (it.sort || 0) + '">');
+  h += '<div class="f"><label>&nbsp;</label><button class="b green" onclick="saveItem()">Save</button></div>';
+  if (it.id) h += '<div class="f"><label>&nbsp;</label><button class="b gray" onclick="drawForm()">New</button></div>';
+  document.getElementById("form").innerHTML = h + "</div>";
+}
+function f(id, label, input) { return '<div class="f"><label>' + label + "</label>" + input + "</div>"; }
+function v(id) { var e = document.getElementById(id); return e ? e.value : ""; }
+
+async function saveItem() {
+  var b = { id: v("fId"), name: v("fName"), sort: Number(v("fSort")), adminOnly: v("fAdm") === "1" };
+  if (CUR === "badge") Object.assign(b, { tier: v("fTier"), icon: v("fIcon"), color: v("fColor"), minFollowers: Number(v("fMinF")), minLiveHours: Number(v("fMinH")), minStars: Number(v("fMinS")), autoUnlock: v("fAuto") === "1" });
+  else if (CUR === "frame") Object.assign(b, { tierRequired: v("fTier"), style: v("fStyle"), color1: v("fC1"), color2: v("fC2"), animated: v("fAnim") === "1" });
+  else Object.assign(b, { kind: v("fKind"), tierRequired: v("fTier"), value: v("fVal") });
+  var cur = ITEMS.filter(function (x) { return x.id === b.id; })[0]; if (cur) b.active = !!Number(cur.active);
+  var d = await api("/api/admin/vip/items/" + CUR, b);
+  if (!d.success) return toast(d.message || "Could not save", true);
+  toast("Saved"); tab(CUR);
+}
+function drawTable() {
+  var th = CUR === "badge" ? "<tr><th>Name</th><th>Tier</th><th>Rule</th><th>Status</th><th></th></tr>" : CUR === "frame" ? "<tr><th>Name</th><th>Tier</th><th>Style</th><th>Status</th><th></th></tr>" : "<tr><th>Name</th><th>Kind</th><th>Tier</th><th>Value</th><th>Status</th><th></th></tr>";
+  document.getElementById("thead").innerHTML = th;
+  document.getElementById("tbody").innerHTML = ITEMS.map(function (it, i) {
+    var st = '<span class="tag' + (Number(it.active) ? "" : " r") + '">' + (Number(it.active) ? "On" : "Off") + "</span>" + (Number(it.adminOnly) ? ' <span class="tag o">admin only</span>' : "");
+    var btn = '<button class="b gray sm" onclick="editItem(' + i + ')">Edit</button> <button class="b ' + (Number(it.active) ? "red" : "green") + ' sm" onclick="flip(' + i + ')">' + (Number(it.active) ? "Switch off" : "Switch on") + "</button>";
+    if (CUR === "badge") return "<tr><td>" + esc(it.icon) + " " + esc(it.name) + "<br><span class='muted'>" + esc(it.id) + "</span></td><td>" + esc(it.tier) + "</td><td>" + (Number(it.autoUnlock) ? it.minFollowers + " followers + " + it.minStars + " stars + " + it.minLiveHours + " live hrs" : "Admin approves") + "</td><td>" + st + "</td><td>" + btn + "</td></tr>";
+    if (CUR === "frame") return "<tr><td>" + esc(it.name) + "<br><span class='muted'>" + esc(it.id) + "</span></td><td>" + esc(it.tierRequired) + "</td><td>" + esc(it.style) + "</td><td>" + st + "</td><td>" + btn + "</td></tr>";
+    return "<tr><td>" + esc(it.name) + "<br><span class='muted'>" + esc(it.id) + "</span></td><td>" + esc(it.kind) + "</td><td>" + esc(it.tierRequired) + "</td><td>" + esc(it.value) + "</td><td>" + st + "</td><td>" + btn + "</td></tr>";
+  }).join("") || "<tr><td colspan=6 class='muted'>Nothing yet.</td></tr>";
+}
+function editItem(i) { drawForm(ITEMS[i]); window.scrollTo({ top: 0, behavior: "smooth" }); }
+async function flip(i) { var it = ITEMS[i]; var d = await api("/api/admin/vip/items/" + CUR + "/" + encodeURIComponent(it.id) + "/active", { active: !Number(it.active) }); if (!d.success) return toast(d.message || "Failed", true); tab(CUR); }
+
+var FX = [];
+async function loadFx() {
+  var d = await api("/api/admin/vip/effects"); FX = d.effects || []; fxForm();
+  document.getElementById("fxBody").innerHTML = FX.map(function (e, i) {
+    var on = Number(e.active);
+    return "<tr><td>" + esc(e.name) + "<br><span class='muted'>" + esc(e.id) + "</span></td><td>" + esc(e.minTier) + "</td><td>" + esc(e.videos.split(",").join(" → ")) + "</td><td>" + esc(e.notice) + "</td><td><span class='tag" + (on ? "" : " r") + "'>" + (on ? "On" : "Off") + "</span></td><td><button class='b gray sm' onclick='fxForm(" + i + ")'>Edit</button> <button class='b " + (on ? "red" : "green") + " sm' onclick='fxFlip(" + i + ")'>" + (on ? "Switch off" : "Switch on") + "</button></td></tr>";
+  }).join("");
+}
+function fxForm(i) {
+  var e = FX[i] || {};
+  document.getElementById("fxForm").innerHTML =
+    f("", "Id", '<input id="xId" value="' + esc(e.id || "") + '" ' + (e.id ? "readonly" : "") + ' placeholder="fx-royal">') +
+    f("", "Name", '<input id="xName" maxlength="40" value="' + esc(e.name || "") + '">') +
+    f("", "From tier", tierSel("xTier", e.minTier || "silver")) +
+    f("", "Videos in order", '<input id="xVids" style="min-width:260px" value="' + esc(e.videos || "") + '" placeholder="vip-entrance-car,vip-entrance-crown">') +
+    f("", "Notice (keep {name})", '<input id="xNote" style="min-width:260px" maxlength="100" value="' + esc(e.notice || "{name} joined the exclusive room") + '">') +
+    '<div class="f"><label>&nbsp;</label><button class="b green" onclick="fxSave(' + (e.id ? "true" : "false") + ')">Save</button></div>';
+  window._xActive = e.id ? !!Number(e.active) : true;
+}
+async function fxSave() {
+  var d = await api("/api/admin/vip/effects", { id: v("xId"), name: v("xName"), minTier: v("xTier"), videos: v("xVids"), notice: v("xNote"), active: window._xActive });
+  if (!d.success) return toast(d.message || "Could not save", true); toast("Saved"); loadFx();
+}
+async function fxFlip(i) {
+  var e = FX[i];
+  var d = await api("/api/admin/vip/effects", { id: e.id, name: e.name, minTier: e.minTier, videos: e.videos, notice: e.notice, sort: e.sort, active: !Number(e.active) });
+  if (!d.success) return toast(d.message || "Failed", true); toast("Done"); loadFx();
+}
+
+var GIFTS = [];
+async function loadGifts() {
+  var d = await api("/api/admin/vip/gifts"); GIFTS = d.gifts || []; giftForm();
+  document.getElementById("gBody").innerHTML = GIFTS.map(function (g, i) {
+    var on = Number(g.active);
+    return "<tr><td><img src='/gift-" + esc(g.videoSlug) + ".jpg' width=34 height=60 style='vertical-align:middle;border-radius:6px;margin-right:8px;object-fit:cover' alt=''>" + esc(g.name) + "<br><span class='muted'>" + esc(g.id) + "</span></td><td>" + Number(g.priceCoins).toLocaleString() + " coins<br><span class='muted'>₦" + Number(g.priceNgn).toLocaleString() + "</span></td><td>" + g.sold + " sent<br><span class='muted'>" + Number(g.coins).toLocaleString() + " coins</span></td><td><span class='tag" + (on ? "" : " r") + "'>" + (on ? "On" : "Off") + "</span></td><td><button class='b gray sm' onclick='giftForm(" + i + ")'>Edit</button> <button class='b " + (on ? "red" : "green") + " sm' onclick='giftFlip(" + i + ")'>" + (on ? "Switch off" : "Switch on") + "</button></td></tr>";
+  }).join("");
+}
+function giftForm(i) {
+  var g = GIFTS[i] || {};
+  document.getElementById("gForm").innerHTML =
+    f("", "Id", '<input id="gId" value="' + esc(g.id || "") + '" ' + (g.id ? "readonly" : "") + ' placeholder="vg-golden-rose">') +
+    f("", "Name", '<input id="gName" maxlength="30" value="' + esc(g.name || "") + '">') +
+    f("", "Video name", '<input id="gSlug" value="' + esc(g.videoSlug || "") + '" placeholder="vip-golden-rose">') +
+    f("", "Price (₦)", '<input id="gNgn" type="number" min="0" style="width:120px" value="' + (g.priceNgn || 0) + '" oninput="document.getElementById(\'gCoins\').value=Math.round(this.value/10)">') +
+    f("", "Price (coins)", '<input id="gCoins" type="number" min="0" style="width:120px" value="' + (g.priceCoins || 0) + '">') +
+    f("", "Order", '<input id="gSort" type="number" min="0" style="width:80px" value="' + (g.sort || 0) + '">') +
+    '<div class="f"><label>&nbsp;</label><button class="b green" onclick="giftSave(' + (g.id ? "true" : "false") + ')">Save</button></div>';
+  window._gActive = g.id ? !!Number(g.active) : true;
+}
+async function giftSave(keep) {
+  var d = await api("/api/admin/vip/gifts", { id: v("gId"), name: v("gName"), videoSlug: v("gSlug"), priceNgn: Number(v("gNgn")), priceCoins: Number(v("gCoins")), sort: Number(v("gSort")), active: window._gActive });
+  if (!d.success) return toast(d.message || "Could not save", true);
+  toast(d.active ? "Saved (on)" : "Saved (off until it has a price)"); loadGifts();
+}
+async function giftFlip(i) {
+  var g = GIFTS[i];
+  var d = await api("/api/admin/vip/gifts", { id: g.id, name: g.name, videoSlug: g.videoSlug, priceNgn: g.priceNgn, priceCoins: g.priceCoins, sort: g.sort, active: !Number(g.active) });
+  if (!d.success) return toast(d.message || "Failed", true);
+  if (!Number(g.active) && !d.active) toast("Set a price first", true); else toast("Done");
+  loadGifts();
+}
+
+async function loadUsers() {
+  var d = await api("/api/admin/vip/users");
+  document.getElementById("uBody").innerHTML = (d.users || []).map(function (u) {
+    var dec = u.status === "revoked" ? '<span class="tag r">Revoked</span>' : '<span class="tag">' + esc(u.tier) + "</span>" + (u.verified ? " ✔" : "") + (u.expiresAt ? "<br><span class='muted'>until " + ago(u.expiresAt) + "</span>" : "");
+    return "<tr><td>" + esc(u.displayName || u.handle || "") + "<br><span class='muted'>" + esc(u.email) + "</span></td><td>" + dec + "</td><td>" + esc(u.effectiveTier) + " <span class='muted'>(" + esc(u.source) + ")</span></td><td>" + u.followers + "</td><td>" + u.stars + "</td><td>" + u.liveHours + "</td><td>" + u.openReports + "</td><td>" + esc(u.reason || "") + "</td></tr>";
+  }).join("") || "<tr><td colspan=8 class='muted'>No admin decisions yet.</td></tr>";
+}
+async function lookup() {
+  var d = await api("/api/admin/vip/lookup?user=" + encodeURIComponent(v("gUser")));
+  var o = document.getElementById("lookupOut");
+  if (!d.success) { o.textContent = d.message || "Not found"; return; }
+  o.textContent = d.email + " • effective tier: " + d.effectiveTier + " (" + d.source + ") • " + d.facts.followers + " followers • " + d.facts.stars + " Golden Stars • " + Math.round(d.facts.liveHours * 10) / 10 + " live hours • " + d.facts.openReports + " open reports" + (d.facts.banned ? " • BLOCKED ACCOUNT" : "") + (d.decision ? " • decision: " + d.decision.status + "/" + d.decision.tier : "");
+}
+async function grant() { var d = await api("/api/admin/vip/grant", { user: v("gUser"), tier: v("gTier"), expiresDays: v("gDays"), reason: v("gReason"), verifiedStreamer: document.getElementById("gVer").checked }); toast(d.success ? "VIP granted" : (d.message || "Failed"), !d.success); if (d.success) loadUsers(); }
+async function revoke() { if (!confirm("Revoke VIP? They also stop earning it automatically until you reset them.")) return; var d = await api("/api/admin/vip/revoke", { user: v("gUser"), reason: v("gReason") }); toast(d.success ? "VIP revoked" : (d.message || "Failed"), !d.success); if (d.success) loadUsers(); }
+async function resetUser() { var d = await api("/api/admin/vip/reset", { user: v("gUser") }); toast(d.success ? "Back to normal" : (d.message || "Failed"), !d.success); if (d.success) loadUsers(); }
+async function unlock(lock) { var d = await api("/api/admin/vip/unlock", { user: v("uUser"), type: v("uType"), id: v("uId"), lock: lock }); toast(d.success ? (lock ? "Taken back" : "Unlocked") : (d.message || "Failed"), !d.success); }
+async function loadAudit() {
+  var d = await api("/api/admin/vip/audit");
+  document.getElementById("aBody").innerHTML = (d.rows || []).map(function (r) { return "<tr><td>" + ago(r.createdAt) + "</td><td>" + esc(r.action) + "</td><td>" + esc(r.target || "") + "</td><td>" + esc(r.detail || "") + "</td></tr>"; }).join("") || "<tr><td colspan=4 class='muted'>Nothing yet.</td></tr>";
+}
+if (KEY) enter();
+</script></body></html>

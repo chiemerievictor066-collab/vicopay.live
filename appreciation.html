@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b4ec7">
+<title>Vico Pay Live Appreciation</title>
+<script src="auth.js"></script>
+<style>
+:root{--blue:#0878ed;--cyan:#35d8f4;--purple:#5425c7;--ink:#102c59}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,#dff7ff 0,#edf5ff 42%,#f7f9ff 100%);font-family:Inter,Arial,sans-serif;color:var(--ink)}
+header{height:68px;background:linear-gradient(100deg,#0648b6,#087ce8);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 max(18px,calc((100vw - 1100px)/2));box-shadow:0 8px 28px #0759bd22}
+.logo{font-size:23px;font-weight:900;letter-spacing:-.7px}.logo span{color:#75edff}
+header a{color:#fff;text-decoration:none;font-weight:700}
+main{width:min(100% - 28px,920px);margin:28px auto 54px}
+.panel{background:#fff;border:1px solid #d9e9ff;border-radius:25px;overflow:hidden;box-shadow:0 20px 60px #1254a51a}
+.intro{text-align:center;padding:25px 20px 8px}
+.kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:30px;background:#e8f7ff;color:#0872d8;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+h1{margin:14px 0 8px;font-size:clamp(27px,5vw,42px);letter-spacing:-1.2px;color:#123d85}
+.sub{margin:0 auto;color:#5d7598;line-height:1.6;max-width:620px}
+.art{display:block;width:min(100% - 28px,700px);height:auto;margin:20px auto 26px;border-radius:18px;box-shadow:0 12px 35px #153b7a22}
+.detail{margin:0 22px 24px;padding:18px;border-radius:16px;background:linear-gradient(135deg,#eff8ff,#f5f1ff);text-align:center;color:#36577f;line-height:1.65}
+.detail strong{color:#123d85}
+footer{text-align:center;color:#7890ae;font-size:12px;padding:20px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="logo">VicoPay <span>Live</span></div><a href="live-room.html">Back to Live →</a></header>
+<main><section class="panel">
+<div class="intro">
+<div class="kicker" id="kicker">💙 Vico Pay Live</div>
+<h1 id="title">A moment of appreciation</h1>
+<p class="sub" id="subtitle">Thank you for being part of our community.</p>
+</div>
+<img class="art" id="art" src="vico-monthly-appreciation.png" alt="Vico Pay Live appreciation artwork">
+<div class="detail" id="detail">Your presence, consistency and support mean so much to the Vico Pay Live community. Thank you for growing with us.</div>
+</section><footer>Vico Pay Live · Watch · Gift · Celebrate</footer></main>
+<script>
+(function(){
+ const p=new URLSearchParams(location.search), type=p.get("type")==="yearly"?"yearly":"monthly";
+ const title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),art=document.getElementById("art"),detail=document.getElementById("detail"),kicker=document.getElementById("kicker");
+ if(type==="yearly"){
+   const year=p.get("year")||String(new Date().getFullYear()-1);
+   kicker.textContent="🏆 Yearly consistency reward";
+   title.textContent="Yearly Appreciation Award";
+   subtitle.textContent="A special thank-you for completing all 12 monthly requirements.";
+   art.src="vico-yearly-appreciation.png";
+   art.alt="Vico Pay Live yearly appreciation reward: 20 coins";
+   detail.innerHTML="<strong>Congratulations!</strong><br>You completed every monthly requirement throughout "+year+". <strong>20 coins have been awarded</strong> to your Vico Pay Live wallet. Thank you for your consistency and active participation.";
+ }else{
+   const month=p.get("month")||"";
+   kicker.textContent="💙 Monthly appreciation";
+   title.textContent="Monthly Appreciation";
+   subtitle.textContent="A message of thanks to every Vico Pay Live streamer.";
+   art.src="vico-monthly-appreciation.png";
+   art.alt="Vico Pay Live monthly appreciation";
+   detail.innerHTML="<strong>Thank you for being a Vico Pay Live streamer.</strong><br>We appreciate your support, effort and participation. We celebrate you this month and look forward to growing together.";
+ }
+})();
+</script>
+</body>
+</html>

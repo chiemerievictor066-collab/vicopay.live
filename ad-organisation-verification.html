@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Organisation Verification | Vico Pay Live</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f7ff;color:#19345f;font-family:Arial,sans-serif}.top{background:linear-gradient(100deg,#062a75,#087fe8);color:white;padding:15px 4%}.brand{max-width:850px;margin:auto;font-size:18px;font-weight:900}.brand b{display:inline-grid;place-items:center;background:linear-gradient(145deg,#8ceaff,#7041d8);width:38px;height:38px;border-radius:12px;margin-right:9px}.brand small{display:block;margin-left:49px;font-size:10px;color:#cdeaff;letter-spacing:1px}.wrap{width:min(850px,93%);margin:25px auto 45px}.panel{background:white;border:1px solid #dce9f8;border-radius:20px;padding:clamp(19px,4vw,32px);box-shadow:0 14px 38px #174b8510}.step{display:inline-block;background:#eaf5ff;color:#1767b5;padding:8px 11px;border-radius:25px;font-size:11px;font-weight:900;letter-spacing:.7px}h1{font-size:clamp(25px,5vw,35px);color:#10285b;margin:14px 0 8px}.sub{font-size:14px;line-height:1.65;color:#657995;margin:0 0 20px}.order{background:linear-gradient(115deg,#e5f3ff,#eee9ff);border:1px solid #d4e5fb;padding:16px;border-radius:15px;margin:18px 0}.order small{display:block;color:#5b7194;font-size:11px;font-weight:bold;text-transform:uppercase}.order strong{display:block;color:#0b4f9d;margin-top:5px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}label{display:block;font-size:12px;font-weight:800;color:#29466f;margin:15px 0 7px}input,textarea{width:100%;border:1px solid #d5e2f1;border-radius:11px;padding:12px 13px;background:white;color:#17345e;font:14px Arial}input[type=file]{padding:9px;background:#f7fbff}textarea{min-height:85px;resize:vertical}.doc{border:1px solid #dce9f8;background:#fbfdff;border-radius:13px;padding:13px;margin:11px 0}.doc b{font-size:13px;color:#183c70}.doc p{font-size:11px;color:#687d99;line-height:1.5;margin:5px 0 9px}.req{color:#c2410c}.btn{width:100%;border:0;border-radius:12px;padding:14px;background:linear-gradient(100deg,#087fe8,#21b6ef);color:white;font-size:14px;font-weight:900;cursor:pointer;margin-top:20px}.btn:disabled{opacity:.6}.note{font-size:11px;color:#687d99;line-height:1.6;background:#f1f7ff;border:1px solid #deebfa;border-radius:12px;padding:12px;margin-top:15px}.status{font-size:13px;line-height:1.6;margin-top:13px;color:#31577e;white-space:pre-wrap}.status.good{color:#137044;background:#eafaf1;border:1px solid #bce8cf;padding:12px;border-radius:10px}.status.bad{color:#a12c2c}.hidden{display:none!important}.footer{text-align:center;color:#8190a6;font-size:11px;margin-top:18px}@media(max-width:580px){.grid{grid-template-columns:1fr}}
+</style></head>
+<body><script src="auth.js"></script><script>VicoAuth.requireLogin();</script>
+<header class="top"><div class="brand"><b>V</b>Vico Pay Live<small>VICO AD CENTER · ORGANISATION CHECK</small></div></header>
+<main class="wrap"><section class="panel">
+<span class="step">STEP 3 OF 3 · ORGANISATION VERIFICATION</span>
+<h1 id="heading">Verify your organisation</h1>
+<p class="sub" id="intro">After your payment and advert location details, upload your organisation documents. You do not need to upload every employee's personal ID. Vico will review the submitted evidence.</p>
+<div class="order"><small>Paid advert and saved location</small><strong id="orderText">Checking your advert…</strong><div id="locationText" style="font-size:12px;color:#526b8e;margin-top:6px"></div></div>
+<div id="reviewBox" class="note hidden"></div>
+<form id="form" class="hidden">
+<div class="grid">
+<div><label>Registered legal organisation name *</label><input name="legalName" required maxlength="180" placeholder="Exact name on CAC or establishment record"></div>
+<div id="regWrap"><label id="regLabel">CAC registration number *</label><input name="registrationNumber" maxlength="80" placeholder="RC / BN number"></div>
+<div><label>TIN (if available)</label><input name="tin" maxlength="80" placeholder="Tax identification number"></div>
+<div><label>Official business email</label><input name="businessEmail" type="email" maxlength="180" placeholder="name@organisation.com"></div>
+<div><label>Business / office phone</label><input name="businessPhone" type="tel" maxlength="60" placeholder="+234…"></div>
+<div><label>Official website</label><input name="website" type="url" maxlength="250" placeholder="https://www.example.gov.ng or company site"></div>
+<div><label>Authorised representative's full name *</label><input name="representativeName" required maxlength="180" placeholder="Person submitting this application"></div>
+<div><label>Representative's position / authority *</label><input name="representativeRole" required maxlength="120" placeholder="Director, Company Secretary, Public Officer…"></div>
+</div>
+<label>Registered organisation address *</label><textarea name="address" required maxlength="500" placeholder="Full registered office / official headquarters address"></textarea>
+<h2 style="font-size:17px;color:#173d78;margin:24px 0 6px" id="documentsHeading">Required company documents</h2>
+<p class="sub" style="font-size:12px;margin-bottom:10px">Upload clear, readable PDF, JPG or PNG documents. Every required item must be supplied.</p>
+<div id="docs"></div>
+<div class="note"><b>File limits:</b> Maximum 2 MB per file and 4 MB total for all documents in one submission. Document signature and hash checks are basic file checks only; they do not prove a document is genuine. Vico admin must check CAC or the relevant official government source.</div>
+<label class="check" style="display:flex;gap:9px;align-items:flex-start;font-weight:500"><input type="checkbox" name="authorityConfirm" required style="width:auto;margin-top:2px">I confirm that I am authorised to submit these documents for this organisation and that the information is accurate.</label>
+<button class="btn" id="submit" type="submit">Submit organisation documents for review</button>
+</form>
+<div id="status" class="status" role="status"></div>
+<div class="footer">© 2026 Vico Pay Live · Secure advertiser verification</div>
+</section></main>
+<script>
+(function(){
+const $=id=>document.getElementById(id),form=$('form'),status=$('status'),submit=$('submit');
+let ORDER=null,orgType=null;
+const companyDocs=[
+ ['cac_certificate','CAC Certificate of Incorporation','Upload the official CAC certificate.'],
+ ['cac_status_report','CAC Status Report / Company Extract','Upload a recent CAC status report or company extract.'],
+ ['business_address','Proof of registered business address','For example, a recent utility bill, tenancy evidence or official address document.'],
+ ['authorisation_letter','Board Resolution / Authorisation Letter','Show that this representative is authorised to advertise for the organisation.'],
+ ['ownership_declaration','Directors / Shareholders / Beneficial Ownership Declaration','Provide the organisation ownership and controlling-person information.']
+];
+const nationalDocs=[
+ ['government_establishment_proof','Establishment Law / Gazette / Official Registration Evidence','Upload the law, gazette, charter or official instrument establishing the organisation.'],
+ ['official_letter','Official Government Letter / Letterhead Evidence','Upload a current official letter or evidence from the government institution.'],
+ ['authorisation_letter','Appointment / Delegation of Authority','Show that the named representative is authorised to act for the institution.']
+];
+function renderDocs(items){$('docs').innerHTML=items.map(([type,title,desc])=>`<div class="doc"><b>${title} <span class="req">*</span></b><p>${desc}</p><input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" data-type="${type}" required></div>`).join('');}
+function lock(message){form.classList.add('hidden');$('reviewBox').classList.remove('hidden');$('reviewBox').textContent=message;}
+(async()=>{
+ try{
+  const r=await fetch('/api/ads/orders/current',{credentials:'same-origin'}),d=await r.json();
+  if(!r.ok||!d.success)throw Error(d.message||'Could not load your advert.');
+  ORDER=d.order;
+  if(!ORDER){lock('No paid advert was found. Please choose an advert and complete payment first.');return;}
+  if(!['big-business','company','national'].includes(ORDER.tier)){location.href='ad-identity-verification.html';return;}
+  orgType=ORDER.tier==='national'?'government':'company';
+  $('orderText').textContent=ORDER.level+' · '+ORDER.job+' · Order #'+ORDER.id;
+  if(d.profile)$('locationText').textContent=[d.profile.address,d.profile.city,d.profile.country].filter(Boolean).join(', ');
+  if(!d.profile||!d.profile.complete){lock('Please finish your advert information and location first.');setTimeout(()=>location.href='ad-business-information.html',1200);return;}
+  $('heading').textContent=orgType==='government'?'Verify your national organisation':'Verify your company';
+  $('intro').textContent=orgType==='government'?'Your National Advert requires proof that the government institution or national organisation exists and that this representative is authorised to advertise for it.':'Your Big Business / Company advert requires company registration and authority documents. Upload organisation evidence instead of asking every employee to submit a personal ID.';
+  $('documentsHeading').textContent=orgType==='government'?'Required national organisation documents':'Required company documents';
+  if(orgType==='government'){$('regWrap').classList.add('hidden');form.elements.registrationNumber.required=false;$('regLabel').textContent='Registration number (if applicable)';}
+  renderDocs(orgType==='government'?nationalDocs:companyDocs);
+  if(d.stage==='verified'){lock('✓ Your organisation has been verified. Your paid advert can now move to Vico’s advertising review step.');return;}
+  if(d.stage==='suspended'){lock('This organisation verification has been suspended. Please contact Vico Support before taking further action.');return;}
+  if(d.stage==='review'){lock('Your organisation documents have been submitted and are being reviewed by Vico. You do not need to upload personal IDs for every employee. Please wait for the review decision.');return;}
+  if(d.organisation&&d.organisation.note){$('reviewBox').classList.remove('hidden');$('reviewBox').textContent='Admin note: '+d.organisation.note+' Please upload the requested or corrected documents below.';}
+  form.classList.remove('hidden');
+ }catch(e){status.textContent=e.message;status.classList.add('bad');}
+})();
+function readFile(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(Error('Could not read '+file.name));r.readAsDataURL(file);});}
+form.addEventListener('submit',async e=>{
+ e.preventDefault();if(!form.reportValidity())return;
+ if(!ORDER||!orgType)return;
+ const inputs=[...form.querySelectorAll('input[type=file]')],documents=[];let total=0;
+ for(const input of inputs){const f=input.files[0];if(!f){status.textContent='Upload every required document.';return;}
+  if(!['application/pdf','image/jpeg','image/png'].includes(f.type)){status.textContent='Only PDF, JPG and PNG documents are accepted: '+f.name;return;}
+  if(f.size>2*1024*1024){status.textContent=f.name+' is larger than 2 MB.';return;}total+=f.size;
+  if(total>4*1024*1024){status.textContent='All documents together must be no larger than 4 MB.';return;}
+  documents.push({documentType:input.dataset.type,fileName:f.name,mimeType:f.type,dataBase64:await readFile(f)});
+ }
+ const f=form.elements,body={orderId:ORDER.id,organisationType:orgType,legalName:f.legalName.value,registrationNumber:f.registrationNumber.value,tin:f.tin.value,address:f.address.value,businessEmail:f.businessEmail.value,businessPhone:f.businessPhone.value,website:f.website.value,representativeName:f.representativeName.value,representativeRole:f.representativeRole.value,documents};
+ submit.disabled=true;status.textContent='Uploading your documents securely… Please keep this page open.';
+ try{const r=await fetch('/api/company-verification/applications',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}),d=await r.json();
+  if(!r.ok||!d.success)throw Error(d.message||'Could not submit your documents.');
+  form.classList.add('hidden');$('reviewBox').classList.remove('hidden');$('reviewBox').textContent='✓ Your organisation documents have been submitted successfully. Application reference: '+d.applicationId+'. Vico will review the documents and record an official CAC or government-source check before making a decision.';
+  status.textContent='Submission received. Your advert is now waiting for organisation verification.';
+  status.classList.add('good');
+ }catch(err){status.textContent=err.message;status.classList.add('bad');submit.disabled=false;}
+});
+})();
+</script></body></html>

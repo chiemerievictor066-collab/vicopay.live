@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex">
+<title>Ad jobs - VicoPay Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050812;color:#e8eefc;font-family:Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid #22304b;background:#071025;flex-wrap:wrap}
+.logo{font-weight:900;font-size:21px;margin-right:auto}.logo span{color:#ffc83d}
+.wrap{width:min(1150px,96%);margin:20px auto}
+.panel{background:#0a1328;border:1px solid #203352;border-radius:14px;padding:16px;margin-bottom:16px}
+.muted{color:#8fa7c5;font-size:13px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{border:1px solid #2a4066;background:#0a1328;color:#cfe3ff;border-radius:18px;padding:8px 15px;font:inherit;font-weight:700;cursor:pointer}.tab.on{background:#f5b400;border-color:#f5b400;color:#1a1305}
+input,textarea{padding:10px 14px;border-radius:10px;border:1px solid #2a4066;background:#050c1c;color:#fff;font:inherit;width:100%}
+.b{border:0;border-radius:12px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:#0787ed;text-decoration:none;display:inline-block}
+.b.red{background:#e11d48}.b.gray{background:#334155}.b.green{background:#16a34a}
+.gate{max-width:420px;margin:12vh auto;background:#0a1328;border:1px solid #203352;border-radius:16px;padding:26px}.gate input{margin:12px 0}
+.err{color:#ff9fb5;font-size:13px;min-height:18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.k{font-size:11px;color:#8fa7c5;text-transform:uppercase;letter-spacing:.5px;margin-top:8px}.v{font-size:14px;word-break:break-word}
+table.cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.cmp th,.cmp td{padding:7px 9px;text-align:left;border-bottom:1px solid #1b2b47}.cmp th{color:#8fa7c5;background:#0c1730}
+.ok{color:#4ade80;font-weight:900}.no{color:#fb7185;font-weight:900}
+.tag{background:#16a34a;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}.tag.o{background:#b45309}.tag.r{background:#e11d48}
+.imgs{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.imgs figure{margin:0;width:150px}.imgs img,.imgs video{width:150px;height:110px;object-fit:cover;border-radius:10px;border:1px solid #2a4066;background:#050c1c;cursor:zoom-in}.imgs figcaption{font-size:11px;color:#8fa7c5;margin-top:3px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}#toast.show{opacity:1}#toast.bad{background:#e11d48}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style></head><body>
+<div id="gate" class="gate">
+  <h2 style="margin:0">Admin sign in</h2>
+  <p class="muted">Enter the ADMIN_KEY from your server's .env file. It is only kept in this tab.</p>
+  <input id="key" type="password" placeholder="ADMIN_KEY" onkeydown="if(event.key==='Enter')enter()">
+  <button class="b" style="width:100%;padding:11px" onclick="enter()">Open Ad jobs</button>
+  <div class="err" id="err"></div>
+</div>
+<div id="app" style="display:none">
+<header><div class="logo">VicoPay <span>Ad jobs</span></div>
+  <a href="admin.html" class="b gray">← Dashboard</a>
+  <button class="b gray" onclick="sessionStorage.removeItem('vk');location.reload()">Lock</button></header>
+<div class="wrap">
+  <div class="muted" style="margin-bottom:12px">Advertisers who chose a level and a job and paid. Compare the documents with what they typed, then approve or reject. ID photos are deleted the moment you decide.</div>
+  <div class="tabs" id="tabs"></div>
+  <div id="list"></div>
+</div></div>
+<div id="toast"></div>
+<script>
+var KEY = sessionStorage.getItem("vk") || "", CUR = "id_pending";
+var TABS = [["id_pending", "Waiting for ID check"], ["profile_saved", "Info saved, no ID yet"], ["paid", "Paid, no info yet"], ["verified", "Verified"], ["id_rejected", "Rejected"], ["all", "All"]];
+function toast(t, bad) { var e = document.getElementById("toast"); e.textContent = t; e.className = "show" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { e.className = ""; }, 2600); }
+async function api(p, body) { var r = await fetch(p, { method: body ? "POST" : "GET", headers: { "Content-Type": "application/json", "x-admin-key": KEY }, body: body ? JSON.stringify(body) : undefined }); var d = await r.json().catch(function () { return {}; }); d._ok = r.ok; return d; }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function when(t) { return t ? new Date(Number(t)).toLocaleString() : ""; }
+// pictures and videos are protected by the admin key, so they are fetched with it and shown from a temporary address
+async function blobUrl(path) { var r = await fetch(path, { headers: { "x-admin-key": KEY } }); if (!r.ok) return ""; return URL.createObjectURL(await r.blob()); }
+async function enter() {
+  KEY = document.getElementById("key").value.trim() || KEY;
+  var d = await api("/api/admin/ad-jobs?status=id_pending");
+  if (!d.success) { document.getElementById("err").textContent = "Wrong key."; return; }
+  sessionStorage.setItem("vk", KEY);
+  document.getElementById("gate").style.display = "none"; document.getElementById("app").style.display = "";
+  tabs(); show(d);
+}
+function tabs() { document.getElementById("tabs").innerHTML = TABS.map(function (t) { return '<button class="tab' + (t[0] === CUR ? " on" : "") + '" onclick="CUR=\'' + t[0] + '\';load()">' + t[1] + "</button>"; }).join(""); }
+async function load() { tabs(); var d = await api("/api/admin/ad-jobs?status=" + CUR); if (!d.success) return toast(d.message || "Could not load", true); show(d); }
+function row(k, a, b) { var same = a !== undefined && String(a).replace(/\s+/g, " ").trim().toLowerCase() === String(b).replace(/\s+/g, " ").trim().toLowerCase(); return '<tr><th>' + k + '</th><td>' + esc(a) + '</td><td>' + esc(b) + "</td><td>" + (same ? '<span class="ok">✓</span>' : '<span class="no">✗</span>') + "</td></tr>"; }
+function show(d) {
+  var box = document.getElementById("list");
+  if (!d.orders.length) { box.innerHTML = '<div class="panel muted">Nothing here.</div>'; return; }
+  box.innerHTML = d.orders.map(function (o) {
+    var st = o.status === "verified" ? "" : o.status === "id_rejected" ? " r" : " o";
+    var cmp = o.legalName ? '<table class="cmp"><tr><th></th><th>Business information</th><th>ID form</th><th></th></tr>' + row("Name", o.ownerName, o.legalName) + row("Phone", o.phone, o.idPhone) + row("Country", o.country, o.idCountry) + row("City / state", o.city, o.idCity) + "</table>" +
+      '<div class="k">ID type · date of birth</div><div class="v">' + esc(o.idType) + " · " + esc(o.dob) + '</div><div class="k">Residential address</div><div class="v">' + esc(o.residentialAddress) + "</div>" : '<div class="muted">No ID submitted yet.</div>';
+    var act = o.idStatus === "pending" ? '<div style="margin-top:12px"><textarea id="why' + o.id + '" rows="2" placeholder="Reason (required when rejecting; the advertiser reads it)"></textarea><div style="margin-top:8px;display:flex;gap:8px"><button class="b green" onclick="decide(' + o.id + ',\'approve\')">Approve identity</button><button class="b red" onclick="decide(' + o.id + ',\'reject\')">Reject</button></div></div>' : (o.reason ? '<div class="muted" style="margin-top:8px">Reason: ' + esc(o.reason) + "</div>" : "");
+    return '<div class="panel" data-id="' + o.id + '"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><b>#' + o.id + " · " + esc(o.level) + " — " + esc(o.job) + '</b><span class="tag' + st + '">' + esc(o.status) + '</span><span class="muted">$' + o.usd + " · ₦" + Number(o.amountNgn).toLocaleString() + " · " + esc(o.email) + " · paid " + when(o.paidAt) + "</span></div>" +
+      '<div class="grid"><div>' + (o.businessName ? '<div class="k">Business</div><div class="v"><b>' + esc(o.businessName) + "</b> — owner " + esc(o.ownerName) + '</div><div class="k">Description</div><div class="v">' + esc(o.description) + '</div><div class="k">Products and services</div><div class="v">' + esc(o.products) + '</div><div class="k">Contact</div><div class="v">' + esc(o.phone) + " · " + esc(o.bizEmail) + " · WhatsApp " + esc(o.whatsapp) + '</div><div class="k">Location</div><div class="v">' + esc(o.address) + ", " + esc(o.city) + ", " + esc(o.country) + '</div><div class="k">Social links</div><div class="v"><a style="color:#7cc4ff" href="' + esc(o.socialLink) + '" target="_blank" rel="noopener noreferrer">' + esc(o.socialLink) + "</a><br>" + esc(o.social) + '</div><div class="k">Wants the advert on</div><div class="v">' + esc(o.placements.join(", ")) + "</div>" : '<div class="muted">The business information has not been saved yet.</div>') + '</div><div><div class="k">Identity check</div>' + cmp + "</div></div>" +
+      '<div class="imgs" id="m' + o.id + '"></div>' + act + "</div>";
+  }).join("");
+  d.orders.forEach(fill);
+}
+async function fill(o) {
+  var box = document.getElementById("m" + o.id); if (!box) return; var html = "";
+  if (o.businessName) { var l = await blobUrl("/api/admin/ad-jobs/" + o.id + "/logo"); if (l) html += '<figure><img src="' + l + '" alt="logo"><figcaption>Logo</figcaption></figure>'; }
+  for (var m of o.media) { var u = await blobUrl("/api/admin/ad-jobs/" + o.id + "/media/" + m.id); if (!u) continue; html += '<figure>' + (m.kind === "video" ? '<video src="' + u + '" controls preload="metadata"></video>' : '<img src="' + u + '" alt="product">') + "<figcaption>" + (m.kind === "video" ? "Promo video" : "Product") + "</figcaption></figure>"; }
+  for (var p of o.idFiles) { var i = await blobUrl("/api/admin/ad-jobs/" + o.id + "/id/" + p); if (i) html += '<figure><img src="' + i + '" alt="id"><figcaption>ID: ' + p + "</figcaption></figure>"; }
+  box.innerHTML = html;
+}
+document.addEventListener("click", function (e) { if (e.target.tagName === "IMG" && e.target.closest(".imgs")) window.open(e.target.src, "_blank"); });
+async function decide(id, decision) {
+  var reason = (document.getElementById("why" + id) || {}).value || "";
+  var d = await api("/api/admin/ad-jobs/" + id + "/decision", { decision: decision, reason: reason });
+  if (!d.success) return toast(d.message || "Could not save", true);
+  toast(decision === "approve" ? "Identity approved" : "Rejected"); load();
+}
+if (KEY) enter();
+</script></body></html>

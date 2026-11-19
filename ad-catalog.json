@@ -1,0 +1,1754 @@
+{
+ "tiers": {
+  "personal": {
+   "label": "Personal Ads",
+   "page": "personal-ads.html",
+   "min": 4,
+   "max": 10,
+   "jobs": [
+    {
+     "group": "Personal services",
+     "name": "Private tutor",
+     "usd": 4
+    },
+    {
+     "group": "Personal services",
+     "name": "Home lesson teacher",
+     "usd": 5
+    },
+    {
+     "group": "Personal services",
+     "name": "Language tutor",
+     "usd": 6
+    },
+    {
+     "group": "Personal services",
+     "name": "Music teacher",
+     "usd": 7
+    },
+    {
+     "group": "Personal services",
+     "name": "Fitness coach",
+     "usd": 8
+    },
+    {
+     "group": "Personal services",
+     "name": "Makeup artist",
+     "usd": 9
+    },
+    {
+     "group": "Personal services",
+     "name": "Hair stylist",
+     "usd": 10
+    },
+    {
+     "group": "Personal services",
+     "name": "Barber",
+     "usd": 4
+    },
+    {
+     "group": "Personal services",
+     "name": "Nail technician",
+     "usd": 5
+    },
+    {
+     "group": "Personal services",
+     "name": "Tailor",
+     "usd": 6
+    },
+    {
+     "group": "Personal services",
+     "name": "Fashion designer",
+     "usd": 7
+    },
+    {
+     "group": "Personal services",
+     "name": "Photographer",
+     "usd": 8
+    },
+    {
+     "group": "Personal services",
+     "name": "Videographer",
+     "usd": 9
+    },
+    {
+     "group": "Personal services",
+     "name": "Graphic designer",
+     "usd": 10
+    },
+    {
+     "group": "Personal services",
+     "name": "Logo designer",
+     "usd": 4
+    },
+    {
+     "group": "Personal services",
+     "name": "Website designer",
+     "usd": 5
+    },
+    {
+     "group": "Personal services",
+     "name": "Web developer",
+     "usd": 6
+    },
+    {
+     "group": "Personal services",
+     "name": "Phone repairer",
+     "usd": 7
+    },
+    {
+     "group": "Personal services",
+     "name": "Computer repairer",
+     "usd": 8
+    },
+    {
+     "group": "Personal services",
+     "name": "Electrician",
+     "usd": 9
+    },
+    {
+     "group": "Personal services",
+     "name": "Plumber",
+     "usd": 10
+    },
+    {
+     "group": "Personal services",
+     "name": "Painter",
+     "usd": 4
+    },
+    {
+     "group": "Personal services",
+     "name": "Carpenter",
+     "usd": 5
+    },
+    {
+     "group": "Personal services",
+     "name": "Mechanic",
+     "usd": 6
+    },
+    {
+     "group": "Personal services",
+     "name": "Cleaner",
+     "usd": 7
+    },
+    {
+     "group": "Personal services",
+     "name": "Laundry service",
+     "usd": 8
+    },
+    {
+     "group": "Personal services",
+     "name": "Gardener",
+     "usd": 9
+    },
+    {
+     "group": "Personal services",
+     "name": "Caterer",
+     "usd": 10
+    },
+    {
+     "group": "Personal services",
+     "name": "Baker",
+     "usd": 4
+    },
+    {
+     "group": "Personal services",
+     "name": "Cake decorator",
+     "usd": 5
+    },
+    {
+     "group": "Personal services",
+     "name": "Chin-chin seller",
+     "usd": 6
+    },
+    {
+     "group": "Personal services",
+     "name": "Food vendor",
+     "usd": 7
+    },
+    {
+     "group": "Personal services",
+     "name": "Event decorator",
+     "usd": 8
+    },
+    {
+     "group": "Personal services",
+     "name": "MC",
+     "usd": 9
+    },
+    {
+     "group": "Personal services",
+     "name": "DJ",
+     "usd": 10
+    },
+    {
+     "group": "Personal services",
+     "name": "Content creator",
+     "usd": 4
+    },
+    {
+     "group": "Personal services",
+     "name": "Writer",
+     "usd": 5
+    },
+    {
+     "group": "Personal services",
+     "name": "Translator",
+     "usd": 6
+    },
+    {
+     "group": "Personal services",
+     "name": "Virtual assistant",
+     "usd": 7
+    },
+    {
+     "group": "Personal services",
+     "name": "Delivery rider",
+     "usd": 8
+    },
+    {
+     "group": "Personal services",
+     "name": "Babysitter",
+     "usd": 9
+    },
+    {
+     "group": "Personal products",
+     "name": "Clothing seller",
+     "usd": 10
+    },
+    {
+     "group": "Personal products",
+     "name": "Shoes seller",
+     "usd": 4
+    },
+    {
+     "group": "Personal products",
+     "name": "Bags seller",
+     "usd": 5
+    },
+    {
+     "group": "Personal products",
+     "name": "Jewellery seller",
+     "usd": 6
+    },
+    {
+     "group": "Personal products",
+     "name": "Perfume seller",
+     "usd": 7
+    },
+    {
+     "group": "Personal products",
+     "name": "Cosmetics seller",
+     "usd": 8
+    },
+    {
+     "group": "Personal products",
+     "name": "Skincare seller",
+     "usd": 9
+    },
+    {
+     "group": "Personal products",
+     "name": "Wig seller",
+     "usd": 10
+    },
+    {
+     "group": "Personal products",
+     "name": "Phone accessories seller",
+     "usd": 4
+    },
+    {
+     "group": "Personal products",
+     "name": "Used phone seller",
+     "usd": 5
+    },
+    {
+     "group": "Personal products",
+     "name": "Books seller",
+     "usd": 6
+    },
+    {
+     "group": "Personal products",
+     "name": "Handmade crafts seller",
+     "usd": 7
+    },
+    {
+     "group": "Personal products",
+     "name": "Artwork seller",
+     "usd": 8
+    },
+    {
+     "group": "Personal products",
+     "name": "Gift items seller",
+     "usd": 9
+    },
+    {
+     "group": "Personal products",
+     "name": "Thrift fashion seller",
+     "usd": 10
+    },
+    {
+     "group": "Personal products",
+     "name": "Foodstuff seller",
+     "usd": 4
+    },
+    {
+     "group": "Personal products",
+     "name": "Fruit seller",
+     "usd": 5
+    },
+    {
+     "group": "Personal products",
+     "name": "Homemade drinks seller",
+     "usd": 6
+    },
+    {
+     "group": "Personal products",
+     "name": "Small chops seller",
+     "usd": 7
+    },
+    {
+     "group": "Personal products",
+     "name": "Pastry seller",
+     "usd": 8
+    },
+    {
+     "group": "Personal products",
+     "name": "Household items seller",
+     "usd": 9
+    },
+    {
+     "group": "Personal products",
+     "name": "Children items seller",
+     "usd": 10
+    },
+    {
+     "group": "Announcements",
+     "name": "Freelance service available",
+     "usd": 4
+    },
+    {
+     "group": "Announcements",
+     "name": "Room for rent by owner",
+     "usd": 5
+    },
+    {
+     "group": "Announcements",
+     "name": "Roommate wanted",
+     "usd": 6
+    },
+    {
+     "group": "Announcements",
+     "name": "Personal event announcement",
+     "usd": 7
+    },
+    {
+     "group": "Announcements",
+     "name": "Fitness class",
+     "usd": 8
+    },
+    {
+     "group": "Announcements",
+     "name": "Community class",
+     "usd": 9
+    },
+    {
+     "group": "Announcements",
+     "name": "Creative portfolio",
+     "usd": 10
+    }
+   ]
+  },
+  "small-business": {
+   "label": "Small Business Ads",
+   "page": "small-business-ads.html",
+   "min": 10,
+   "max": 15,
+   "jobs": [
+    {
+     "group": "Retail and trading",
+     "name": "Fashion boutique",
+     "usd": 10
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Clothing store",
+     "usd": 11
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Shoe shop",
+     "usd": 12
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Bag shop",
+     "usd": 13
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Jewellery shop",
+     "usd": 14
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Cosmetics store",
+     "usd": 15
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Beauty supply shop",
+     "usd": 10
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Perfume store",
+     "usd": 11
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Phone accessories shop",
+     "usd": 12
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Computer accessories shop",
+     "usd": 13
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Electronics retailer",
+     "usd": 14
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Furniture shop",
+     "usd": 15
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Homeware shop",
+     "usd": 10
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Mini-mart",
+     "usd": 11
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Convenience store",
+     "usd": 12
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Bookshop",
+     "usd": 13
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Stationery shop",
+     "usd": 14
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Toy shop",
+     "usd": 15
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Baby products shop",
+     "usd": 10
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Sports goods shop",
+     "usd": 11
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Gift shop",
+     "usd": 12
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Thrift store",
+     "usd": 13
+    },
+    {
+     "group": "Retail and trading",
+     "name": "Online store",
+     "usd": 14
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Bakery",
+     "usd": 15
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Cake shop",
+     "usd": 10
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Restaurant",
+     "usd": 11
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Fast-food outlet",
+     "usd": 12
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Food delivery business",
+     "usd": 13
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Catering business",
+     "usd": 14
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Small chops business",
+     "usd": 15
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Chin-chin brand",
+     "usd": 10
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Snacks producer",
+     "usd": 11
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Juice bar",
+     "usd": 12
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Coffee shop",
+     "usd": 13
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Ice cream shop",
+     "usd": 14
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Local food vendor",
+     "usd": 15
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Meal prep service",
+     "usd": 10
+    },
+    {
+     "group": "Food and hospitality",
+     "name": "Grill business",
+     "usd": 11
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Website development studio",
+     "usd": 12
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Digital marketing freelancer",
+     "usd": 13
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Social media agency",
+     "usd": 14
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Graphic design studio",
+     "usd": 15
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Printing shop",
+     "usd": 10
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Branding service",
+     "usd": 11
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Photography studio",
+     "usd": 12
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Video production service",
+     "usd": 13
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Computer training centre",
+     "usd": 14
+    },
+    {
+     "group": "Professional and digital",
+     "name": "ICT support business",
+     "usd": 15
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Phone repair shop",
+     "usd": 10
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Computer repair shop",
+     "usd": 11
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Cybercafé",
+     "usd": 12
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Online tutoring",
+     "usd": 13
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Recruitment agency",
+     "usd": 14
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Cleaning company",
+     "usd": 15
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Laundry business",
+     "usd": 10
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Event planner",
+     "usd": 11
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Travel agency",
+     "usd": 12
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Logistics startup",
+     "usd": 13
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Delivery company",
+     "usd": 14
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Car wash",
+     "usd": 15
+    },
+    {
+     "group": "Professional and digital",
+     "name": "Auto detailing",
+     "usd": 10
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Real estate agent",
+     "usd": 11
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Property management",
+     "usd": 12
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Short-let apartment",
+     "usd": 13
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Interior decorator",
+     "usd": 14
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Furniture maker",
+     "usd": 15
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Building materials dealer",
+     "usd": 10
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Plumbing company",
+     "usd": 11
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Electrical contractor",
+     "usd": 12
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Solar installer",
+     "usd": 13
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Pest control",
+     "usd": 14
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Landscaping",
+     "usd": 15
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Security service",
+     "usd": 10
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Daycare centre",
+     "usd": 11
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Beauty salon",
+     "usd": 12
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Barbershop",
+     "usd": 13
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Spa",
+     "usd": 14
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Fitness studio",
+     "usd": 15
+    },
+    {
+     "group": "Home and lifestyle",
+     "name": "Tailoring shop",
+     "usd": 10
+    }
+   ]
+  },
+  "big-business": {
+   "label": "Big Business Ads",
+   "page": "big-business-ads.html",
+   "min": 18,
+   "max": 35,
+   "jobs": [
+    {
+     "group": "Education",
+     "name": "Private school",
+     "usd": 18
+    },
+    {
+     "group": "Education",
+     "name": "Primary school",
+     "usd": 20
+    },
+    {
+     "group": "Education",
+     "name": "Secondary school",
+     "usd": 23
+    },
+    {
+     "group": "Education",
+     "name": "International school",
+     "usd": 26
+    },
+    {
+     "group": "Education",
+     "name": "University",
+     "usd": 29
+    },
+    {
+     "group": "Education",
+     "name": "Polytechnic",
+     "usd": 32
+    },
+    {
+     "group": "Education",
+     "name": "College of education",
+     "usd": 35
+    },
+    {
+     "group": "Education",
+     "name": "Vocational institute",
+     "usd": 18
+    },
+    {
+     "group": "Education",
+     "name": "Professional training institute",
+     "usd": 20
+    },
+    {
+     "group": "Education",
+     "name": "Language school",
+     "usd": 23
+    },
+    {
+     "group": "Education",
+     "name": "Driving school",
+     "usd": 26
+    },
+    {
+     "group": "Education",
+     "name": "Exam preparation centre",
+     "usd": 29
+    },
+    {
+     "group": "Education",
+     "name": "E-learning platform",
+     "usd": 32
+    },
+    {
+     "group": "Education",
+     "name": "Education consultancy",
+     "usd": 35
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Large supermarket",
+     "usd": 18
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Department store",
+     "usd": 20
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Shopping mall",
+     "usd": 23
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Wholesale distributor",
+     "usd": 26
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Food distributor",
+     "usd": 29
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Pharmaceutical distributor",
+     "usd": 32
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Electronics distributor",
+     "usd": 35
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Building materials wholesaler",
+     "usd": 18
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Auto parts distributor",
+     "usd": 20
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Furniture chain",
+     "usd": 23
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Fashion retail chain",
+     "usd": 26
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Agricultural supply store",
+     "usd": 29
+    },
+    {
+     "group": "Retail and distribution",
+     "name": "Industrial equipment supplier",
+     "usd": 32
+    },
+    {
+     "group": "Property and construction",
+     "name": "Real estate developer",
+     "usd": 35
+    },
+    {
+     "group": "Property and construction",
+     "name": "Property investment firm",
+     "usd": 18
+    },
+    {
+     "group": "Property and construction",
+     "name": "Construction company",
+     "usd": 20
+    },
+    {
+     "group": "Property and construction",
+     "name": "Civil engineering company",
+     "usd": 23
+    },
+    {
+     "group": "Property and construction",
+     "name": "Architecture firm",
+     "usd": 26
+    },
+    {
+     "group": "Property and construction",
+     "name": "Quantity surveying firm",
+     "usd": 29
+    },
+    {
+     "group": "Property and construction",
+     "name": "Road contractor",
+     "usd": 32
+    },
+    {
+     "group": "Property and construction",
+     "name": "Building materials manufacturer",
+     "usd": 35
+    },
+    {
+     "group": "Property and construction",
+     "name": "Facility management company",
+     "usd": 18
+    },
+    {
+     "group": "Property and construction",
+     "name": "Commercial property operator",
+     "usd": 20
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Transport company",
+     "usd": 23
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Interstate bus operator",
+     "usd": 26
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Fleet management company",
+     "usd": 29
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Logistics company",
+     "usd": 32
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Freight forwarder",
+     "usd": 35
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Courier network",
+     "usd": 18
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Car dealership",
+     "usd": 20
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Vehicle leasing company",
+     "usd": 23
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Auto service centre",
+     "usd": 26
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Truck sales company",
+     "usd": 29
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Marine transport operator",
+     "usd": 32
+    },
+    {
+     "group": "Transport and automotive",
+     "name": "Aviation services company",
+     "usd": 35
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Private hospital",
+     "usd": 18
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Specialist clinic",
+     "usd": 20
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Diagnostic laboratory",
+     "usd": 23
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Dental hospital",
+     "usd": 26
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Medical centre",
+     "usd": 29
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Hotel",
+     "usd": 32
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Resort",
+     "usd": 35
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Conference centre",
+     "usd": 18
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Event venue",
+     "usd": 20
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Restaurant group",
+     "usd": 23
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Hospitality management company",
+     "usd": 26
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Insurance brokerage",
+     "usd": 29
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Financial services firm",
+     "usd": 32
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Telecommunications dealer",
+     "usd": 35
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Media production company",
+     "usd": 18
+    },
+    {
+     "group": "Health and hospitality",
+     "name": "Security company",
+     "usd": 20
+    }
+   ]
+  },
+  "company": {
+   "label": "Company Ads",
+   "page": "company-ads.html",
+   "min": 35,
+   "max": 100,
+   "jobs": [
+    {
+     "group": "Corporate and enterprise",
+     "name": "Corporate brand campaign",
+     "usd": 35
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Company product launch",
+     "usd": 45
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Corporate reputation campaign",
+     "usd": 55
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Investor relations announcement",
+     "usd": 65
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Corporate recruitment campaign",
+     "usd": 75
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Business expansion announcement",
+     "usd": 85
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Enterprise software",
+     "usd": 100
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Cloud services provider",
+     "usd": 35
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Data centre operator",
+     "usd": 45
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "IT consulting company",
+     "usd": 55
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Cybersecurity company",
+     "usd": 65
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Telecommunications operator",
+     "usd": 75
+    },
+    {
+     "group": "Corporate and enterprise",
+     "name": "Internet service provider",
+     "usd": 85
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Commercial bank",
+     "usd": 100
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Microfinance bank",
+     "usd": 35
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Fintech company",
+     "usd": 45
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Payment services provider",
+     "usd": 55
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Insurance company",
+     "usd": 65
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Pension administrator",
+     "usd": 75
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Investment management firm",
+     "usd": 85
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Asset management company",
+     "usd": 100
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Mortgage company",
+     "usd": 35
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Capital markets firm",
+     "usd": 45
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Credit services company",
+     "usd": 55
+    },
+    {
+     "group": "Finance and insurance",
+     "name": "Business lending company",
+     "usd": 65
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Food manufacturer",
+     "usd": 75
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Beverage manufacturer",
+     "usd": 85
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Pharmaceutical manufacturer",
+     "usd": 100
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Cosmetics manufacturer",
+     "usd": 35
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Textile manufacturer",
+     "usd": 45
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Cement manufacturer",
+     "usd": 55
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Steel manufacturer",
+     "usd": 65
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Automotive manufacturer",
+     "usd": 75
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Electronics manufacturer",
+     "usd": 85
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Packaging company",
+     "usd": 100
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Chemical manufacturer",
+     "usd": 35
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Industrial machinery company",
+     "usd": 45
+    },
+    {
+     "group": "Manufacturing",
+     "name": "Energy equipment supplier",
+     "usd": 55
+    },
+    {
+     "group": "Major brands",
+     "name": "Automobile brand",
+     "usd": 65
+    },
+    {
+     "group": "Major brands",
+     "name": "Solar energy company",
+     "usd": 75
+    },
+    {
+     "group": "Major brands",
+     "name": "Oil and gas company",
+     "usd": 85
+    },
+    {
+     "group": "Major brands",
+     "name": "Renewable energy company",
+     "usd": 100
+    },
+    {
+     "group": "Major brands",
+     "name": "Airline",
+     "usd": 35
+    },
+    {
+     "group": "Major brands",
+     "name": "Hotel group",
+     "usd": 45
+    },
+    {
+     "group": "Major brands",
+     "name": "Real estate group",
+     "usd": 55
+    },
+    {
+     "group": "Major brands",
+     "name": "Retail chain",
+     "usd": 65
+    },
+    {
+     "group": "Major brands",
+     "name": "Consumer electronics brand",
+     "usd": 75
+    },
+    {
+     "group": "Major brands",
+     "name": "FMCG company",
+     "usd": 85
+    },
+    {
+     "group": "Major brands",
+     "name": "Agribusiness company",
+     "usd": 100
+    },
+    {
+     "group": "Major brands",
+     "name": "Export company",
+     "usd": 35
+    },
+    {
+     "group": "Major brands",
+     "name": "Import company",
+     "usd": 45
+    },
+    {
+     "group": "Major brands",
+     "name": "Media network",
+     "usd": 55
+    },
+    {
+     "group": "Major brands",
+     "name": "Entertainment company",
+     "usd": 65
+    },
+    {
+     "group": "Major brands",
+     "name": "Sports brand",
+     "usd": 75
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Brand awareness campaign",
+     "usd": 85
+    },
+    {
+     "group": "Campaign formats",
+     "name": "New product launch",
+     "usd": 100
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Seasonal sales campaign",
+     "usd": 35
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Multi-city promotion",
+     "usd": 45
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Lead generation",
+     "usd": 55
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Website traffic campaign",
+     "usd": 65
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Recruitment drive",
+     "usd": 75
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Corporate event campaign",
+     "usd": 85
+    },
+    {
+     "group": "Campaign formats",
+     "name": "Dealer recruitment",
+     "usd": 100
+    }
+   ]
+  },
+  "national": {
+   "label": "National Ads",
+   "page": "national-ads.html",
+   "min": 100,
+   "max": null,
+   "jobs": [
+    {
+     "group": "Government and public information",
+     "name": "National government announcement",
+     "usd": 100
+    },
+    {
+     "group": "Government and public information",
+     "name": "Ministry campaign",
+     "usd": 150
+    },
+    {
+     "group": "Government and public information",
+     "name": "National agency campaign",
+     "usd": 200
+    },
+    {
+     "group": "Government and public information",
+     "name": "Public health awareness",
+     "usd": 300
+    },
+    {
+     "group": "Government and public information",
+     "name": "National education campaign",
+     "usd": 500
+    },
+    {
+     "group": "Government and public information",
+     "name": "Census information",
+     "usd": 100
+    },
+    {
+     "group": "Government and public information",
+     "name": "Public safety campaign",
+     "usd": 150
+    },
+    {
+     "group": "Government and public information",
+     "name": "Road safety campaign",
+     "usd": 200
+    },
+    {
+     "group": "Government and public information",
+     "name": "Emergency preparedness",
+     "usd": 300
+    },
+    {
+     "group": "Government and public information",
+     "name": "National recruitment notice",
+     "usd": 500
+    },
+    {
+     "group": "Government and public information",
+     "name": "Public service announcement",
+     "usd": 100
+    },
+    {
+     "group": "Government and public information",
+     "name": "National tourism campaign",
+     "usd": 150
+    },
+    {
+     "group": "National industries",
+     "name": "National airline campaign",
+     "usd": 200
+    },
+    {
+     "group": "National industries",
+     "name": "Telecommunications campaign",
+     "usd": 300
+    },
+    {
+     "group": "National industries",
+     "name": "National bank campaign",
+     "usd": 500
+    },
+    {
+     "group": "National industries",
+     "name": "Insurance campaign",
+     "usd": 100
+    },
+    {
+     "group": "National industries",
+     "name": "National energy campaign",
+     "usd": 150
+    },
+    {
+     "group": "National industries",
+     "name": "Oil and gas campaign",
+     "usd": 200
+    },
+    {
+     "group": "National industries",
+     "name": "Electricity provider",
+     "usd": 300
+    },
+    {
+     "group": "National industries",
+     "name": "Renewable energy campaign",
+     "usd": 500
+    },
+    {
+     "group": "National industries",
+     "name": "National transport operator",
+     "usd": 100
+    },
+    {
+     "group": "National industries",
+     "name": "Railway campaign",
+     "usd": 150
+    },
+    {
+     "group": "National industries",
+     "name": "Port and shipping campaign",
+     "usd": 200
+    },
+    {
+     "group": "National industries",
+     "name": "National logistics network",
+     "usd": 300
+    },
+    {
+     "group": "National industries",
+     "name": "Infrastructure campaign",
+     "usd": 500
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National supermarket chain",
+     "usd": 100
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National retail chain",
+     "usd": 150
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National food brand",
+     "usd": 200
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National beverage brand",
+     "usd": 300
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National fashion brand",
+     "usd": 500
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National electronics brand",
+     "usd": 100
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "Automotive brand campaign",
+     "usd": 150
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "Pharmaceutical brand campaign",
+     "usd": 200
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National cosmetics brand",
+     "usd": 300
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "Household products brand",
+     "usd": 500
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National agriculture brand",
+     "usd": 100
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "E-commerce marketplace",
+     "usd": 150
+    },
+    {
+     "group": "Major consumer brands",
+     "name": "National delivery platform",
+     "usd": 200
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National university campaign",
+     "usd": 300
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National school network",
+     "usd": 500
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National hospital network",
+     "usd": 100
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National health provider",
+     "usd": 150
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National financial services",
+     "usd": 200
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National real estate campaign",
+     "usd": 300
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National construction campaign",
+     "usd": 500
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National manufacturing campaign",
+     "usd": 100
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National media campaign",
+     "usd": 150
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National entertainment tour",
+     "usd": 200
+    },
+    {
+     "group": "Countrywide services",
+     "name": "National sports competition",
+     "usd": 300
+    },
+    {
+     "group": "International campaigns",
+     "name": "Export promotion",
+     "usd": 500
+    },
+    {
+     "group": "International campaigns",
+     "name": "Import and trade promotion",
+     "usd": 100
+    },
+    {
+     "group": "International campaigns",
+     "name": "Foreign investment promotion",
+     "usd": 150
+    },
+    {
+     "group": "International campaigns",
+     "name": "International tourism promotion",
+     "usd": 200
+    },
+    {
+     "group": "International campaigns",
+     "name": "Country investment showcase",
+     "usd": 300
+    },
+    {
+     "group": "International campaigns",
+     "name": "Trade fair campaign",
+     "usd": 500
+    },
+    {
+     "group": "International campaigns",
+     "name": "International product launch",
+     "usd": 100
+    },
+    {
+     "group": "International campaigns",
+     "name": "West African regional campaign",
+     "usd": 150
+    },
+    {
+     "group": "International campaigns",
+     "name": "Diaspora engagement",
+     "usd": 200
+    },
+    {
+     "group": "International campaigns",
+     "name": "Multinational corporate campaign",
+     "usd": 300
+    },
+    {
+     "group": "National campaign packages",
+     "name": "Nationwide product launch",
+     "usd": 500
+    },
+    {
+     "group": "National campaign packages",
+     "name": "Nationwide recruitment",
+     "usd": 100
+    },
+    {
+     "group": "National campaign packages",
+     "name": "Multi-region sales campaign",
+     "usd": 150
+    },
+    {
+     "group": "National campaign packages",
+     "name": "National event sponsorship",
+     "usd": 200
+    },
+    {
+     "group": "National campaign packages",
+     "name": "Government information campaign",
+     "usd": 300
+    },
+    {
+     "group": "National campaign packages",
+     "name": "Custom nationwide media plan",
+     "usd": 500
+    }
+   ]
+  }
+ }
+}

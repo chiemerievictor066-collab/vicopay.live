@@ -9,7 +9,7 @@
 (function () {
   var TOKEN_KEY = "vicoPayToken";
   var LOGIN_PAGE = "join-now.html";
-  var PUBLIC_PAGES = ["join-now.html", "signup.html", "forgot-password.html", "reset-password.html", "terms.html", "privacy.html", "motivational-page.html", "welcome-page.html", "forex.html", "vicopay-global-livestream.html", "help-center.html", "support-chat.html", "about.html", "contact.html", "community-guidelines.html"];
+  var PUBLIC_PAGES = ["join-now.html", "signup.html", "forgot-password.html", "reset-password.html", "terms.html", "privacy.html", "motivational-page.html", "welcome-page.html", "forex.html", "vicopay-global-livestream.html", "help-center.html", "about.html", "contact.html", "community-guidelines.html"];
 
   function page() {
     return (location.pathname.split("/").pop() || "").toLowerCase();
@@ -70,6 +70,16 @@
     };
   })();
 
+  function deviceId() {
+    try { var d = localStorage.getItem("vicoDeviceId"); if (d && /^[a-f0-9]{32}$/.test(d)) return d;
+      var a = new Uint8Array(16); crypto.getRandomValues(a); d = Array.prototype.map.call(a, function (x) { return ("0" + x.toString(16)).slice(-2); }).join(""); localStorage.setItem("vicoDeviceId", d); return d; } catch (e) { return "unknown-device-0000"; }
+  }
+  var pinLoading = null;
+  function loadPin() {
+    if (window.VicoPin) return Promise.resolve();
+    if (!pinLoading) pinLoading = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "vico-pin.js"; s.onload = ok; s.onerror = function () { pinLoading = null; no(); }; document.head.appendChild(s); });
+    return pinLoading;
+  }
   var realFetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     var url = typeof input === "string" ? input : (input && input.url) || "";
@@ -80,10 +90,26 @@
       init = init || {};
       var headers = new Headers(init.headers || {});
       if (!headers.has("Authorization")) headers.set("Authorization", "Bearer " + Auth.getToken());
+      if (!headers.has("x-device-id")) headers.set("x-device-id", deviceId());   // lets Vico notice a browser it has not seen before (wallet security)
       init.headers = headers;
     }
 
     return realFetch(input, init).then(function (response) {
+      // Wallet PIN: a withdrawal or paid gift answers 428 "walletAuthRequired". Ask for the PIN (and the email code when needed), then repeat the request.
+      if (response.status === 428 && isApi && typeof input === "string" && init) {
+        return response.clone().json().then(function (b) {
+          if (!b || !b.walletAuthRequired) return response;
+          var sent = {}; try { sent = JSON.parse(init.body || "{}"); } catch (e) { /* not JSON */ }
+          var details = [];
+          if (b.action === "withdraw") { if (sent.bankName) details.push(["Bank", sent.bankName]); if (sent.accountNumber) details.push(["Account", "••••" + String(sent.accountNumber).slice(-4)]); if (sent.method) details.push(["Method", sent.method]); details.push(["Amount", "₦" + Number(sent.amount || 0).toLocaleString()]); }
+          return loadPin().then(function () { return window.VicoPin.authorize({ action: b.action, amount: Number(sent.amount) || 0, details: b.action === "withdraw" ? details : null }); }).then(function (r) {
+            var h = new Headers(init.headers || {}); h.set("x-wallet-auth", r.token); var again = {}; for (var k in init) again[k] = init[k]; again.headers = h;
+            return realFetch(input, again);
+          }, function () { return response; });   // closed the PIN screen: the page shows the "Enter your Wallet PIN" message
+        });
+      }
+      return response;
+    }).then(function (response) {
       if (response.status === 401 && isApi && !isAuthCall && PUBLIC_PAGES.indexOf(page()) === -1) {
         Auth.clear();
         location.href = LOGIN_PAGE + "?next=" + encodeURIComponent(page() + location.search);

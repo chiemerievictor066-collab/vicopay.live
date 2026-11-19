@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex">
+<title>Referrals - Vico Pay Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050812;color:#e8eefc;font-family:Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid #22304b;background:#071025;flex-wrap:wrap}
+.logo{font-weight:900;font-size:21px;margin-right:auto}.logo span{color:#ffc83d}
+.wrap{width:min(1150px,96%);margin:20px auto}
+.panel{background:#0a1328;border:1px solid #203352;border-radius:14px;padding:16px;margin-bottom:16px}
+.panel h3{margin:0 0 4px;font-size:16px}.muted{color:#8fa7c5;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.card{background:#0a1328;border:1px solid #203352;border-radius:14px;padding:14px}.card b{display:block;font-size:26px;margin-top:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+input,select{padding:10px 14px;border-radius:10px;border:1px solid #2a4066;background:#050c1c;color:#fff;font:inherit}input.n{width:110px}
+.b{border:0;border-radius:12px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:#0787ed}
+.b.red{background:#e11d48}.b.gray{background:#334155}.b.green{background:#16a34a}.b.sm{padding:5px 11px;font-size:12px;border-radius:9px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 11px;text-align:left;border-bottom:1px solid #1b2b47;vertical-align:top}
+th{color:#8fa7c5;background:#0c1730}.tw{overflow-x:auto;border-radius:12px;background:#0a1328;border:1px solid #203352}
+.tag{background:#16a34a;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:900}.tag.o{background:#b45309}.tag.r{background:#e11d48}
+.gate{max-width:420px;margin:12vh auto;background:#0a1328;border:1px solid #203352;border-radius:16px;padding:26px}.gate input{width:100%;margin:12px 0}
+.err{color:#ff9fb5;font-size:13px;min-height:18px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}#toast.bad{background:#e11d48}
+label.ck{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:8px}
+</style></head><body>
+<div id="gate" class="gate"><h2 style="margin:0">Admin sign in</h2>
+  <p class="muted">Enter the ADMIN_KEY from your server's .env file. It is only kept in this tab.</p>
+  <input id="key" type="password" placeholder="ADMIN_KEY" onkeydown="if(event.key==='Enter')enter()">
+  <button class="b" style="width:100%;padding:11px" onclick="enter()">Open Referral admin</button><div class="err" id="err"></div></div>
+<div id="app" style="display:none">
+<header><div class="logo">Vico Pay <span>Referral Admin</span></div>
+  <a href="admin.html" class="b gray" style="text-decoration:none">← Dashboard</a>
+  <button class="b gray" onclick="sessionStorage.removeItem('vk');location.reload()">Lock</button></header>
+<div class="wrap">
+  <div class="grid" id="stats"></div>
+
+  <div class="panel"><h3>Rewards and rules</h3>
+    <div class="muted">Each milestone is a cumulative total. Example: 5 friends = 10 coins, 10 friends = 20 coins, 20 friends = 30 coins pays 10 coins at each step.</div>
+    <div id="ms"></div>
+    <div class="row"><button class="b gray sm" onclick="addMs()">+ Add milestone</button></div>
+    <label class="ck"><input type="checkbox" id="sEnabled"> Referral rewards are ON</label>
+    <label class="ck"><input type="checkbox" id="sProfile"> Invited friend must complete their profile (username and bio or photo)</label>
+    <label class="ck"><input type="checkbox" id="sActivity"> Invited friend must do one real activity (buy coins, send a gift, join a fan club or go live)</label>
+    <label class="ck"><input type="checkbox" id="sPhone"> Invited friend must verify their email <span class="muted">(a 6-digit code sent with Resend)</span></label>
+    <div class="row"><span class="muted">Hold for review after</span><input class="n" id="sIp" type="number" min="1" max="50"><span class="muted">signups from one network address</span></div>
+    <div class="row"><button class="b green" onclick="save()">Save settings</button></div></div>
+
+  <div class="panel"><h3>Referrals</h3>
+    <div class="row" style="margin-top:6px"><select id="flt" onchange="load()"><option value="all">All</option><option value="flagged">Flagged (held)</option><option value="pending">Pending</option><option value="qualified">Qualified</option><option value="rejected">Rejected</option></select>
+      <button class="b gray sm" onclick="load()">Refresh</button></div></div>
+  <div class="tw"><table><thead><tr><th>#</th><th>Inviter</th><th>Invited</th><th>Status</th><th>Network</th><th>Joined</th><th>Action</th></tr></thead><tbody id="list"></tbody></table></div>
+
+  <div class="panel" style="margin-top:16px"><h3>Top inviters</h3><div id="top" class="muted"></div></div>
+  <div class="panel"><h3>Coins awarded</h3><div class="tw"><table><thead><tr><th>Inviter</th><th>Milestone</th><th>Coins</th><th>Transaction</th><th>Date</th></tr></thead><tbody id="rw"></tbody></table></div></div>
+</div></div>
+<div id="toast"></div>
+<script>
+var KEY=sessionStorage.getItem("vk")||"",MS=[];
+async function api(p,body){var r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json","x-admin-key":KEY},body:body?JSON.stringify(body):undefined});var d=await r.json().catch(function(){return{};});d._ok=r.ok;return d;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function toast(m,bad){var t=document.getElementById("toast");t.textContent=m;t.className="show"+(bad?" bad":"");clearTimeout(toast.t);toast.t=setTimeout(function(){t.className="";},2400);}
+async function enter(){KEY=document.getElementById("key").value.trim()||KEY;var d=await api("/api/admin/referrals/overview");
+  if(!d.success){document.getElementById("err").textContent="Wrong key.";return;}
+  sessionStorage.setItem("vk",KEY);document.getElementById("gate").style.display="none";document.getElementById("app").style.display="";show(d);load();rewards();}
+function show(d){var s=d.stats;
+  document.getElementById("stats").innerHTML=[["Total referrals",s.total],["Pending",s.pending],["Qualified",s.qualified],["Rejected",s.rejected],["Flagged (held)",s.flagged],["Coins awarded",s.coinsAwarded],["Rewards paid",s.rewardsPaid]].map(function(x){return '<div class="card"><span class="muted">'+x[0]+'</span><b>'+Number(x[1]).toLocaleString()+'</b></div>';}).join("");
+  var S=d.settings;MS=S.milestones.map(function(m){return{count:m.count,total:m.total};});drawMs();
+  document.getElementById("sEnabled").checked=S.enabled;document.getElementById("sProfile").checked=S.requireProfile;document.getElementById("sActivity").checked=S.requireActivity;document.getElementById("sPhone").checked=S.requireEmail;document.getElementById("sIp").value=S.maxSameIp;
+  document.getElementById("top").innerHTML=d.top.length?d.top.map(function(t){return esc(t.email)+" — "+t.qualified+" qualified of "+t.total+" invited";}).join("<br>"):"No referrals yet.";}
+function drawMs(){document.getElementById("ms").innerHTML=MS.map(function(m,i){return '<div class="row"><input class="n" type="number" min="1" value="'+m.count+'" onchange="MS['+i+'].count=Number(this.value)"> <span class="muted">friends =</span> <input class="n" type="number" min="1" value="'+m.total+'" onchange="MS['+i+'].total=Number(this.value)"> <span class="muted">coins in total</span> <button class="b red sm" onclick="MS.splice('+i+',1);drawMs()">Remove</button></div>';}).join("");}
+function addMs(){var l=MS[MS.length-1]||{count:0,total:0};MS.push({count:l.count+5,total:l.total+10});drawMs();}
+async function save(){var d=await api("/api/admin/referrals/settings",{milestones:MS,enabled:document.getElementById("sEnabled").checked,requireProfile:document.getElementById("sProfile").checked,requireActivity:document.getElementById("sActivity").checked,requireEmail:document.getElementById("sPhone").checked,maxSameIp:Number(document.getElementById("sIp").value)});
+  if(d.success){toast("Settings saved.");enter();}else toast(d.message||"Could not save.",1);}
+async function load(){var d=await api("/api/admin/referrals/list?filter="+document.getElementById("flt").value);
+  document.getElementById("list").innerHTML=(d.referrals||[]).map(function(r){var st=r.status==="rejected"?'<span class="tag r">Rejected</span>':r.flagged?'<span class="tag o">Held</span>':r.status==="qualified"?'<span class="tag">Qualified</span>':'<span class="tag o">Pending</span>';
+    var why=r.flagged?'<div class="muted">'+esc(r.flagReason)+'</div>':r.status==="rejected"?'<div class="muted">'+esc(r.rejectReason)+'</div>':"";
+    return "<tr><td>"+r.id+"</td><td>"+esc(r.inviter)+"</td><td>"+esc(r.invited)+"</td><td>"+st+why+"</td><td>"+esc(r.ip||"")+"</td><td>"+new Date(r.createdAt).toLocaleString()+"</td><td>"+
+      (r.status!=="rejected"&&!r.flagged?'<button class="b gray sm" onclick="act('+r.id+',\'flag\')">Hold</button> ':"")+(r.flagged||r.status==="rejected"?'<button class="b green sm" onclick="act('+r.id+',\'approve\')">Approve</button> ':"")+(r.status!=="rejected"?'<button class="b red sm" onclick="act('+r.id+',\'reject\')">Reject</button>':"")+"</td></tr>";}).join("")||'<tr><td colspan="7" class="muted">Nothing here.</td></tr>';}
+async function act(id,a){var reason=a==="approve"?"":(prompt("Reason (optional):")||"");var d=await api("/api/admin/referrals/"+id+"/action",{action:a,reason:reason});if(d.success){toast("Updated.");load();enter();}else toast(d.message||"Failed.",1);}
+async function rewards(){var d=await api("/api/admin/referrals/rewards");document.getElementById("rw").innerHTML=(d.rewards||[]).map(function(r){return "<tr><td>"+esc(r.inviter)+"</td><td>"+r.count+" friends</td><td>+"+r.coins+"</td><td>"+(r.txnId||"")+"</td><td>"+new Date(r.createdAt).toLocaleString()+"</td></tr>";}).join("")||'<tr><td colspan="5" class="muted">No rewards paid yet.</td></tr>';}
+if(KEY)enter();
+</script></body></html>
