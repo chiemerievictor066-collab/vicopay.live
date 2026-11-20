@@ -2,8 +2,11 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vico Messages - Vico Pay Live</title>
 <link rel="stylesheet" href="gm.css">
 <style>
-.hero{padding:18px 22px;border-radius:24px;background:linear-gradient(120deg,#bfe0ff,#c9b8ff);margin-bottom:12px}.hero h1{margin:0;font-size:28px;color:#12275c}.hero p{margin:2px 0 0;font-weight:700;color:#1b2f66}
-.pane{display:grid;grid-template-columns:340px 1fr;gap:12px;height:min(620px,calc(100vh - 290px));min-height:420px}
+/* Full-height, WhatsApp-style chat workspace */
+body.gm[data-gm="messages"]{height:100dvh;min-height:100dvh;overflow:hidden;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+body.gm[data-gm="messages"] .gm-wrap{width:100%;max-width:none;height:calc(100dvh - 76px - env(safe-area-inset-bottom));margin:0;padding:0}
+body.gm[data-gm="messages"] .hero{display:none}
+.pane{display:grid;grid-template-columns:minmax(270px,360px) minmax(0,1fr);gap:0;height:100%;min-height:0;overflow:hidden;border:1px solid #c5dcf7;border-radius:0;background:#fff}
 .side,.main{overflow:hidden;display:flex;flex-direction:column}
 .find{display:flex;gap:6px;padding:10px;border-bottom:1px solid #c5dcf7}.find input{flex:1;min-width:0;border:1px solid #c5dcf7;border-radius:14px;padding:10px 12px;font:inherit}
 #threads{flex:1;overflow:auto}.th{display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #e3eefc;cursor:pointer}.th:hover,.th.on{background:#eaf3ff}
@@ -17,6 +20,29 @@
 #f{display:flex;gap:8px;padding:10px;border-top:1px solid #c5dcf7;background:#fff}#f input{flex:1;min-width:0;border:1px solid #c5dcf7;border-radius:18px;padding:12px 16px;font:inherit}
 .empty{margin:auto;color:#5d7096;font-weight:700;text-align:center;padding:20px}
 @media(max-width:760px){.pane{grid-template-columns:1fr}.pane.chat .side{display:none}.pane:not(.chat) .main{display:none}.mh button{display:inline-block}}
+
+.side,.main{min-width:0;min-height:0;border-radius:0!important;box-shadow:none!important}
+.side{border-right:1px solid #c5dcf7}
+.main{height:100%;background:#fff}
+.mh{min-height:62px;flex:0 0 auto}
+#msgs{min-height:0;overscroll-behavior:contain}
+#f{flex:0 0 auto;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+#f input{outline:none}
+#f input:focus,.find input:focus{border-color:#1d6fe8;box-shadow:0 0 0 3px #1d6fe822}
+.find{flex:0 0 auto}
+@media(max-width:760px){
+  body.gm[data-gm="messages"] .gm-wrap{height:calc(100dvh - 76px - env(safe-area-inset-bottom))}
+  .pane{grid-template-columns:minmax(0,1fr);height:100%;border-left:0;border-right:0}
+  .pane:not(.chat) .side{display:flex}
+  .pane:not(.chat) .main{display:none}
+  .pane.chat .side{display:none}
+  .pane.chat .main{display:flex}
+  .side,.main{height:100%;min-height:0}
+  .mh button{display:inline-flex;align-items:center;justify-content:center}
+}
+@media(min-width:761px){
+  .pane .side,.pane .main{display:flex!important}
+}
 </style></head>
 <body class="gm" data-gm="messages" data-title="Vico Messages">
 <div class="gm-wrap">

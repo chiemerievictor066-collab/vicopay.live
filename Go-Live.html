@@ -351,6 +351,22 @@ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
 #pageLayer iframe{flex:1;width:100%;border:0;background:#fff}
 #storyModal textarea{min-height:120px;resize:vertical}
 #storyModal .cnt{font-size:12px;color:#66809a;text-align:right;margin-top:4px}
+
+/* Full-bleed creator view: camera spans the available screen; chat/tools float above it. */
+.layout{display:block!important;min-height:calc(100dvh - 66px)!important}
+.sidebar{display:none!important}
+.main{width:100%;min-width:0;min-height:calc(100dvh - 66px);padding:0!important}
+.live-stage{width:100%;height:calc(100dvh - 66px);min-height:0;max-height:none;border-radius:0!important;border:0!important}
+video#camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.right{position:fixed!important;right:12px;top:78px;bottom:12px;width:min(330px,32vw);min-height:0!important;z-index:24;border:1px solid #2b5da8!important;border-radius:18px;overflow:hidden;box-shadow:0 14px 40px #0008}
+@media(max-width:1050px){
+  .right{display:flex!important;position:fixed!important;right:10px;top:auto;bottom:calc(74px + env(safe-area-inset-bottom));width:min(340px,88vw);height:min(42dvh,360px);min-height:220px;grid-column:auto;border-radius:18px}
+}
+@media(max-width:650px){
+  .live-stage{height:calc(100dvh - 66px);min-height:0;border-radius:0!important}
+  .main{min-height:calc(100dvh - 66px);padding:0!important}
+  .right{right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:min(330px,88vw);height:min(40dvh,330px)}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
 <script src="auth.js"></script>

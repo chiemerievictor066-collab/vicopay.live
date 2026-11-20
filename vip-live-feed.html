@@ -10,9 +10,8 @@
 html,body{height:100%;margin:0;background:#020a1f;color:#fff;font-family:var(--font);overflow:hidden}
 .feed{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
 .feed::-webkit-scrollbar{display:none}
-.slide{height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#07245f,#020a1f 70%)}
-.phone{position:relative;width:min(100vw,calc(100dvh*9/16));height:100dvh;overflow:hidden;background:#041233;isolation:isolate}
-@media(min-width:900px){.phone{height:calc(100dvh - 28px);border-radius:22px;box-shadow:0 20px 70px #000b,0 0 0 1px #17407f}}
+.slide{height:100dvh;width:100vw;scroll-snap-align:start;scroll-snap-stop:always;display:block;background:#020a1f}
+.phone{position:relative;width:100vw;height:100dvh;max-width:none;overflow:hidden;background:#041233;isolation:isolate;border-radius:0;box-shadow:none}
 
 .poster{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(16px);opacity:.85;z-index:-3}
 .videos{position:absolute;inset:0;z-index:-2;display:flex}
