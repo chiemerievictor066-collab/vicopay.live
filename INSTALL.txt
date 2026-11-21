@@ -1,0 +1,9 @@
+VICOPAY LIVE BRAND ICON INSTALL
+
+Copy every file in this folder into the same folder that contains server.js (the vicopay-website folder). Replace server.js when prompted. Do not put these files in a new public folder.
+
+The server.js change adds the app icon to all HTML pages and allows the icon/manifest files through the existing static-file allow-list. The original supplied artwork is vico-app-icon.png.
+
+Commit and push server.js plus all icon files and site.webmanifest to Git. Render will redeploy.
+
+After deployment, test https://vicopay.live/favicon.ico and https://vicopay.live/vico-app-icon.png. Browser tabs and search engines may cache favicons; Google search result icons can take days or longer to refresh after recrawling and are not guaranteed to change immediately. Social preview caches may also need refreshing.

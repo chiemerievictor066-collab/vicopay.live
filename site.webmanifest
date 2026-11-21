@@ -1,0 +1,24 @@
+{
+  "name": "VicoPay Live",
+  "short_name": "VicoPay",
+  "description": "Live • Watch • Earn with VicoPay Live",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#061b78",
+  "theme_color": "#0636d9",
+  "icons": [
+    {
+      "src": "/vico-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/vico-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

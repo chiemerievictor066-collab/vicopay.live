@@ -75,7 +75,8 @@ const GIFT_VIDEO = /^gift-[a-z0-9-]+\.(mp4|jpg)$/;   // gift videos + their smal
 const VIP_FX_IMG = /^(vipfx-[a-z0-9-]+\.webp|vico-art-[a-z0-9-]+\.jpg|vico-animals\.webp|vico-ai-guide\.gif|vico-promo-(?:hero|vip|celebrate|benefits)\.jpg|vico-bc-(?:hero|shield|support)\.jpg)$/;   // VIP emoji / avatar / sticker / frame pictures used by the live Effects
 const ANIMAL_PAGES = new RegExp("^(go-?live[a-z0-9_-]*\\.html|vip-go-?live[a-z0-9_-]*\\.html" + (process.env.ANIMAL_FILTER_PAGES ? "|" + process.env.ANIMAL_FILTER_PAGES.split(",").map((p) => p.trim().replace(/[^a-zA-Z0-9_.-]/g, "").replace(/\./g, "\\.")).filter(Boolean).join("|") : "") + ")$", "i");
 const APPRECIATION_ART = new Set(["vico-monthly-appreciation.png", "vico-yearly-appreciation.png"]);
-const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || f === "gm.css" || BROWSER_SCRIPTS.has(f) || GIFT_VIDEO.test(f) || VIP_FX_IMG.test(f) || APPRECIATION_ART.has(f)));
+const BRAND_ASSETS = new Set(["favicon.ico", "favicon-32x32.png", "apple-touch-icon.png", "vico-app-icon.png", "vico-app-icon-192.png", "vico-app-icon-512.png", "site.webmanifest"]);
+const SITE_FILES = new Set(fs.readdirSync(SITE_DIR).filter((f) => /\.html$/i.test(f) || f === "vico.css" || f === "gm.css" || BROWSER_SCRIPTS.has(f) || GIFT_VIDEO.test(f) || VIP_FX_IMG.test(f) || APPRECIATION_ART.has(f) || BRAND_ASSETS.has(f)));
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
   let name;
@@ -85,6 +86,29 @@ app.use((req, res, next) => {
   if (/\.html$/i.test(name)) {
     return fs.readFile(path.join(SITE_DIR, name), "utf8", (err, html) => {
       if (err) return next();
+      // VicoPay brand identity: expose the supplied app logo as the browser favicon,
+      // mobile home-screen icon and social/search preview image on every HTML page.
+      const brandHead = '<link rel="icon" href="/favicon.ico" sizes="any">' +
+        '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">' +
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png">' +
+        '<link rel="manifest" href="/site.webmanifest">' +
+        '<meta name="theme-color" content="#0636d9">' +
+        '<meta name="application-name" content="VicoPay Live">' +
+        '<meta property="og:site_name" content="VicoPay Live">' +
+        '<meta property="og:type" content="website">' +
+        '<meta property="og:title" content="VicoPay Live — Live • Watch • Earn">' +
+        '<meta property="og:description" content="Go live, watch creators, connect and earn with VicoPay Live.">' +
+        '<meta property="og:image" content="https://vicopay.live/vico-app-icon.png">' +
+        '<meta property="og:image:width" content="1254">' +
+        '<meta property="og:image:height" content="1254">' +
+        '<meta name="twitter:card" content="summary">' +
+        '<meta name="twitter:title" content="VicoPay Live — Live • Watch • Earn">' +
+        '<meta name="twitter:description" content="Go live, watch creators, connect and earn with VicoPay Live.">' +
+        '<meta name="twitter:image" content="https://vicopay.live/vico-app-icon.png">';
+      if (!/rel=["']icon["']/i.test(html) || html.indexOf("/vico-app-icon.png") === -1) {
+        const headMatch = /<head[^>]*>/i.exec(html);
+        if (headMatch) html = html.slice(0, headMatch.index + headMatch[0].length) + brandHead + html.slice(headMatch.index + headMatch[0].length);
+      }
       if (html.indexOf("vico-next.js") === -1) {
         const tag = (html.indexOf("auth.js") === -1 ? '<script src="auth.js"></script>' : "") + '<script src="vico-next.js"></script>';
         const i = html.lastIndexOf("</body>");
@@ -486,7 +510,7 @@ app.post("/api/auth/login", authRateLimit, async (req, res) => {
     if (adminControl) {
       const blocked = await adminControl.isLoginBlocked(req);
       if (blocked) {
-        if (commandCenter) await commandCenter.recordLogin({ login: String((req.body && req.body.login) || "").slice(0, 120), ip: req.ip, device: req.headers["user-agent"], success: false });
+        if (commandCenter) await commandCenter.recordLogin({ login: String((req.body && req.body.login) || "").slice(0,120), ip: req.ip, device: req.headers["user-agent"], success: false });
         return res.status(403).json({ success: false, message: "Sign-in from this network or device has been blocked. Contact VicoPay support." });
       }
     }
@@ -1349,14 +1373,14 @@ app.get(
           stars,
 
         minimumStars: hostRules.minStars,
-        monthlyHoursRequired: hostRules.monthlyHours,
-        vipPayout: hostRules.vip,
+          monthlyHoursRequired: hostRules.monthlyHours,
+          vipPayout: hostRules.vip,
 
         starsComplete:
           true,
 
         dailyFourHoursRequired: hostRules.dailyHours,
-        dailyHoursRequired: hostRules.dailyHours,
+          dailyHoursRequired: hostRules.dailyHours,
 
         monthlyLiveRequirementComplete:
           true,
@@ -3465,6 +3489,7 @@ async function start() {
   await productLiveRecordings.ready; // product livestream recording files and Marketplace links
   await creatorPartnership.migrate(); // creator partnership escrow records, Marketplace publication and payout tracking
   await vip.migrate();           // VIP tables (new tables only, safe to run every time)
+  await fans.migrate();          // fan mission claims (new table only, safe to run every time)
   await appreciation.migrate();  // monthly appreciation + idempotent yearly 20-coin awards
   await campaigns.migrate();     // VicoPay campaigns, competitions, votes and sponsor enquiries
   await store.refreshBans();
