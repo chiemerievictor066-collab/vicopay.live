@@ -295,19 +295,39 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON support_messages(ticket_id)`
 ];
 
+
 db.migrate = async function () {
-  // Advisory lock: if two copies of the app start at the same moment, only one builds the tables.
+  console.log("DB MIGRATION: connecting to PostgreSQL...");
+
   const client = await pool.connect();
+
+  console.log("DB MIGRATION: PostgreSQL connection successful.");
+
   try {
-    await client.query("SELECT pg_advisory_lock(727200)");
-    for (const sql of SCHEMA) await client.query(sql);
-    // A crash/restart leaves live sessions open forever. Close them at the last moment we know the host was alive.
-    await client.query("UPDATE live_sessions SET ended_at = COALESCE(last_beat, started_at) WHERE ended_at IS NULL");
+    console.log("DB MIGRATION: waiting for migration lock...");
+    await client.query("SELECT pg_advisory_lock(727274)");
+    console.log("DB MIGRATION: migration lock acquired.");
+
+    for (let i = 0; i < SCHEMA.length; i++) {
+      console.log(`DB MIGRATION: running schema ${i + 1}/${SCHEMA.length}`);
+      await client.query(SCHEMA[i]);
+    }
+
+    console.log("DB MIGRATION: all schema statements completed.");
+
+    await client.query(
+      "UPDATE live_sessions SET ended_at = COALESCE(last_beat, started_at) WHERE ended_at IS NULL"
+    );
+
+    console.log("DB MIGRATION: live session cleanup completed.");
   } finally {
-    try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ }
+    try {
+      await client.query("SELECT pg_advisory_unlock(727274)");
+      console.log("DB MIGRATION: lock released.");
+    } catch (e) {
+      console.error("DB MIGRATION: lock release error:", e.message);
+    }
+
     client.release();
   }
 };
-
-db.close = () => pool.end();
-module.exports = db;
