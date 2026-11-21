@@ -142,7 +142,7 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
   async function migrate() {
     const client = await db.pool.connect();
     try {
-      await client.query("SELECT pg_advisory_lock(727275)");   // different lock number from db.js, so start-ups never block each other
+      await client.query("SELECT pg_advisory_lock(727200)");   // different lock number from db.js, so start-ups never block each other
       for (const sql of SCHEMA) await client.query(sql);
       // Earned tiers also need 6000 lifetime Golden Stars. Added to the (new) VIP table only, once; later admin edits are never overwritten.
       const hasStars = await client.query("SELECT 1 FROM information_schema.columns WHERE table_name = 'vip_badges' AND column_name = 'min_stars'");
@@ -185,7 +185,7 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
       await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('enabled','0',$1) ON CONFLICT (key) DO NOTHING", [ts]);
       await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('max_open_reports','3',$1) ON CONFLICT (key) DO NOTHING", [ts]);
     } finally {
-      try { await client.query("SELECT pg_advisory_unlock(727275)"); } catch (_) { /* ignore */ }
+      try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ }
       client.release();
     }
     await syncGifts();

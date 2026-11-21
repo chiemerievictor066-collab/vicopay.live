@@ -53,8 +53,8 @@ module.exports = function makeVideos({ app, db, requireAuth, requireAdmin, store
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727283)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727283)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("VIDEOS MIGRATE ERROR:", e); });
   const today = () => new Date(Date.now() + 3600000).toISOString().slice(0, 10);
 

@@ -128,8 +128,8 @@ module.exports = function makeAdJobs({ app, db, requireAuth, requireAdmin, comme
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727283)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727283)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("AD JOBS MIGRATE ERROR:", e); });
   const audit = (orderId, actor, action, detail) => db.run("INSERT INTO ad_audit (campaign_id, actor, action, detail, created_at) VALUES (NULL,?,?,?,?)", [actor, "job_" + action, ("order #" + orderId + " " + (detail || "")).slice(0, 300), now()]).catch(() => {});
   const notify = (email, text, link) => db.run("INSERT INTO notifications (user_id, text, link, created_at) VALUES (?,?,?,?)", [email, String(text).slice(0, 200), link || "ad-sense-home.html", now()]).catch(() => {});

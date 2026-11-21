@@ -68,8 +68,8 @@ module.exports = function makeWalletSecurity({ app, db, requireAuth, getAuthEmai
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727284)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727284)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("WALLET SECURITY MIGRATE ERROR:", e); });
 
   // ---- email through Resend (same settings as password reset / email verification) ----

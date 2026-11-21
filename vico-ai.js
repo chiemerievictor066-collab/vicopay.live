@@ -103,8 +103,8 @@ module.exports = function makeAi({ app, db, requireAuth, requireAdmin, axios }) 
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727278)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727278)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("AI MIGRATE ERROR:", e); });
 
   const today = () => new Date().toISOString().slice(0, 10);

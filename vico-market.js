@@ -61,8 +61,8 @@ module.exports = function makeMarket({ app, db, requireAuth, requireAdmin, store
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727280)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727280)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("MARKET MIGRATE ERROR:", e); });
 
   const COLS = `id, seller, title, description, price_ngn AS "priceNgn", old_price_ngn AS "oldPrice", category, location, status, sale_mode AS "saleMode", contact_mode AS "contactMode", call_enabled AS "callEnabled", keep_until AS "keepUntil", created_at AS "createdAt", (image IS NOT NULL AND image <> '') AS "hasImage",

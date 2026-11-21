@@ -55,8 +55,8 @@ module.exports = function makeCommerce({ app, db, requireAuth, requireAdmin, sto
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727282)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727282)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("COMMERCE MIGRATE ERROR:", e); });
 
   const DEFAULTS = { commissionPercent: "0", releaseDays: "7", minWithdrawal: "1000" };

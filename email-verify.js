@@ -53,10 +53,10 @@ module.exports = function makeEmailVerify({ app, db, requireAuth, onBounce }) {
   const ready = (async function migrate() {
     const client = await db.pool.connect();
     try {
-      await client.query("SELECT pg_advisory_lock(727277)");
+      await client.query("SELECT pg_advisory_lock(727200)");
       for (const sql of SCHEMA) await client.query(sql);
     } finally {
-      try { await client.query("SELECT pg_advisory_unlock(727277)"); } catch (_) { /* ignore */ }
+      try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ }
       client.release();
     }
   })().catch((e) => { console.error("EMAIL VERIFY MIGRATE ERROR:", e); });

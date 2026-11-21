@@ -182,8 +182,8 @@ module.exports = function makeAds({ app, db, requireAuth, requireAdmin, emailVer
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727281)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727281)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("ADS MIGRATE ERROR:", e); });
 
   const DEFAULTS = { budgets: "1000,5000,10000,20000,50000,100000", minBudget: "1000", maxBudget: "1000000", cpmNgn: "0", feePercent: "0", activePlacements: DEFAULT_ACTIVE.join(","), keepUsd: String(KEEP_USD) };

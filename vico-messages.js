@@ -11,7 +11,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store }) {
     `CREATE TABLE IF NOT EXISTS dm_messages (id BIGSERIAL PRIMARY KEY, conversation_id BIGINT NOT NULL REFERENCES dm_conversations(id) ON DELETE CASCADE, sender_id TEXT NOT NULL, recipient_id TEXT NOT NULL, body TEXT NOT NULL, created_at BIGINT NOT NULL, read_at BIGINT)`,
     `CREATE INDEX IF NOT EXISTS idx_dm_messages_conversation ON dm_messages(conversation_id,id)`
   ];
-  const ready = (async () => { const c = await db.pool.connect(); try { await c.query('SELECT pg_advisory_lock(727291)'); for (const q of SCHEMA) await c.query(q); } finally { try { await c.query('SELECT pg_advisory_unlock(727291)'); } catch (_) {} c.release(); } })().catch(e => { console.error('VICO MESSAGES MIGRATE ERROR:', e); });
+  const ready = (async () => { const c = await db.pool.connect(); try { await c.query('SELECT pg_advisory_lock(727200)'); for (const q of SCHEMA) await c.query(q); } finally { try { await c.query('SELECT pg_advisory_unlock(727200)'); } catch (_) {} c.release(); } })().catch(e => { console.error('VICO MESSAGES MIGRATE ERROR:', e); });
   async function target(handle) {
     const email = await users.resolveHandle(String(handle || '').replace(/^@/, ''));
     return email ? lc(email) : null;

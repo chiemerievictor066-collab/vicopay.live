@@ -97,10 +97,10 @@ module.exports = function makeReferrals({ app, db, requireAuth, requireAdmin, le
   const ready = (async function migrate() {
     const client = await db.pool.connect();
     try {
-      await client.query("SELECT pg_advisory_lock(727276)");
+      await client.query("SELECT pg_advisory_lock(727200)");
       for (const sql of SCHEMA) await client.query(sql);
     } finally {
-      try { await client.query("SELECT pg_advisory_unlock(727276)"); } catch (_) { /* ignore */ }
+      try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ }
       client.release();
     }
   })().catch((e) => { console.error("REFERRALS MIGRATE ERROR:", e); });

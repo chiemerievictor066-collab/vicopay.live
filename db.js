@@ -299,12 +299,12 @@ db.migrate = async function () {
   // Advisory lock: if two copies of the app start at the same moment, only one builds the tables.
   const client = await pool.connect();
   try {
-    await client.query("SELECT pg_advisory_lock(727274)");
+    await client.query("SELECT pg_advisory_lock(727200)");
     for (const sql of SCHEMA) await client.query(sql);
     // A crash/restart leaves live sessions open forever. Close them at the last moment we know the host was alive.
     await client.query("UPDATE live_sessions SET ended_at = COALESCE(last_beat, started_at) WHERE ended_at IS NULL");
   } finally {
-    try { await client.query("SELECT pg_advisory_unlock(727274)"); } catch (_) { /* ignore */ }
+    try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ }
     client.release();
   }
 };
