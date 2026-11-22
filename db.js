@@ -57,6 +57,10 @@ function api(exec) {
       return { all: (...p) => self.all(sql, p), get: (...p) => self.get(sql, p), run: (...p) => self.run(sql, p) };
     }
   };
+
+  db.close = () => pool.end();
+
+  module.exports = db;
   return self;
 }
 
