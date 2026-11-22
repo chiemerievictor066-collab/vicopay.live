@@ -102,6 +102,11 @@ const SCHEMA = [
     signup_ip TEXT,
     last_ip TEXT
   )`,
+  // Google sign-in is linked only to an existing VicoPay account.
+  // ALTER TABLE keeps existing PostgreSQL accounts and data intact.
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub TEXT`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS google_linked_at TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub) WHERE google_sub IS NOT NULL`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_id ON users(id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_handle ON users(handle)`,
@@ -293,13 +298,7 @@ const SCHEMA = [
     body TEXT NOT NULL,
     created_at BIGINT NOT NULL
   )`,
-  `CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON support_messages(ticket_id)`,
-  // A Google identity can be linked to only one existing VicoPay account.
-  `CREATE TABLE IF NOT EXISTS google_identities (
-    google_sub TEXT PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE REFERENCES users(email) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-  )`
+  `CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON support_messages(ticket_id)`
 ];
 
 

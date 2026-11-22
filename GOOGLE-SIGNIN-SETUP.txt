@@ -1,0 +1,22 @@
+VicoPay Google Sign-In Fix
+
+Replace these files in the root of your existing vicopay-website project:
+- server.js
+- db.js
+- store.js
+- join-now.html
+- signup.html
+
+Use env.example as a reference only; do not replace your existing .env.
+Add GOOGLE_CLIENT_ID=<your Google OAuth Web Client ID> to your existing local .env and to Render -> Environment. Keep all existing environment variables.
+
+Google Cloud Console -> APIs & Services -> Credentials -> your OAuth 2.0 Client ID (Web application):
+Authorized JavaScript origins:
+- https://vicopay.live
+- http://localhost:3000
+Add https://www.vicopay.live too only if you actually serve the site on www.
+This popup-based Google Identity Services flow does not require an Authorized redirect URI.
+
+The first successful Google sign-in must use the same verified Google email as an existing VicoPay account. If there is no existing VicoPay account, Google sign-in is rejected and the user must register through signup.html first. Existing database accounts and balances are preserved; db.js adds two nullable columns and a unique Google-subject index using safe IF NOT EXISTS migrations.
+
+After replacing files: save; run npm start locally; open http://localhost:3000/join-now.html; verify Google button appears; test with the same Google email as an existing VicoPay account. Then deploy. Do not delete/reset PostgreSQL.

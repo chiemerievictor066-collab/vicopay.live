@@ -21,7 +21,7 @@ module.exports = function makeStore(db) {
   const CACHE_MAX = Math.max(100, Number(process.env.USER_CACHE_MAX || 20000));
   const cache = new Map();
   const SEL = `SELECT u.email, u.id, u.salt, u.hash, u.username, u.display_name AS "displayName", u.created_at AS "createdAt",
-                      u.handle, a.updated_at AS "avatarV"
+                      u.handle, u.google_sub AS "googleSub", u.google_linked_at AS "googleLinkedAt", a.updated_at AS "avatarV"
                  FROM users u LEFT JOIN avatars a ON a.email = u.email`;
   function remember(row) {
     if (!row) return null;
@@ -50,6 +50,24 @@ module.exports = function makeStore(db) {
     async byLogin(login) {
       const l = lc(login).trim(); if (!l) return null;
       return remember(await db.get(SEL + " WHERE u.email = ? OR u.username = ?", [l, l]));
+    },
+    async byGoogleSub(sub) {
+      const value = String(sub || "").trim();
+      if (!value) return null;
+      return remember(await db.get(SEL + " WHERE u.google_sub = ?", [value]));
+    },
+    async linkGoogle(email, sub) {
+      email = lc(email);
+      sub = String(sub || "").trim();
+      if (!email || !sub) return null;
+      // Never replace a different Google identity already linked to this account.
+      const result = await db.get(
+        "UPDATE users SET google_sub = ?, google_linked_at = ? WHERE email = ? AND (google_sub IS NULL OR google_sub = ?) RETURNING email",
+        [sub, new Date().toISOString(), email, sub]
+      );
+      if (!result) return null;
+      cache.delete(email);
+      return users.get(email);
     },
     async usernameTaken(username) { return !!(await db.get("SELECT 1 AS x FROM users WHERE username = ? OR handle = ?", [username, username])); },
     // Returns the new account, or null if the email/username is already used.
