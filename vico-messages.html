@@ -9,6 +9,7 @@ body.gm[data-gm="messages"] .hero{display:none}
 .pane{display:grid;grid-template-columns:minmax(270px,360px) minmax(0,1fr);gap:0;height:100%;min-height:0;overflow:hidden;border:1px solid #c5dcf7;border-radius:0;background:#fff}
 .side,.main{overflow:hidden;display:flex;flex-direction:column}
 .find{display:flex;gap:6px;padding:10px;border-bottom:1px solid #c5dcf7}.find input{flex:1;min-width:0;border:1px solid #c5dcf7;border-radius:14px;padding:10px 12px;font:inherit}
+#searchResults{max-height:34%;overflow:auto;border-bottom:1px solid #c5dcf7;background:#f8fbff}#searchResults:empty{display:none}.sr{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #e5eefb;cursor:pointer}.sr:hover{background:#eaf3ff}.sr .t{min-width:0;flex:1}.sr b,.sr small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sr small{color:#64748b;font-size:12px}
 #threads{flex:1;overflow:auto}.th{display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #e3eefc;cursor:pointer}.th:hover,.th.on{background:#eaf3ff}
 .av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#1d6fe8,#6d28d9);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 44px}
 .th .t{flex:1;min-width:0}.th b{display:block;font-size:14.5px}.th small{display:block;color:#5d7096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -43,41 +44,13 @@ body.gm[data-gm="messages"] .hero{display:none}
 @media(min-width:761px){
   .pane .side,.pane .main{display:flex!important}
 }
-
-/* WhatsApp-inspired Vico Messages layout: familiar chat list, green sent bubbles and warm conversation canvas. */
-.pane{border:1px solid #d6dedb;background:#fff}
-.side{background:#fff;border-right:1px solid #d6dedb}
-.sidehead{display:flex;align-items:center;justify-content:space-between;padding:17px 16px;background:#075e54;color:#fff;min-height:62px}
-.sidehead b{font-size:19px}.sidehead span{font-size:11px;color:#d5eee8;font-weight:700}
-.find{background:#f6f8f7;border-bottom:0;padding:10px 12px 6px}
-.find input,.newchat input{border:0!important;background:#eaf0ed;border-radius:10px!important;padding:11px 13px!important;outline:none}
-.find button{background:#dce9e4!important;color:#075e54!important;border:0}
-.newchat{display:flex;gap:7px;padding:5px 12px 10px;background:#f6f8f7;border-bottom:1px solid #e2e9e6}
-.newchat input{flex:1;min-width:0;font:inherit}
-.newchat button{white-space:nowrap;background:#087e70!important}
-.th{padding:13px 14px;border-bottom:1px solid #edf1ef;min-height:72px}
-.th:hover,.th.on{background:#eaf5f1}
-.th .av{background:linear-gradient(135deg,#087e70,#25a18e)}
-.th b{color:#172b26}.th small{color:#687c75}
-.mh{background:#075e54;color:#fff;border-bottom:0;min-height:62px}
-.mh button{background:#ffffff25;color:#fff}
-#msgs{background-color:#efeae2;background-image:radial-gradient(#d8d2c8 0.55px,transparent 0.55px);background-size:8px 8px}
-.m{max-width:min(82%,560px);box-shadow:0 1px 1px #00000010;border:0!important;border-radius:9px!important;padding:8px 11px}
-.m.me{background:#d9fdd3;color:#173c31;border-bottom-right-radius:2px!important}
-.m.th2{background:#fff;color:#26332e;border-bottom-left-radius:2px!important}
-.m small{color:#60756c;opacity:1;text-align:right;font-size:10px}
-#f{background:#f0f2f0;border-top:1px solid #dce4df;gap:8px}
-#f input{border:0;background:#fff;border-radius:22px;padding:12px 16px}
-#f button{background:#087e70!important;border-radius:22px}
-.empty{color:#687c75}
-@media(max-width:760px){.sidehead{padding-top:calc(14px + env(safe-area-inset-top))}}
 </style></head>
-<body class="gm" data-gm="messages">
+<body class="gm" data-gm="messages" data-title="Vico Messages">
 <div class="gm-wrap">
   <div class="hero"><h1>Vico Messages</h1><p>Chat · Connect · Share with your friends, buyers and sellers.</p></div>
   <div class="pane" id="pane">
-    <div class="gm-card side"><div class="sidehead"><b>Vico Messages</b><span>Private chats</span></div><div class="find"><input id="searchChats" placeholder="Search chats"><button class="gm-btn sm" id="clearSearch" type="button" aria-label="Clear search">×</button></div><div class="newchat"><input id="who" placeholder="Start chat with @username"><button class="gm-btn sm" id="go" type="button">New chat</button></div><div id="threads"></div></div>
-    <div class="gm-card main"><div class="mh" id="mh"><button id="back" type="button">‹</button><span id="mt">Select a conversation</span></div><div id="msgs"><div class="empty">Pick a chat on the left, or start a new one with a username.</div></div>
+    <div class="gm-card side"><div class="find"><input id="who" placeholder="Search people by name or username" autocomplete="off" aria-label="Search VicoPay people"><button class="gm-btn sm" id="go" type="button">Search</button></div><div id="searchResults" aria-live="polite"></div><div id="threads"></div></div>
+    <div class="gm-card main"><div class="mh" id="mh"><button id="back" type="button">‹</button><span id="mt">Choose a chat</span></div><div id="msgs"><div class="empty">Choose a contact or search for a VicoPay person by name.</div></div>
       <form id="f" style="display:none"><input id="in" maxlength="1000" placeholder="Write a message…" autocomplete="off"><button class="gm-btn" style="padding:0 20px">Send</button></form></div>
   </div>
 </div>
@@ -87,10 +60,13 @@ var cur=null,lastId=0,timer=null;
 function av(p){return p.avatar?'<img class="av" src="'+gmEsc(p.avatar)+'" alt="">':'<div class="av">'+gmEsc((p.displayName||"?").charAt(0).toUpperCase())+'</div>';}
 function ago(t){var s=(Date.now()-t)/1000;if(s<60)return"now";if(s<3600)return Math.floor(s/60)+"m";if(s<86400)return Math.floor(s/3600)+"h";return new Date(t).toLocaleDateString();}
 function loadThreads(){gmApi("/api/dm/threads").then(function(d){var el=document.getElementById("threads");if(!d.success){el.innerHTML='<div class="empty">'+gmEsc(d.message||"Log in to see your chats.")+'</div>';return;}
-  el.innerHTML=d.threads.map(function(t){return '<div class="th'+(cur===t.handle?' on':'')+'" data-h="'+gmEsc(t.handle)+'">'+av(t)+'<div class="t"><b>'+gmEsc(t.displayName)+'</b><small>'+gmEsc(t.preview)+'</small></div><div style="text-align:right"><small>'+ago(t.lastAt)+'</small>'+(t.unread?'<em>'+t.unread+'</em>':'')+'</div></div>';}).join("")||'<div class="empty">No chats yet.</div>';});}
+  el.innerHTML=d.threads.map(function(t){return '<div class="th'+(cur===t.handle?' on':'')+'" data-h="'+gmEsc(t.handle)+'">'+av(t)+'<div class="t"><b>'+gmEsc(t.displayName)+'</b><small>'+gmEsc(t.preview)+'</small></div><div style="text-align:right"><small>'+ago(t.lastAt)+'</small>'+(t.unread?'<em>'+t.unread+'</em>':'')+'</div></div>';}).join("")||'<div class="empty">No conversations yet. Search for a person or open a product and tap Vico Message.</div>';});}
 document.getElementById("threads").onclick=function(e){var t=e.target.closest(".th");if(t)openChat(t.dataset.h);};
-document.getElementById("searchChats").oninput=function(){var q=this.value.trim().toLowerCase();document.querySelectorAll("#threads .th").forEach(function(t){t.style.display=t.textContent.toLowerCase().includes(q)?"":"none";});};
-document.getElementById("clearSearch").onclick=function(){var s=document.getElementById("searchChats");s.value="";s.dispatchEvent(new Event("input"));};
+var searchTimer=null,searchTerm="";
+function searchPeople(){var q=document.getElementById("who").value.trim().replace(/^@/,""),box=document.getElementById("searchResults");searchTerm=q;if(q.length<2){box.innerHTML="";return;}box.innerHTML='<div class="empty">Searching VicoPay…</div>';gmApi("/api/search/hosts?q="+encodeURIComponent(q)).then(function(d){if(searchTerm!==q)return;var a=(d.results||[]).filter(function(x){return x.handle;});box.innerHTML=a.map(function(x){return '<div class="sr" data-h="'+gmEsc(x.handle)+'">'+av(x)+'<div class="t"><b>'+gmEsc(x.displayName||x.handle)+'</b><small>@'+gmEsc(x.handle)+'</small></div><span>Message</span></div>';}).join("")||'<div class="empty">No VicoPay account matched that search.</div>';}).catch(function(){box.innerHTML='<div class="empty">Could not search people. Please try again.</div>';});}
+document.getElementById("searchResults").onclick=function(e){var t=e.target.closest(".sr");if(t){document.getElementById("searchResults").innerHTML="";document.getElementById("who").value="";openChat(t.dataset.h);}};
+document.getElementById("who").oninput=function(){clearTimeout(searchTimer);searchTimer=setTimeout(searchPeople,250);};
+
 function draw(list,mine){var el=document.getElementById("msgs");list.forEach(function(m){var d=document.createElement("div");d.className="m "+(m.mine?"me":"th2");d.innerHTML=gmEsc(m.body)+"<small>"+new Date(m.at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+"</small>";el.appendChild(d);lastId=Math.max(lastId,m.id);});el.scrollTop=el.scrollHeight;}
 function openChat(h){if(!gmSignedIn()){gmNeedLogin();return;}cur=h;lastId=0;document.getElementById("pane").classList.add("chat");
   gmApi("/api/dm/with/"+encodeURIComponent(h)).then(function(d){if(!d.success){gmToast(d.message||"Could not open the chat.");document.getElementById("pane").classList.remove("chat");return;}
@@ -99,8 +75,8 @@ function openChat(h){if(!gmSignedIn()){gmNeedLogin();return;}cur=h;lastId=0;docu
 function poll(){if(!cur||document.hidden)return;gmApi("/api/dm/with/"+encodeURIComponent(cur)+"?after="+lastId).then(function(d){if(d.success&&d.messages.length){var e=document.querySelector("#msgs .empty");if(e)e.remove();draw(d.messages);loadThreads();}});}
 document.getElementById("f").onsubmit=function(e){e.preventDefault();var i=document.getElementById("in"),b=i.value.trim();if(!b||!cur)return;i.value="";
   gmApi("/api/dm/with/"+encodeURIComponent(cur),{body:{body:b}}).then(function(d){if(d.success){var e2=document.querySelector("#msgs .empty");if(e2)e2.remove();draw([d.message]);loadThreads();}else{gmToast(d.message||"Could not send.");i.value=b;}});};
-document.getElementById("go").onclick=function(){var v=document.getElementById("who").value.trim().replace(/^@/,"");if(v)openChat(v);};
-document.getElementById("who").onkeydown=function(e){if(e.key==="Enter")document.getElementById("go").click();};
+document.getElementById("go").onclick=searchPeople;
+document.getElementById("who").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();searchPeople();}};
 document.getElementById("back").onclick=function(){document.getElementById("pane").classList.remove("chat");cur=null;clearInterval(timer);loadThreads();};
 if(gmSignedIn()){loadThreads();var qs=new URLSearchParams(location.search),to=qs.get("to");if(to){openChat(to);if(qs.get("t"))setTimeout(function(){var i=document.getElementById("in");if(i&&!i.value)i.value="Hi, I am interested in “"+qs.get("t")+"”. Is it still available?";},900);}}else{document.getElementById("threads").innerHTML='<div class="empty">Log in to see your chats.</div>';}
 </script></body></html>

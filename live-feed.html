@@ -83,6 +83,8 @@ html,body{height:100%;margin:0;background:#020a1f;color:#fff;font-family:var(--f
 .bar2 input{flex:1;min-width:0;height:44px;border-radius:22px;border:1px solid rgba(255,255,255,.22);background:rgba(3,28,93,.55);backdrop-filter:blur(8px);color:#fff;padding:0 16px;font:inherit;font-size:14px;outline:none}
 .bar2 input::placeholder{color:#a9c9ea}
 .bar2 button{width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--sky),var(--blue));color:#fff;font-size:18px;cursor:pointer;flex:none}
+.bar2 button.call-bottom{width:auto;min-width:76px;padding:0 13px;border-radius:22px;background:linear-gradient(135deg,#20c997,#087fe8);border:1px solid #b8fff0;font-size:13px;font-weight:900;box-shadow:0 4px 18px #008cbb88;white-space:nowrap}
+.bar2 button.call-bottom:active{transform:scale(.96)}
 
 .fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .fly{position:absolute;left:50%;bottom:34%;transform:translateX(-50%);text-align:center;animation:fly 3.2s ease-out forwards;text-shadow:0 4px 18px #000}
@@ -236,13 +238,12 @@ function slideHTML(r){
       '<button class="rb" data-act="pk"><span class="ic">⚔️</span>PK</button>' +
       '<button class="rb" data-act="fans"><span class="ic">💜</span>Fans</button>' +
       '<button class="rb" data-act="people"><span class="ic">👥</span>Followers</button>' +
-      '<button class="rb call" data-act="call"><span class="ic">📹</span>Video Call</button>' +
       '<button class="rb" data-act="share"><span class="ic">↗️</span>Share</button>' +
       '<a class="rb" href="Go-Live.html"><span class="ic">🎥</span>Go Live</a>' +
     '</div>' +
     (r.product ? '<div class="plive"><span class="pi">' + (r.product.imageUrl ? '<img alt="" src="' + U.esc(r.product.imageUrl) + '">' : '🛍️') + '</span><div class="pt"><b>' + U.esc(r.product.title) + '</b><span><em>Selling live</em>₦' + Number(r.product.price).toLocaleString() + '</span></div><a href="vico-product.html?id=' + encodeURIComponent(r.product.id) + '" target="_blank" rel="noopener">Buy Now</a></div>' : '') +
     '<div class="lstack"><div class="chat"><div class="msgs" aria-live="polite"></div></div><div class="vlp-slot"></div></div>' +
-    '<div class="bar2"><input maxlength="200" placeholder="Say something…" aria-label="Chat message"><button data-act="send" aria-label="Send">➤</button><button data-act="gift" aria-label="Gift">🎁</button></div>' +
+    '<div class="bar2"><input maxlength="200" placeholder="Say something…" aria-label="Chat message"><button class="call-bottom" data-act="call" aria-label="Request a face-to-face video call">📹 Call</button><button data-act="send" aria-label="Send">➤</button><button data-act="gift" aria-label="Gift">🎁</button></div>' +
     '<div class="call-pip"><video playsinline autoplay muted></video><span class="pip-name">Video caller</span></div>' +
     '<div class="call-controls"><button data-call="mic" aria-label="Mute microphone">🎙️</button><button data-call="camera" aria-label="Turn camera off">📷</button><button class="end" data-call="end" aria-label="End call">☎</button></div>' +
     '<div class="call-layer"><div class="call-card"><h3>📹 Vico Video Call</h3><p class="call-copy">Request a face-to-face call with this streamer while the livestream continues.</p><div class="call-actions"><button class="secondary" data-call="cancel">Cancel</button><button data-call="request">Request call</button></div></div></div>' +
@@ -254,7 +255,7 @@ function addSlide(r){
   if (S.has(r.roomId)) return S.get(r.roomId);
   const el = document.createElement("section"); el.className = "slide" + (r.product ? " hasp" : ""); el.dataset.room = r.roomId; el.innerHTML = slideHTML(r);
   feed.appendChild(el);
-  const st = { room: r, el, lk: null, lkOpp: null, oppId: null, lastEv: 0, battle: null, info: null, ended: false, audio: [], loves: 0, callActive: false, callPending: false, callMic: true, callCamera: true, callId: null, callStatusTimer: null, callConnecting: false };
+  const st = { room: r, el, lk: null, lkOpp: null, oppId: null, lastEv: 0, battle: null, info: null, ended: false, audio: [], loves: 0, callActive: false, callPending: false, callMic: true, callCamera: true, callId: null };
   S.set(r.roomId, st); paintFollow(st); io.observe(el);
   st.panel = VicoLivePanel.create({ role: "viewer" }); $(".vlp-slot", el).appendChild(st.panel.el);
   st.panel.set({ promoted: r.promoted, story: r.story || "", startedAt: r.createdAt });
@@ -364,8 +365,6 @@ async function syncOpp(st, b){
 }
 function deactivate(st){
   st.leaving = true;
-  clearInterval(st.callStatusTimer); st.callStatusTimer=null;
-  if(st.callPending && st.callId) U.api("/api/calls/cancel",{method:"POST",body:{callId:st.callId}}).catch(()=>{});
   try { if (st.lk) st.lk.disconnect(); if (st.lkOpp) st.lkOpp.disconnect(); } catch (e) {}
   st.lk = st.lkOpp = null; st.oppId = null; st.battle = null; st.callActive = false; st.callPending = false;
   if ($(".call-controls", st.el)) $(".call-controls", st.el).classList.remove("on");
@@ -409,19 +408,9 @@ async function sendCallRequest(st){
   const payload = { type:"call_request", callId:d.callId, displayName:(me && me.displayName) || "Vico user" };
   await st.lk.localParticipant.publishData(new TextEncoder().encode(JSON.stringify(payload)), { reliable:true });
   showCallLayer(st, "Request sent", "Waiting for the streamer to accept your video call…", '<button class="secondary" data-call="cancel">Cancel request</button>');
-  clearInterval(st.callStatusTimer);
-  st.callStatusTimer = setInterval(async function(){
-    if(!st.callPending || !st.callId || st.callConnecting) return;
-    try { const status=await U.api("/api/calls/status/"+enc(st.callId)); if(!status._ok||!status.call) return;
-      if(status.call.status==="accepted" || status.call.status==="connected") startAcceptedCall(st);
-      else if(["declined","cancelled","ended"].includes(status.call.status)){clearInterval(st.callStatusTimer);st.callPending=false;hideCallLayer(st);U.toast("The streamer is unavailable for a call right now.");}
-    } catch(e){}
-  },2000);
 }
 async function startAcceptedCall(st){
-  if (!st.callPending || st.callConnecting || st.callActive || !cur || cur !== st) return;
-  st.callConnecting = true;
-  clearInterval(st.callStatusTimer);
+  if (!st.callPending || !cur || cur !== st) return;
   try {
     st.callPending = false; hideCallLayer(st);
     setStatus(st, "Connecting your camera…");
@@ -444,7 +433,7 @@ async function startAcceptedCall(st){
   } catch (e) {
     console.error("Vico call:", e); U.toast(e.message || "Could not connect the call.");
     hideCallLayer(st); st.callPending = false;
-  } finally { st.callConnecting = false; }
+  }
 }
 async function endCallerCall(st, notify){
   if (st.callId) U.api("/api/calls/end", {method:"POST",body:{callId:st.callId}}).catch(()=>{});
@@ -452,8 +441,7 @@ async function endCallerCall(st, notify){
     try { await st.lk.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"call_end"})), {reliable:true}); } catch(e){}
   }
   try { if (st.lk) await st.lk.disconnect(); } catch(e){}
-  clearInterval(st.callStatusTimer); st.callStatusTimer=null;
-  st.lk = null; st.callActive = false; st.callPending = false; st.callConnecting=false;
+  st.lk = null; st.callActive = false; st.callPending = false;
   $(".call-controls", st.el).classList.remove("on");
   const pip = $(".call-pip", st.el); pip.classList.remove("on"); $("video",pip).srcObject = null;
   if (cur === st && !st.ended) {

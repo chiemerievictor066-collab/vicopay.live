@@ -9,7 +9,6 @@
     { k: "videos", icon: "▶️", label: "Videos", href: "vico-videos.html", ready: false },
     { k: "messages", icon: "💬", label: "Messages", href: "vico-messages.html", ready: true },
     { k: "wallet", icon: "👛", label: "Vico Wallet", href: "vico-wallet.html", ready: true },
-    { k: "ai", icon: '<img src="vico-ai-guide.gif" alt="" class="gmAiNavIcon">', label: "Vico AI", href: "vico-ai.html", ready: true },
     { k: "ads", icon: "📢", label: "Ad Center", href: "vico-ad-center.html", ready: true },
     { k: "market", icon: "🛒", label: "Marketplace", href: "vico-marketplace.html", ready: true },
     { k: "partnership", icon: "🎬", label: "Creator Partnership", href: "creator-partnership.html", ready: true },
@@ -125,7 +124,7 @@
     if (ttl) { var h = document.createElement("div"); h.className = "gm-wrap"; h.style.paddingBottom = "0";
       h.innerHTML = '<div class="gm-top"><a class="gm-me" href="global-market-community.html" style="padding:8px 14px">‹ Back</a><div class="gm-logo" style="margin-left:6px"><i>▶</i><div>' + window.gmEsc(ttl) + '<small>Vico Pay Live</small></div></div></div>';
       document.body.insertBefore(h, document.body.firstChild); }
-    badge(); var f = document.body.getAttribute("data-ai"); if (f) floatAi(f);
+    badge(); // Vico AI is intentionally removed from the shared Market Community navigation and overlay.
   }
   if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
 })();

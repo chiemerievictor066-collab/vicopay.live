@@ -23,8 +23,7 @@
 <header class="v-header"><a class="v-logo" href="index.html">Vico<span>Pay</span></a>
   <nav class="v-nav"><a href="index.html">Home</a></nav></header>
 <main class="v-wrap">
-  <div id="off" class="v-card off" style="display:none"><h2 style="margin:0 0 6px">VIP is temporarily unavailable</h2><p class="muted" style="color:var(--muted)">Please try again later or contact VicoPay support.</p></div>
-  <div id="locked" class="v-card off" style="display:none"><div style="font-size:44px">👑</div><h2 style="margin:0 0 8px">Complete your VicoPay promotion first</h2><p style="color:var(--muted);line-height:1.6">VIP access opens after your Promotional Duration payment has been verified and the promotion shows <b>Promotion Successful</b>, or after you qualify through the published promotion goals.</p><a class="v-btn" href="promotion-duration.html" style="display:inline-block;text-decoration:none;margin-top:12px">View Promotion and Upgrade</a><p style="font-size:12px;color:var(--muted);margin-top:12px">A payment that has not been verified will not unlock VIP.</p></div>
+  <div id="off" class="v-card off" style="display:none"><h2 id="offTitle" style="margin:0 0 6px">VIP is currently switched off</h2><p id="offText" class="muted" style="color:var(--muted)">A VicoPay administrator must turn on VIP from the VIP Admin page before members can use it.</p></div>
   <div id="app" style="display:none">
     <div class="v-card vp-hero">
       <div id="cardBox"></div>
@@ -50,11 +49,12 @@ var SLOTS = [
 function say(t, bad) { var m = document.getElementById("msg"); m.textContent = t || ""; m.style.color = bad ? "#e11d48" : "var(--muted)"; }
 
 async function load() {
-  var r = await fetch("/api/vip/me"); var d = await r.json();
-  if (!d.success || !d.enabled) { document.getElementById("off").style.display = ""; document.getElementById("locked").style.display = "none"; document.getElementById("app").style.display = "none"; return; }
-  if (d.eligible === false) { document.getElementById("locked").style.display = ""; document.getElementById("off").style.display = "none"; document.getElementById("app").style.display = "none"; return; }
-  ME = d; document.getElementById("off").style.display = "none"; document.getElementById("locked").style.display = "none"; document.getElementById("app").style.display = "";
-  render();
+  try {
+    var r = await fetch("/api/vip/me"); var d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || "The VIP service could not be reached.");
+    if (!d.enabled) { document.getElementById("offTitle").textContent = "VIP is currently switched off"; document.getElementById("offText").textContent = "A VicoPay administrator must turn on VIP from /admin-vip.html. This is a platform setting, not a problem with your account or payment."; document.getElementById("off").style.display = ""; document.getElementById("app").style.display = "none"; return; }
+    ME = d; document.getElementById("off").style.display = "none"; document.getElementById("app").style.display = ""; render();
+  } catch (e) { document.getElementById("offTitle").textContent = "VIP is temporarily unavailable"; document.getElementById("offText").textContent = e.message || "Please refresh the page or contact VicoPay support."; document.getElementById("off").style.display = ""; document.getElementById("app").style.display = "none"; }
 }
 
 function render() {
