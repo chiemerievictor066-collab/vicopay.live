@@ -466,6 +466,108 @@ function publicUser(email, u) {
   u = u || users.peek(email) || {};
   return { email, username: u.username || "", displayName: u.displayName || email.split("@")[0] };
 }
+// =====================================================
+// GOOGLE SIGN-IN (existing VicoPay accounts only)
+// The browser sends a Google ID token. The server asks Google's
+// tokeninfo endpoint to validate it, then links the verified Google
+// identity to an already-existing VicoPay account with the same email.
+// Google sign-in NEVER creates a new VicoPay account.
+// =====================================================
+app.get("/api/auth/google/config", (req, res) => {
+  const clientId = String(process.env.GOOGLE_CLIENT_ID || "").trim();
+  return res.json({ success: true, enabled: !!clientId, clientId: clientId || null });
+});
+
+app.post("/api/auth/google", authRateLimit, async (req, res) => {
+  try {
+    const credential = String((req.body && req.body.credential) || "").trim();
+    const clientId = String(process.env.GOOGLE_CLIENT_ID || "").trim();
+
+    if (!clientId) {
+      return res.status(503).json({ success: false, message: "Google sign-in is not configured yet. Please use your VicoPay email and password." });
+    }
+    if (!credential || credential.length > 10000) {
+      return res.status(400).json({ success: false, message: "Google did not return a valid sign-in token. Please try again." });
+    }
+
+    // Google validates the ID token and returns its trusted claims.
+    const googleResponse = await axios.get("https://oauth2.googleapis.com/tokeninfo", {
+      params: { id_token: credential },
+      timeout: 10000
+    });
+    const claims = googleResponse.data || {};
+    const validIssuer = claims.iss === "accounts.google.com" || claims.iss === "https://accounts.google.com";
+    const verifiedEmail = claims.email_verified === true || claims.email_verified === "true";
+    const email = String(claims.email || "").trim().toLowerCase();
+    const googleSub = String(claims.sub || "").trim();
+
+    if (!validIssuer || claims.aud !== clientId || !verifiedEmail ||
+        !googleSub || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      return res.status(401).json({ success: false, message: "Google could not verify this sign-in. Please try again." });
+    }
+
+    // Google sign-in is for returning VicoPay members only.
+    const user = await users.get(email);
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        accountRequired: true,
+        message: "No VicoPay account exists for this Google email. Please create your VicoPay account first."
+      });
+    }
+
+    if (bannedUsers.has(email)) {
+      return res.status(403).json({ success: false, message: "This VicoPay account has been suspended. Contact support." });
+    }
+
+    // Prevent one Google identity from being moved between VicoPay accounts,
+    // and prevent a VicoPay email from being linked to two Google identities.
+    const existingLink = await db.get(
+      "SELECT google_sub AS sub, email FROM google_identities WHERE google_sub = ? OR email = ?",
+      [googleSub, email]
+    );
+    if (existingLink && (existingLink.sub !== googleSub || String(existingLink.email).toLowerCase() !== email)) {
+      return res.status(409).json({
+        success: false,
+        message: "This Google account is already linked to a different VicoPay account. Contact VicoPay support."
+      });
+    }
+    if (!existingLink) {
+      try {
+        await db.run(
+          "INSERT INTO google_identities (google_sub, email) VALUES (?, ?) ON CONFLICT DO NOTHING",
+          [googleSub, email]
+        );
+      } catch (linkError) {
+        console.error("GOOGLE ACCOUNT LINK ERROR:", linkError.message);
+        return res.status(409).json({ success: false, message: "Could not link this Google account. Please contact VicoPay support." });
+      }
+      const confirmedLink = await db.get(
+        "SELECT google_sub AS sub, email FROM google_identities WHERE google_sub = ? OR email = ?",
+        [googleSub, email]
+      );
+      if (!confirmedLink || confirmedLink.sub !== googleSub || String(confirmedLink.email).toLowerCase() !== email) {
+        return res.status(409).json({
+          success: false,
+          message: "This Google account is already linked to a different VicoPay account. Contact VicoPay support."
+        });
+      }
+    }
+
+    users.touchIp(email, req.ip).catch(() => {});
+    if (commandCenter) {
+      await commandCenter.recordLogin({ login: email, ip: req.ip, device: req.headers["user-agent"], success: true });
+    }
+    return res.json({ success: true, token: signToken(email), user: publicUser(email, user) });
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      return res.status(401).json({ success: false, message: "Your Google sign-in has expired. Please try again." });
+    }
+    console.error("GOOGLE LOGIN ERROR:", error.message);
+    return res.status(503).json({ success: false, message: "Google sign-in is temporarily unavailable. Please use your VicoPay email and password." });
+  }
+});
+
 app.post("/api/auth/register", authRateLimit, async (req, res) => {
   try {
     const email = String((req.body && req.body.email) || "").trim().toLowerCase();

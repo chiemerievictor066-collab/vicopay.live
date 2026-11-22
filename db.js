@@ -293,7 +293,13 @@ const SCHEMA = [
     body TEXT NOT NULL,
     created_at BIGINT NOT NULL
   )`,
-  `CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON support_messages(ticket_id)`
+  `CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON support_messages(ticket_id)`,
+  // A Google identity can be linked to only one existing VicoPay account.
+  `CREATE TABLE IF NOT EXISTS google_identities (
+    google_sub TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE REFERENCES users(email) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`
 ];
 
 

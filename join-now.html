@@ -147,11 +147,11 @@ body{
     <button type="submit" class="primary-btn" id="loginButton">Sign In</button>
   </form>
 
-  <div class="divider" style="display:none">OR</div>
-
-  <button type="button" class="google-btn" id="googleButton" style="display:none">
-    <span class="google-icon">G</span> Continue with Google
-  </button>
+  <div class="divider" id="googleDivider" style="display:none">OR</div>
+  <div id="googleButton" class="google-btn" style="display:none;min-height:44px"></div>
+  <p id="googleHelp" style="display:none;color:#8fa3bd;font-size:12px;line-height:1.5;text-align:center;margin-top:10px">
+    Google sign-in is available for existing VicoPay accounts. New members must create a VicoPay account first.
+  </p>
 
   <div class="signup">Don't have an account? <a href="signup.html">Create Account</a></div>
   <a href="motivational-page.html" class="back-link">← Back to VicoPay Live</a>
@@ -173,6 +173,8 @@ const message=document.getElementById("message");
 const passwordInput=document.getElementById("password");
 const togglePassword=document.getElementById("togglePassword");
 const googleButton=document.getElementById("googleButton");
+const googleDivider=document.getElementById("googleDivider");
+const googleHelp=document.getElementById("googleHelp");
 
 function showMessage(text,type){
   message.textContent=text;
@@ -230,9 +232,71 @@ loginForm.addEventListener("submit",async function(event){
   }
 });
 
-googleButton.addEventListener("click",function(){
-  showMessage("Google sign-in must be connected to your Google authentication setup.","error");
-});
+// Load Google Identity Services and show the real Google sign-in button only
+// when GOOGLE_CLIENT_ID is configured on the VicoPay server.
+function loadGoogleIdentityServices(){
+  return new Promise(function(resolve,reject){
+    if(window.google&&window.google.accounts&&window.google.accounts.id){resolve();return;}
+    const script=document.createElement("script");
+    script.src="https://accounts.google.com/gsi/client";
+    script.async=true;
+    script.defer=true;
+    script.onload=resolve;
+    script.onerror=function(){reject(new Error("Google sign-in could not load. Check your internet connection and try again."));};
+    document.head.appendChild(script);
+  });
+}
+
+async function handleGoogleCredential(response){
+  try{
+    if(!response||!response.credential) throw new Error("Google did not return a sign-in token. Please try again.");
+    googleButton.style.pointerEvents="none";
+    showMessage("Checking your Google account...","success");
+    const result=await fetch(window.location.origin+"/api/auth/google",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({credential:response.credential})
+    });
+    const data=await result.json();
+    if(!result.ok||!data.success) throw new Error(data.message||"Google sign-in failed.");
+    VicoAuth.setSession(data.token,data.user,document.getElementById("remember").checked);
+    showMessage("Signed in with Google. Connecting to VicoPay Live...","success");
+    setTimeout(function(){window.location.href=VicoAuth.nextUrl("welcome-page.html");},500);
+  }catch(error){
+    showMessage(error.message||"Google sign-in failed. Please try again.","error");
+    googleButton.style.pointerEvents="";
+  }
+}
+
+(async function setupGoogleSignIn(){
+  try{
+    const configResponse=await fetch(window.location.origin+"/api/auth/google/config");
+    const config=await configResponse.json();
+    if(!configResponse.ok||!config.success||!config.enabled||!config.clientId) return;
+    await loadGoogleIdentityServices();
+    window.google.accounts.id.initialize({
+      client_id:config.clientId,
+      callback:handleGoogleCredential,
+      auto_select:false,
+      cancel_on_tap_outside:true
+    });
+    window.google.accounts.id.renderButton(googleButton,{
+      type:"standard",
+      theme:"filled_black",
+      size:"large",
+      text:"continue_with",
+      shape:"rectangular",
+      width:350,
+      logo_alignment:"left"
+    });
+    googleButton.style.display="flex";
+    googleDivider.style.display="flex";
+    googleHelp.style.display="block";
+  }catch(error){
+    console.warn("Google sign-in setup:",error.message);
+    // Keep ordinary email/password sign-in available if Google is unavailable.
+  }
+})();
 
 const savedUser=localStorage.getItem("vicoPayUser");
 const savedRemember=localStorage.getItem("vicoPayRemember");
