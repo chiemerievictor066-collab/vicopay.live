@@ -58,9 +58,6 @@ function api(exec) {
     }
   };
 
-  db.close = () => pool.end();
-
-  module.exports = db;
   return self;
 }
 
@@ -335,3 +332,7 @@ db.migrate = async function () {
     client.release();
   }
 };
+
+db.close = () => pool.end();
+
+module.exports = db;
