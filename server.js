@@ -3477,56 +3477,100 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ success: false, message: err.status === 413 ? "That upload is too large." : "Something went wrong." });
 });
 
+
 const PORT = process.env.PORT || 3000;
+
+// START THE WEB SERVER IMMEDIATELY.
+// Render can detect the port while database migrations run.
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log("============================================================");
+  console.log("Victopay server is listening on port " + PORT);
+  console.log("============================================================");
+});
+
+server.on("error", (error) => {
+  console.error("SERVER ERROR:", error);
+});
+
+process.on("SIGTERM", () => {
+  console.log("Shutting down...");
+  server.close(() => {
+    store.flushLoves()
+      .catch(() => { })
+      .then(() => db.close())
+      .then(() => process.exit(0))
+      .catch(() => process.exit(0));
+  });
+});
+
 async function start() {
   console.log("STARTUP: beginning VicoPay startup sequence...");
+
   console.log("STARTUP: running main database migration...");
   await db.migrate();
-  console.log("STARTUP: main database migration completed.");            // creates/updates tables (safe to run every time)
-  await commandCenter.migrate(); // command-centre security events, login telemetry and fraud alerts
-  await adminControl.migrate(); // administrator accounts, MFA, role permissions, enforcement and audit trail
-  await platformOps.migrate(); // platform incidents, maintenance state and operational controls
-  await globalEnquiries.migrate(); // global business enquiries + Paystack invoices
-  await payouts.migrate();       // payout tables (safe to run every time)
-  await videos.ready;            // ensure video storage exists before partnership delivery routes are used
-  await productLiveRecordings.ready; // product livestream recording files and Marketplace links
-  await creatorPartnership.migrate(); // creator partnership escrow records, Marketplace publication and payout tracking
-  await vip.migrate();           // VIP tables (new tables only, safe to run every time)
-  await fans.migrate();          // fan mission claims (new table only, safe to run every time)
-  await appreciation.migrate();  // monthly appreciation + idempotent yearly 20-coin awards
-  await campaigns.migrate();     // VicoPay campaigns, competitions, votes and sponsor enquiries
+  console.log("STARTUP: main database migration completed.");
+
+  console.log("STARTUP: migrating command center...");
+  await commandCenter.migrate();
+  console.log("STARTUP: command center migration completed.");
+
+  console.log("STARTUP: migrating admin control...");
+  await adminControl.migrate();
+  console.log("STARTUP: admin control migration completed.");
+
+  await platformOps.migrate();
+  console.log("STARTUP: platform operations migration completed.");
+
+  await globalEnquiries.migrate();
+  console.log("STARTUP: global enquiries migration completed.");
+
+  await payouts.migrate();
+  console.log("STARTUP: payouts migration completed.");
+
+  await videos.ready;
+  console.log("STARTUP: video storage ready.");
+
+  await productLiveRecordings.ready;
+  console.log("STARTUP: product live recordings ready.");
+
+  await creatorPartnership.migrate();
+  await vip.migrate();
+  await fans.migrate();
+  await appreciation.migrate();
+  await campaigns.migrate();
+
+  console.log("STARTUP: all migrations completed.");
+
   await store.refreshBans();
+
   setInterval(() => store.refreshBans().catch(() => { }), 20000).unref();
   setInterval(() => store.pruneOld().catch(() => { }), 3600000).unref();
-  // The full ledger audit reads every ledger row, so it runs in the background (it must never delay start-up).
+
   ledger.verifyCached(0).then((audit) => {
-    console.log(audit.ok ? `Ledger check OK: ${audit.accounts} coin accounts, ${audit.totalCoins} coins in total.` : "⚠️ LEDGER MISMATCH (see /api/admin/ledger/verify): " + JSON.stringify(audit.mismatches.slice(0, 5)));
+    console.log(
+      audit.ok
+        ? `Ledger check OK: ${audit.accounts} coin accounts, ${audit.totalCoins} coins in total.`
+        : "LEDGER MISMATCH: " + JSON.stringify(audit.mismatches.slice(0, 5))
+    );
   }).catch((e) => console.error("Ledger check failed:", e.message));
+
   setInterval(() => ledger.verifyCached(3600000).catch(() => { }), 3600000).unref();
   setInterval(() => store.flushLoves().catch(() => { }), 3000).unref();
-  feat.start();                  // background jobs (PK timers, abandoned-live cleanup)
-  payouts.start();               // payout background checks (settles unconfirmed transfers, optional monthly auto-batch)
-  appreciation.start();          // monthly messages + annual consistency reward
-  // Explainable fraud rules run periodically; alerts require human review and never auto-freeze funds.
-  const fraudScanTimer = setInterval(() => commandCenter.scanFraud().catch((e) => console.error("Fraud scan failed:", e.message)), 60000);
+
+  feat.start();
+  payouts.start();
+  appreciation.start();
+
+  const fraudScanTimer = setInterval(
+    () => commandCenter.scanFraud().catch((e) => console.error("Fraud scan failed:", e.message)),
+    60000
+  );
   fraudScanTimer.unref();
 
-  const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log("============================================================");
-    console.log("Victopay server is running");
-    console.log(`Local URL: http://localhost:${PORT}`);
-    console.log("============================================================");
-  });
-
-  server.on("error", (error) => {
-    if (error.code === "EADDRINUSE") {
-      console.error(`Port ${PORT} is already in use.`);
-      console.error("Another server may already be running.");
-      console.error(`Close the existing server and then run: node server.js`);
-    } else {
-      console.error("Server error:", error);
-    }
-  });
-  process.on("SIGTERM", () => { console.log("Shutting down..."); server.close(() => store.flushLoves().catch(() => { }).then(() => db.close()).then(() => process.exit(0), () => process.exit(0))); });
+  console.log("STARTUP: VicoPay startup completed successfully.");
 }
-start().catch((e) => { console.error("STARTUP FAILED:", e.message); process.exit(1); });
+
+start().catch((e) => {
+  console.error("STARTUP FAILED:", e);
+  process.exit(1);
+});
