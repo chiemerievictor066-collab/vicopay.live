@@ -43,13 +43,41 @@ body.gm[data-gm="messages"] .hero{display:none}
 @media(min-width:761px){
   .pane .side,.pane .main{display:flex!important}
 }
+
+/* WhatsApp-inspired Vico Messages layout: familiar chat list, green sent bubbles and warm conversation canvas. */
+.pane{border:1px solid #d6dedb;background:#fff}
+.side{background:#fff;border-right:1px solid #d6dedb}
+.sidehead{display:flex;align-items:center;justify-content:space-between;padding:17px 16px;background:#075e54;color:#fff;min-height:62px}
+.sidehead b{font-size:19px}.sidehead span{font-size:11px;color:#d5eee8;font-weight:700}
+.find{background:#f6f8f7;border-bottom:0;padding:10px 12px 6px}
+.find input,.newchat input{border:0!important;background:#eaf0ed;border-radius:10px!important;padding:11px 13px!important;outline:none}
+.find button{background:#dce9e4!important;color:#075e54!important;border:0}
+.newchat{display:flex;gap:7px;padding:5px 12px 10px;background:#f6f8f7;border-bottom:1px solid #e2e9e6}
+.newchat input{flex:1;min-width:0;font:inherit}
+.newchat button{white-space:nowrap;background:#087e70!important}
+.th{padding:13px 14px;border-bottom:1px solid #edf1ef;min-height:72px}
+.th:hover,.th.on{background:#eaf5f1}
+.th .av{background:linear-gradient(135deg,#087e70,#25a18e)}
+.th b{color:#172b26}.th small{color:#687c75}
+.mh{background:#075e54;color:#fff;border-bottom:0;min-height:62px}
+.mh button{background:#ffffff25;color:#fff}
+#msgs{background-color:#efeae2;background-image:radial-gradient(#d8d2c8 0.55px,transparent 0.55px);background-size:8px 8px}
+.m{max-width:min(82%,560px);box-shadow:0 1px 1px #00000010;border:0!important;border-radius:9px!important;padding:8px 11px}
+.m.me{background:#d9fdd3;color:#173c31;border-bottom-right-radius:2px!important}
+.m.th2{background:#fff;color:#26332e;border-bottom-left-radius:2px!important}
+.m small{color:#60756c;opacity:1;text-align:right;font-size:10px}
+#f{background:#f0f2f0;border-top:1px solid #dce4df;gap:8px}
+#f input{border:0;background:#fff;border-radius:22px;padding:12px 16px}
+#f button{background:#087e70!important;border-radius:22px}
+.empty{color:#687c75}
+@media(max-width:760px){.sidehead{padding-top:calc(14px + env(safe-area-inset-top))}}
 </style></head>
-<body class="gm" data-gm="messages" data-title="Vico Messages">
+<body class="gm" data-gm="messages">
 <div class="gm-wrap">
   <div class="hero"><h1>Vico Messages</h1><p>Chat · Connect · Share with your friends, buyers and sellers.</p></div>
   <div class="pane" id="pane">
-    <div class="gm-card side"><div class="find"><input id="who" placeholder="Start a chat: type a username"><button class="gm-btn sm" id="go" type="button">Chat</button></div><div id="threads"></div></div>
-    <div class="gm-card main"><div class="mh" id="mh"><button id="back" type="button">‹</button><span id="mt">Choose a chat</span></div><div id="msgs"><div class="empty">Pick a chat on the left, or start a new one with a username.</div></div>
+    <div class="gm-card side"><div class="sidehead"><b>Vico Messages</b><span>Private chats</span></div><div class="find"><input id="searchChats" placeholder="Search chats"><button class="gm-btn sm" id="clearSearch" type="button" aria-label="Clear search">×</button></div><div class="newchat"><input id="who" placeholder="Start chat with @username"><button class="gm-btn sm" id="go" type="button">New chat</button></div><div id="threads"></div></div>
+    <div class="gm-card main"><div class="mh" id="mh"><button id="back" type="button">‹</button><span id="mt">Select a conversation</span></div><div id="msgs"><div class="empty">Pick a chat on the left, or start a new one with a username.</div></div>
       <form id="f" style="display:none"><input id="in" maxlength="1000" placeholder="Write a message…" autocomplete="off"><button class="gm-btn" style="padding:0 20px">Send</button></form></div>
   </div>
 </div>
@@ -61,6 +89,8 @@ function ago(t){var s=(Date.now()-t)/1000;if(s<60)return"now";if(s<3600)return M
 function loadThreads(){gmApi("/api/dm/threads").then(function(d){var el=document.getElementById("threads");if(!d.success){el.innerHTML='<div class="empty">'+gmEsc(d.message||"Log in to see your chats.")+'</div>';return;}
   el.innerHTML=d.threads.map(function(t){return '<div class="th'+(cur===t.handle?' on':'')+'" data-h="'+gmEsc(t.handle)+'">'+av(t)+'<div class="t"><b>'+gmEsc(t.displayName)+'</b><small>'+gmEsc(t.preview)+'</small></div><div style="text-align:right"><small>'+ago(t.lastAt)+'</small>'+(t.unread?'<em>'+t.unread+'</em>':'')+'</div></div>';}).join("")||'<div class="empty">No chats yet.</div>';});}
 document.getElementById("threads").onclick=function(e){var t=e.target.closest(".th");if(t)openChat(t.dataset.h);};
+document.getElementById("searchChats").oninput=function(){var q=this.value.trim().toLowerCase();document.querySelectorAll("#threads .th").forEach(function(t){t.style.display=t.textContent.toLowerCase().includes(q)?"":"none";});};
+document.getElementById("clearSearch").onclick=function(){var s=document.getElementById("searchChats");s.value="";s.dispatchEvent(new Event("input"));};
 function draw(list,mine){var el=document.getElementById("msgs");list.forEach(function(m){var d=document.createElement("div");d.className="m "+(m.mine?"me":"th2");d.innerHTML=gmEsc(m.body)+"<small>"+new Date(m.at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+"</small>";el.appendChild(d);lastId=Math.max(lastId,m.id);});el.scrollTop=el.scrollHeight;}
 function openChat(h){if(!gmSignedIn()){gmNeedLogin();return;}cur=h;lastId=0;document.getElementById("pane").classList.add("chat");
   gmApi("/api/dm/with/"+encodeURIComponent(h)).then(function(d){if(!d.success){gmToast(d.message||"Could not open the chat.");document.getElementById("pane").classList.remove("chat");return;}

@@ -11,7 +11,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store }) {
     `CREATE TABLE IF NOT EXISTS dm_messages (id BIGSERIAL PRIMARY KEY, conversation_id BIGINT NOT NULL REFERENCES dm_conversations(id) ON DELETE CASCADE, sender_id TEXT NOT NULL, recipient_id TEXT NOT NULL, body TEXT NOT NULL, created_at BIGINT NOT NULL, read_at BIGINT)`,
     `CREATE INDEX IF NOT EXISTS idx_dm_messages_conversation ON dm_messages(conversation_id,id)`
   ];
-  const ready = (async () => { const c = await db.pool.connect(); try { await c.query('SELECT pg_advisory_lock(727200)'); for (const q of SCHEMA) await c.query(q); } finally { try { await c.query('SELECT pg_advisory_unlock(727200)'); } catch (_) {} c.release(); } })().catch(e => { console.error('VICO MESSAGES MIGRATE ERROR:', e); });
+  const ready = (async () => { const c = await db.pool.connect(); try { await c.query('SELECT pg_advisory_lock(727291)'); for (const q of SCHEMA) await c.query(q); } finally { try { await c.query('SELECT pg_advisory_unlock(727291)'); } catch (_) {} c.release(); } })().catch(e => { console.error('VICO MESSAGES MIGRATE ERROR:', e); });
   async function target(handle) {
     const email = await users.resolveHandle(String(handle || '').replace(/^@/, ''));
     return email ? lc(email) : null;
@@ -21,6 +21,12 @@ module.exports = function makeMessages({ app, db, requireAuth, store }) {
     if (create) await db.run(`INSERT INTO dm_conversations(user_a,user_b,created_at,updated_at) VALUES(?,?,?,?) ON CONFLICT(user_a,user_b) DO NOTHING`, [a[0],a[1],Date.now(),Date.now()]);
     return db.get('SELECT id FROM dm_conversations WHERE user_a=? AND user_b=?', a);
   }
+  app.get('/api/dm/unread', requireAuth, async (req,res) => {
+    try { await ready; const me=lc(req.userEmail);
+      const row=await db.get('SELECT COUNT(*) AS unread FROM dm_messages WHERE recipient_id=? AND read_at IS NULL',[me]);
+      res.set('Cache-Control','no-store'); res.json({success:true,unread:Number(row && row.unread)||0});
+    } catch(e){ console.error('DM UNREAD:',e); bad(res,500,'Could not check unread messages.'); }
+  });
   app.get('/api/dm/threads', requireAuth, async (req,res) => {
     try { await ready; const me=lc(req.userEmail);
       const rows=await db.all(`SELECT c.id, CASE WHEN c.user_a=? THEN c.user_b ELSE c.user_a END AS other_id, c.updated_at AS "lastAt",

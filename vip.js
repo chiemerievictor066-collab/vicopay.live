@@ -3,7 +3,7 @@
 // =====================================================
 // Added WITHOUT touching existing tables or routes:
 //   * every table is CREATE TABLE IF NOT EXISTS (new tables only; no column of an existing table is changed)
-//   * everything is OFF until an admin switches "VIP system" on in /admin-vip.html
+//   * VIP is activated once during upgrade; an administrator can still switch it off in /admin-vip.html
 //   * every permission is decided here on the server; the pages only display what the server allows
 //   * Stage 1 never touches balances, ledger_entries, gift_transactions, host_stats or payouts (it only READS gift_transactions to count earned stars).
 //     Stage 2 VIP gifts will be paid through the existing ledger.sendGift, so they behave like normal gifts and pay the host Golden Stars.
@@ -142,7 +142,7 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
   async function migrate() {
     const client = await db.pool.connect();
     try {
-      await client.query("SELECT pg_advisory_lock(727200)");   // different lock number from db.js, so start-ups never block each other
+      await client.query("SELECT pg_advisory_lock(727275)");   // different lock number from db.js, so start-ups never block each other
       for (const sql of SCHEMA) await client.query(sql);
       // Earned tiers also need 6000 lifetime Golden Stars. Added to the (new) VIP table only, once; later admin edits are never overwritten.
       const hasStars = await client.query("SELECT 1 FROM information_schema.columns WHERE table_name = 'vip_badges' AND column_name = 'min_stars'");
@@ -181,11 +181,18 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
           "INSERT INTO vip_effects (id, name, min_tier, videos, notice, sort, active, created_at) VALUES ($1,$2,$3,$4,'{name} joined the exclusive room',$5,1,$6) ON CONFLICT (id) DO NOTHING",
           [e[0], e[1], e[2], e[3], ++i, ts]);
       }
-      // feature switch: OFF by default
+      // Activate the already-built VIP feature once during this upgrade. A version marker
+      // ensures an administrator can still switch VIP OFF later without the next restart
+      // silently turning it back ON.
       await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('enabled','0',$1) ON CONFLICT (key) DO NOTHING", [ts]);
+      const activation = await client.query("SELECT value FROM vip_settings WHERE key='activation_version'");
+      if (!activation.rowCount) {
+        await client.query("UPDATE vip_settings SET value='1', updated_at=$1 WHERE key='enabled'", [ts]);
+        await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('activation_version','1',$1) ON CONFLICT (key) DO NOTHING", [ts]);
+      }
       await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('max_open_reports','3',$1) ON CONFLICT (key) DO NOTHING", [ts]);
     } finally {
-      try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ }
+      try { await client.query("SELECT pg_advisory_unlock(727275)"); } catch (_) { /* ignore */ }
       client.release();
     }
     await syncGifts();
@@ -405,6 +412,7 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
     const me = req.userEmail;
     if (!(await isEnabled())) return res.json({ success: true, enabled: false });
     const tier = await tierOf(me);
+    if (!tier || tier.rank === 0) return res.json({ success: true, enabled: true, eligible: false, tier: "none", promotionUrl: "promotion-duration.html" });
     const [badges, frames, decor, unl] = await Promise.all([loadItems("badge", true), loadItems("frame", true), loadItems("decor", true), unlockSet(me)]);
     const need = (it) => (Number(it.adminOnly) ? "Given by VicoPay" : TIER_LABEL[it.tierRequired || it.tier] + " VIP");
     const mark = (list, type) => list.map((it) => ({ ...it, unlocked: canUse(it, tier, unl, type), requirement: need(it) }));

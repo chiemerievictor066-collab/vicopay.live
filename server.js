@@ -466,87 +466,6 @@ function publicUser(email, u) {
   u = u || users.peek(email) || {};
   return { email, username: u.username || "", displayName: u.displayName || email.split("@")[0] };
 }
-
-// Google Identity Services. The Client ID is public by design; the server verifies every ID token.
-const GOOGLE_CLIENT_ID = String(process.env.GOOGLE_CLIENT_ID || "").trim();
-app.get("/api/auth/google/config", (req, res) => {
-  res.setHeader("Cache-Control", "no-store");
-  res.json({ enabled: !!GOOGLE_CLIENT_ID, clientId: GOOGLE_CLIENT_ID });
-});
-
-app.post("/api/auth/google", authRateLimit, async (req, res) => {
-  try {
-    if (!GOOGLE_CLIENT_ID) {
-      return res.status(503).json({ success: false, message: "Google sign-in is not configured yet. Please use your VicoPay password." });
-    }
-    if (adminControl && await adminControl.isLoginBlocked(req)) {
-      if (commandCenter) await commandCenter.recordLogin({ login: "Google sign-in", ip: req.ip, device: req.headers["user-agent"], success: false });
-      return res.status(403).json({ success: false, message: "Sign-in from this network or device has been blocked. Contact VicoPay support." });
-    }
-    const credential = String((req.body && req.body.credential) || "").trim();
-    if (!credential || credential.length > 12000) {
-      return res.status(400).json({ success: false, message: "Google did not return a valid sign-in credential." });
-    }
-
-    // Google's tokeninfo endpoint validates the token signature and claims. We additionally
-    // enforce this VicoPay application's audience, issuer, expiry and verified email.
-    const googleResponse = await axios.get("https://oauth2.googleapis.com/tokeninfo", {
-      params: { id_token: credential }, timeout: 10000
-    });
-    const claims = googleResponse.data || {};
-    const issuerOk = claims.iss === "https://accounts.google.com" || claims.iss === "accounts.google.com";
-    const email = String(claims.email || "").trim().toLowerCase();
-    const emailVerified = claims.email_verified === true || claims.email_verified === "true";
-    const expiresAt = Number(claims.exp || 0) * 1000;
-    const googleSub = String(claims.sub || "").trim();
-    if (claims.aud !== GOOGLE_CLIENT_ID || !issuerOk || !emailVerified || !googleSub || !email || expiresAt <= Date.now()) {
-      return res.status(401).json({ success: false, message: "Google could not verify this sign-in for VicoPay. Please try again." });
-    }
-
-    // A previously linked Google identity is the strongest account match.
-    let user = await users.byGoogleSub(googleSub);
-    if (user && user.email !== email) {
-      return res.status(403).json({ success: false, message: "This Google account is linked to a different VicoPay account. Contact support." });
-    }
-
-    if (!user) {
-      // Google must never create a VicoPay account or bypass the registration questions.
-      const existing = await users.get(email);
-      if (!existing) {
-        return res.status(403).json({
-          success: false,
-          registrationRequired: true,
-          message: "You do not have a VicoPay account with this Google email yet. Create your VicoPay account first, then return here to use Google sign-in."
-        });
-      }
-      if (existing.googleSub && existing.googleSub !== googleSub) {
-        return res.status(403).json({ success: false, message: "A different Google account is already linked to this VicoPay account. Sign in with your VicoPay password or contact support." });
-      }
-      user = await users.linkGoogle(email, googleSub);
-      if (!user) {
-        const alreadyLinked = await users.byGoogleSub(googleSub);
-        if (!alreadyLinked || alreadyLinked.email !== email) {
-          return res.status(409).json({ success: false, message: "This Google account could not be linked safely. Please contact VicoPay support." });
-        }
-        user = alreadyLinked;
-      }
-    }
-
-    if (bannedUsers.has(user.email)) {
-      return res.status(403).json({ success: false, message: "This account has been suspended. Contact support." });
-    }
-    users.touchIp(user.email, req.ip).catch(() => {});
-    if (commandCenter) await commandCenter.recordLogin({ login: user.email, ip: req.ip, device: req.headers["user-agent"], success: true });
-    return res.json({ success: true, token: signToken(user.email), user: publicUser(user.email, user), linkedGoogle: true });
-  } catch (error) {
-    const status = error && error.response && error.response.status;
-    if (status === 400 || status === 401) {
-      return res.status(401).json({ success: false, message: "Google sign-in expired or was rejected. Please try again." });
-    }
-    console.error("GOOGLE LOGIN ERROR:", error && error.message ? error.message : error);
-    return res.status(503).json({ success: false, message: "Google sign-in is temporarily unavailable. Please use your VicoPay password." });
-  }
-});
 app.post("/api/auth/register", authRateLimit, async (req, res) => {
   try {
     const email = String((req.body && req.body.email) || "").trim().toLowerCase();
@@ -3485,7 +3404,7 @@ const campaigns = require("./campaigns")({ app, db, requireAuth, requireAdmin, g
 // Free-first company and national organisation verification (KYB).
 require("./company-verification")({ app, db, requireAuth, requireAdmin });
 
-// VIP system (Stage 1: identity). New tables only, switched OFF until an admin turns it on in admin-vip.html. See vip.js.
+// VIP system (Stage 1: identity). New tables only; activation is one-time and remains controllable by admin-vip.html. See vip.js.
 const vip = require("./vip")({ app, db, requireAuth, requireAdmin, store, giftPrices });
 // Shared video-call access: VIP eligibility, 9,000-star threshold and verified $3 VIP-call payments.
 callSystem = require("./vico-calls")({ app, db, requireAuth, store, vip, liveRooms, axios });

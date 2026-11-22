@@ -986,7 +986,19 @@ let pendingStory = "";
 let vicoPendingCaller = null;
 let vicoActiveCaller = null;
 let vicoActiveCallId = null;
-
+let vicoIncomingCallPoll = null;
+async function pollVicoIncomingCalls(){
+  if(!liveStarted || !vicoLiveRoomId || !vicoLiveKitRoom || vicoPendingCaller || vicoActiveCaller) return;
+  try {
+    const r=await fetch(API_BASE+"/api/calls/incoming?room="+encodeURIComponent(vicoLiveRoomId),{cache:"no-store"});
+    const d=await r.json(); if(!r.ok || !d.success || !Array.isArray(d.calls) || !d.calls.length) return;
+    const c=d.calls[0]; if(!c.callId) return;
+    vicoPendingCaller=c.callerIdentity || "viewer"; window.vicoPendingCallId=c.callId;
+    const box=document.getElementById("hostCallRequest");
+    document.getElementById("hostCallRequestText").textContent=(c.displayName||"A viewer")+" wants to join your livestream by video call.";
+    box.classList.add("on");
+  }catch(e){ /* LiveKit data-channel notification remains available as a second path. */ }
+}
 function toggleLive() {
   if (vicoLiveKitRoom) return endLive();
   return startLive();
@@ -1132,6 +1144,9 @@ async function startLive() {
     });
 
     liveStarted = true;
+    clearInterval(vicoIncomingCallPoll);
+    vicoIncomingCallPoll=setInterval(pollVicoIncomingCalls,2500);
+    pollVicoIncomingCalls();
     document.getElementById("placeholder")?.classList.add("hidden");
     const status = document.getElementById("liveStatus");
     if (status) status.innerHTML = '<span class="dot"></span> LIVE NOW';
@@ -1213,6 +1228,7 @@ async function endLive() {
       });
     }
   } finally {
+    clearInterval(vicoIncomingCallPoll); vicoIncomingCallPoll=null;
     vicoLiveKitRoom = null;
     vicoLiveRoomId = null;
     vicoPendingCaller = null; vicoActiveCaller = null; vicoActiveCallId = null;

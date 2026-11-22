@@ -1,0 +1,39 @@
+VICOPAY THREE-FEATURE FIX
+
+This update addresses the Global Market Community Messages page, VIP access, and viewer-to-streamer video calls.
+
+FILES TO REPLACE IN YOUR EXISTING vicopay-website FOLDER
+- server.js
+- vip.js
+- vip-profile.html
+- vico-messages.js
+- vico-messages.html
+- vico-calls.js
+- live-feed.html
+- Go-Live.html
+- global-market-community.html
+
+SAFE INSTALL
+1. Make a backup copy of your current project folder first.
+2. Extract this ZIP.
+3. Copy the nine files above into your existing vicopay-website folder and choose Replace when Windows asks.
+4. Do NOT replace or delete .env, package.json, package-lock.json, node_modules, your PostgreSQL database, or any other files.
+5. Commit/push the changed files to the same GitHub repository connected to Render, then wait for deployment to finish.
+6. Test the website after Render reports the deployment is live.
+
+WHAT CHANGED
+- Messages: fixed the full-height layout issue caused by the extra navigation header wrapper; added a WhatsApp-inspired responsive chat layout, conversation search, new-chat-by-username flow remains, and an unread-count API for the navigation badge. This remains private one-to-one text messaging with polling; it is not yet WhatsApp feature parity (voice notes, media uploads, group chats, end-to-end encryption, and push notifications are not included).
+- VIP: the existing VIP feature is activated once by a versioned migration. The admin can still switch it off afterwards. The VIP page now checks server-side VIP eligibility: users without verified promotion/approved VIP access see the promotion upgrade route, while an account granted VIP after successful Paystack verification can enter. No payment is assumed from a browser success message.
+- Video calls: the viewer can check request status while waiting, the host polls authenticated incoming requests for the current live room, and the server supports repeat-safe caller authorization. Existing LiveKit media is reused; the viewer's camera/microphone should only connect after the streamer accepts.
+- Homepage: added a direct Vico Messages shortcut tile.
+
+IMPORTANT
+- Do not share your .env file or secret keys. Existing environment variables are retained.
+- Video calls require the existing LiveKit environment variables to be correctly configured. Paid VIP-call access also requires the existing Paystack secret key.
+- This ZIP contains only changed files and this instruction file, not a replacement project.
+
+CHECKS RUN
+- Node syntax checks passed for server.js, vip.js, vico-calls.js, and vico-messages.js.
+- Inline JavaScript syntax checks passed for Go-Live.html, live-feed.html, vico-messages.html, vip-profile.html, and global-market-community.html.
+- Market/community, commerce, marketplace/video, wallet-security, VIP stage-1, VIP gifts, VIP entrance, VIP entrance client, and promotion tests passed when run individually.
+- LiveKit camera/microphone calls still need a real two-account browser test on the deployed site; static checks cannot confirm device permissions or network connectivity.

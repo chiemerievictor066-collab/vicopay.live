@@ -254,7 +254,7 @@ function addSlide(r){
   if (S.has(r.roomId)) return S.get(r.roomId);
   const el = document.createElement("section"); el.className = "slide" + (r.product ? " hasp" : ""); el.dataset.room = r.roomId; el.innerHTML = slideHTML(r);
   feed.appendChild(el);
-  const st = { room: r, el, lk: null, lkOpp: null, oppId: null, lastEv: 0, battle: null, info: null, ended: false, audio: [], loves: 0, callActive: false, callPending: false, callMic: true, callCamera: true, callId: null };
+  const st = { room: r, el, lk: null, lkOpp: null, oppId: null, lastEv: 0, battle: null, info: null, ended: false, audio: [], loves: 0, callActive: false, callPending: false, callMic: true, callCamera: true, callId: null, callStatusTimer: null, callConnecting: false };
   S.set(r.roomId, st); paintFollow(st); io.observe(el);
   st.panel = VicoLivePanel.create({ role: "viewer" }); $(".vlp-slot", el).appendChild(st.panel.el);
   st.panel.set({ promoted: r.promoted, story: r.story || "", startedAt: r.createdAt });
@@ -364,6 +364,8 @@ async function syncOpp(st, b){
 }
 function deactivate(st){
   st.leaving = true;
+  clearInterval(st.callStatusTimer); st.callStatusTimer=null;
+  if(st.callPending && st.callId) U.api("/api/calls/cancel",{method:"POST",body:{callId:st.callId}}).catch(()=>{});
   try { if (st.lk) st.lk.disconnect(); if (st.lkOpp) st.lkOpp.disconnect(); } catch (e) {}
   st.lk = st.lkOpp = null; st.oppId = null; st.battle = null; st.callActive = false; st.callPending = false;
   if ($(".call-controls", st.el)) $(".call-controls", st.el).classList.remove("on");
@@ -407,9 +409,19 @@ async function sendCallRequest(st){
   const payload = { type:"call_request", callId:d.callId, displayName:(me && me.displayName) || "Vico user" };
   await st.lk.localParticipant.publishData(new TextEncoder().encode(JSON.stringify(payload)), { reliable:true });
   showCallLayer(st, "Request sent", "Waiting for the streamer to accept your video call…", '<button class="secondary" data-call="cancel">Cancel request</button>');
+  clearInterval(st.callStatusTimer);
+  st.callStatusTimer = setInterval(async function(){
+    if(!st.callPending || !st.callId || st.callConnecting) return;
+    try { const status=await U.api("/api/calls/status/"+enc(st.callId)); if(!status._ok||!status.call) return;
+      if(status.call.status==="accepted" || status.call.status==="connected") startAcceptedCall(st);
+      else if(["declined","cancelled","ended"].includes(status.call.status)){clearInterval(st.callStatusTimer);st.callPending=false;hideCallLayer(st);U.toast("The streamer is unavailable for a call right now.");}
+    } catch(e){}
+  },2000);
 }
 async function startAcceptedCall(st){
-  if (!st.callPending || !cur || cur !== st) return;
+  if (!st.callPending || st.callConnecting || st.callActive || !cur || cur !== st) return;
+  st.callConnecting = true;
+  clearInterval(st.callStatusTimer);
   try {
     st.callPending = false; hideCallLayer(st);
     setStatus(st, "Connecting your camera…");
@@ -432,7 +444,7 @@ async function startAcceptedCall(st){
   } catch (e) {
     console.error("Vico call:", e); U.toast(e.message || "Could not connect the call.");
     hideCallLayer(st); st.callPending = false;
-  }
+  } finally { st.callConnecting = false; }
 }
 async function endCallerCall(st, notify){
   if (st.callId) U.api("/api/calls/end", {method:"POST",body:{callId:st.callId}}).catch(()=>{});
@@ -440,7 +452,8 @@ async function endCallerCall(st, notify){
     try { await st.lk.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"call_end"})), {reliable:true}); } catch(e){}
   }
   try { if (st.lk) await st.lk.disconnect(); } catch(e){}
-  st.lk = null; st.callActive = false; st.callPending = false;
+  clearInterval(st.callStatusTimer); st.callStatusTimer=null;
+  st.lk = null; st.callActive = false; st.callPending = false; st.callConnecting=false;
   $(".call-controls", st.el).classList.remove("on");
   const pip = $(".call-pip", st.el); pip.classList.remove("on"); $("video",pip).srcObject = null;
   if (cur === st && !st.ended) {
