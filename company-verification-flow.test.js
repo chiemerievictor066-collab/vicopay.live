@@ -1,0 +1,28 @@
+// Vico Pay Live — organisation verification routing and guard checks.
+"use strict";
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const root = path.join(__dirname, "..");
+const read = (name) => fs.readFileSync(path.join(root, name), "utf8");
+const jobs = read("vico-ad-jobs.js");
+const kyb = read("company-verification.js");
+const page = read("ad-organisation-verification.html");
+const business = read("ad-business-information.html");
+const personalId = read("ad-identity-verification.html");
+const admin = read("admin-company-verification.html");
+assert.ok(jobs.includes(`["big-business","company","national"].includes(req.order.tier) ? "ad-organisation-verification.html" : "ad-identity-verification.html"`));
+assert.ok(jobs.includes('["big-business", "company", "national"].includes(o.tier)'));
+assert.ok(jobs.includes('to_regclass(\'public.company_verification_applications\')'));
+assert.ok(business.includes("ad-organisation-verification.html"));
+assert.ok(personalId.includes("ad-organisation-verification.html"));
+assert.ok(page.includes("orderId:ORDER.id"));
+assert.ok(page.includes("/api/company-verification/applications"));
+assert.ok(page.includes("government_establishment_proof"));
+assert.ok(page.includes("cac_certificate"));
+assert.ok(kyb.includes("!['paid','profile_saved','verified'].includes(order.status)"));
+assert.ok(kyb.includes("AES-256-GCM") || kyb.includes("aes-256-gcm"));
+assert.ok(kyb.includes("checks.official_registry.result!=='match'"));
+assert.ok(kyb.includes("UPDATE ad_job_orders SET status='verified'"));
+assert.ok(admin.includes("Official CAC / government check"));
+console.log("ok  Organisation flow: paid Big Business/Company/National orders are routed to KYB; Personal/Small Business retain personal ID; admin must record an official-source match before approval.");
