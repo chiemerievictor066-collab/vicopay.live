@@ -69,7 +69,7 @@ app.use((req, res, next) => {
   next();
 });
 const SITE_DIR = __dirname;
-const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "vico-currency.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js", "vip-ui.js", "vip-entrance.js", "share-menu.js", "gm-nav.js", "vico-shell.js", "vico-buy.js", "vico-social.js", "vico-live-panel.js", "vico-pin.js", "vico-animal-filters.js", "campaigns-ui.js", "campaign-calendar.js"]);
+const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "vico-currency.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js", "vip-ui.js", "vip-entrance.js", "share-menu.js", "gm-nav.js", "vico-shell.js", "vico-buy.js", "vico-social.js", "vico-live-panel.js", "vico-pin.js", "vico-animal-filters.js", "campaigns-ui.js", "campaign-calendar.js", "vico-messages-app.js"]);
 // gift videos are ordinary files next to the HTML pages: gift-rose.mp4, gift-lion.mp4 ... (there is NO gifts folder)
 const GIFT_VIDEO = /^gift-[a-z0-9-]+\.(mp4|jpg)$/;   // gift videos + their small thumbnails
 const VIP_FX_IMG = /^(vipfx-[a-z0-9-]+\.webp|vico-art-[a-z0-9-]+\.jpg|vico-animals\.webp|vico-ai-guide\.gif|vico-promo-(?:hero|vip|celebrate|benefits)\.jpg|vico-bc-(?:hero|shield|support)\.jpg)$/;   // VIP emoji / avatar / sticker / frame pictures used by the live Effects
@@ -808,6 +808,10 @@ app.get("/api/paystack/verify", async (req, res) => {
       });
     }
 
+    if (vicoWallet && vicoWallet.isWalletPayment(payment)) {   // wallet recharge: credited by the wallet module, never as coins
+      const w = await vicoWallet.finalize(reference);
+      return res.status(w.ok ? 200 : 400).json({ success: w.ok, wallet: true, coins: 0, message: w.ok ? "Wallet recharged." : w.message });
+    }
     if (typeof commerce !== "undefined" && commerce.isCommercePayment(payment)) {
       const r = await commerce.finalize(reference);
       return res.status(r.ok ? 200 : 400).json({ success: r.ok, message: r.ok ? "Payment received." : r.message, commerce: true, coins: 0 });
@@ -3293,6 +3297,7 @@ async function reversePayment(reference, why) {
 // PAYSTACK WEBHOOK
 // ============================================================
 let creatorPartnership = null;
+let vicoWallet = null;   // VicoPay Wallet (vico-wallet.js): wallet recharges must never be treated as coin purchases
 let globalEnquiries = null;
 app.post("/api/paystack/webhook", async (req, res) => {
   try {
@@ -3321,6 +3326,11 @@ app.post("/api/paystack/webhook", async (req, res) => {
       if (creatorPartnership) {
         const partnershipResult = await creatorPartnership.handleChargeSuccess(payment);
         if (partnershipResult && partnershipResult.handled) return res.sendStatus(200);
+      }
+      if (vicoWallet && vicoWallet.isWalletPayment(payment)) {   // wallet recharge: re-checked with Paystack, credited once
+        const w = await vicoWallet.finalize(reference);
+        if (!w.ok && !w.pending) console.error("Wallet recharge not credited:", reference, w.message);
+        return res.sendStatus(w.ok || !w.pending ? 200 : 500);
       }
       const userId = String(payment?.customer?.email || "").toLowerCase();
       if (typeof commerce !== "undefined" && commerce.isCommercePayment(payment)) {   // ad and marketplace payments: always re-checked with Paystack, finalised once
@@ -3404,7 +3414,7 @@ const campaigns = require("./campaigns")({ app, db, requireAuth, requireAdmin, g
 // Free-first company and national organisation verification (KYB).
 require("./company-verification")({ app, db, requireAuth, requireAdmin });
 
-// VIP system (Stage 1: identity). New tables only; activation is one-time and remains controllable by admin-vip.html. See vip.js.
+// VIP system (Stage 1: identity). New tables only, switched OFF until an admin turns it on in admin-vip.html. See vip.js.
 const vip = require("./vip")({ app, db, requireAuth, requireAdmin, store, giftPrices });
 // Shared video-call access: VIP eligibility, 9,000-star threshold and verified $3 VIP-call payments.
 callSystem = require("./vico-calls")({ app, db, requireAuth, store, vip, liveRooms, axios });
@@ -3415,7 +3425,10 @@ const emailVerify = require("./email-verify")({ app, db, requireAuth, onBounce: 
 const referrals = require("./referrals")({ app, db, requireAuth, requireAdmin, ledger, emailVerified: emailVerify.isVerified });
 // Market Community: Vico AI, Vico Messages, Vico Marketplace and the Vico Ad Center. New tables only. See vico-ai.js, vico-messages.js, vico-market.js, vico-ads.js.
 require("./vico-ai")({ app, db, requireAuth, requireAdmin, axios });
-require("./vico-messages")({ app, db, requireAuth, store });
+// Vico Message: phone-verified chat + voice/video calls (vico-messages.js, vico-message-calls.js, vico-phone.js). Private calls with a VIP follow the same paid-call rule as live calls.
+// VicoPay Wallet: one central naira balance for paid messages and calls, recharged with Paystack. New tables only. See vico-wallet.js.
+vicoWallet = require("./vico-wallet")({ app, db, requireAuth, axios, siteUrlOf });
+const vicoMessage = require("./vico-messages")({ app, db, requireAuth, store, axios, callAccess: callSystem && callSystem.access, wallet: vicoWallet });
 require("./vico-market")({ app, db, requireAuth, requireAdmin, store });
 const videos = require("./vico-videos")({ app, db, requireAuth, requireAdmin, store, getAuthEmail });
 // Creator video partnership: public Marketplace publishing + Paystack verified company funding + bank transfer settlement.
