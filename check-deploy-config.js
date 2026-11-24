@@ -15,6 +15,8 @@ const required = [
   'PAYSTACK_SECRET_KEY', 'LIVEKIT_URL', 'LIVEKIT_API_KEY', 'LIVEKIT_API_SECRET'
 ];
 const optionalForEnquiryEmail = ['RESEND_API_KEY', 'MAIL_FROM'];
+const smsReady = !!(process.env.TERMII_API_KEY || (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && (process.env.TWILIO_FROM || process.env.TWILIO_MESSAGING_SERVICE_SID)));
+if (!smsReady) console.warn('Vico Message phone verification will NOT work until an SMS service is set: TERMII_API_KEY (+ TERMII_SENDER_ID) or TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM.');
 const missing = required.filter((key) => !String(process.env[key] || '').trim());
 const missingMail = optionalForEnquiryEmail.filter((key) => !String(process.env[key] || '').trim());
 if (missing.length) {
