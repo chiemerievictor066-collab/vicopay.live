@@ -23,7 +23,7 @@
 <header class="v-header"><a class="v-logo" href="index.html">Vico<span>Pay</span></a>
   <nav class="v-nav"><a href="index.html">Home</a></nav></header>
 <main class="v-wrap">
-  <div id="off" class="v-card off" style="display:none"><h2 id="offTitle" style="margin:0 0 6px">VIP is currently switched off</h2><p id="offText" class="muted" style="color:var(--muted)">A VicoPay administrator must turn on VIP from the VIP Admin page before members can use it.</p></div>
+  <div id="off" class="v-card off" style="display:none"><h2 style="margin:0 0 6px">VIP is coming soon</h2><p class="muted" style="color:var(--muted)">VicoPay VIP is not open yet. Everything else works as normal.</p></div>
   <div id="app" style="display:none">
     <div class="v-card vp-hero">
       <div id="cardBox"></div>
@@ -49,12 +49,10 @@ var SLOTS = [
 function say(t, bad) { var m = document.getElementById("msg"); m.textContent = t || ""; m.style.color = bad ? "#e11d48" : "var(--muted)"; }
 
 async function load() {
-  try {
-    var r = await fetch("/api/vip/me"); var d = await r.json();
-    if (!r.ok || !d.success) throw new Error(d.message || "The VIP service could not be reached.");
-    if (!d.enabled) { document.getElementById("offTitle").textContent = "VIP is currently switched off"; document.getElementById("offText").textContent = "A VicoPay administrator must turn on VIP from /admin-vip.html. This is a platform setting, not a problem with your account or payment."; document.getElementById("off").style.display = ""; document.getElementById("app").style.display = "none"; return; }
-    ME = d; document.getElementById("off").style.display = "none"; document.getElementById("app").style.display = ""; render();
-  } catch (e) { document.getElementById("offTitle").textContent = "VIP is temporarily unavailable"; document.getElementById("offText").textContent = e.message || "Please refresh the page or contact VicoPay support."; document.getElementById("off").style.display = ""; document.getElementById("app").style.display = "none"; }
+  var r = await fetch("/api/vip/me"); var d = await r.json();
+  if (!d.success || !d.enabled) { document.getElementById("off").style.display = ""; document.getElementById("app").style.display = "none"; return; }
+  ME = d; document.getElementById("off").style.display = "none"; document.getElementById("app").style.display = "";
+  render();
 }
 
 function render() {

@@ -1,82 +1,330 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vico Messages - Vico Pay Live</title>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>Vico Message - Vico Pay Live</title>
 <link rel="stylesheet" href="gm.css">
 <style>
-/* Full-height, WhatsApp-style chat workspace */
+/* ===== Vico Message: full-height workspace inside the Market Community shell ===== */
 body.gm[data-gm="messages"]{height:100dvh;min-height:100dvh;overflow:hidden;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
-body.gm[data-gm="messages"] .gm-wrap{width:100%;max-width:none;height:calc(100dvh - 76px - env(safe-area-inset-bottom));margin:0;padding:0}
-body.gm[data-gm="messages"] .hero{display:none}
-.pane{display:grid;grid-template-columns:minmax(270px,360px) minmax(0,1fr);gap:0;height:100%;min-height:0;overflow:hidden;border:1px solid #c5dcf7;border-radius:0;background:#fff}
-.side,.main{overflow:hidden;display:flex;flex-direction:column}
-.find{display:flex;gap:6px;padding:10px;border-bottom:1px solid #c5dcf7}.find input{flex:1;min-width:0;border:1px solid #c5dcf7;border-radius:14px;padding:10px 12px;font:inherit}
-#searchResults{max-height:34%;overflow:auto;border-bottom:1px solid #c5dcf7;background:#f8fbff}#searchResults:empty{display:none}.sr{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #e5eefb;cursor:pointer}.sr:hover{background:#eaf3ff}.sr .t{min-width:0;flex:1}.sr b,.sr small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sr small{color:#64748b;font-size:12px}
-#threads{flex:1;overflow:auto}.th{display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #e3eefc;cursor:pointer}.th:hover,.th.on{background:#eaf3ff}
-.av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#1d6fe8,#6d28d9);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 44px}
-.th .t{flex:1;min-width:0}.th b{display:block;font-size:14.5px}.th small{display:block;color:#5d7096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.th em{background:#ef4444;color:#fff;border-radius:10px;font:800 11px Arial;padding:2px 7px;font-style:normal}
-.mh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #c5dcf7;background:#fff;font-weight:900}.mh button{display:none;border:0;background:#eaf3ff;border-radius:12px;padding:7px 12px;font-weight:800;cursor:pointer}
-#msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:#f3f8ff}
-.m{max-width:80%;padding:9px 13px;border-radius:16px;font-size:15px;line-height:1.4;word-break:break-word;white-space:pre-wrap}.m.me{align-self:flex-end;background:#4c1d95;color:#fff;border-bottom-right-radius:4px}.m.th2{align-self:flex-start;background:#fff;border:1px solid #c5dcf7;border-bottom-left-radius:4px}
-.m small{display:block;opacity:.65;font-size:10.5px;margin-top:3px}
-#f{display:flex;gap:8px;padding:10px;border-top:1px solid #c5dcf7;background:#fff}#f input{flex:1;min-width:0;border:1px solid #c5dcf7;border-radius:18px;padding:12px 16px;font:inherit}
-.empty{margin:auto;color:#5d7096;font-weight:700;text-align:center;padding:20px}
-@media(max-width:760px){.pane{grid-template-columns:1fr}.pane.chat .side{display:none}.pane:not(.chat) .main{display:none}.mh button{display:inline-block}}
+.vm{--bubble-me:#4c1d95;--tick:#8fd3ff;--wall:#eaf3ff;height:100%;max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);background:#fff;overflow:hidden;height:calc(100dvh - 76px - env(safe-area-inset-bottom))}
+@media(min-width:1000px){.vm{margin-top:10px;height:calc(100dvh - 96px - env(safe-area-inset-bottom));border:1px solid var(--gm-line);border-radius:22px;box-shadow:var(--gm-shadow)}}
+[hidden]{display:none!important}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+button{font:inherit;color:inherit}
+.vm button{cursor:pointer}
+.vm :focus-visible,.vm-gate :focus-visible,#callLayer :focus-visible{outline:3px solid #1d6fe888;outline-offset:2px}
 
-.side,.main{min-width:0;min-height:0;border-radius:0!important;box-shadow:none!important}
-.side{border-right:1px solid #c5dcf7}
-.main{height:100%;background:#fff}
-.mh{min-height:62px;flex:0 0 auto}
-#msgs{min-height:0;overscroll-behavior:contain}
-#f{flex:0 0 auto;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
-#f input{outline:none}
-#f input:focus,.find input:focus{border-color:#1d6fe8;box-shadow:0 0 0 3px #1d6fe822}
-.find{flex:0 0 auto}
+/* --- left column --- */
+.vm-side{display:flex;flex-direction:column;min-width:0;min-height:0;border-right:1px solid var(--gm-line);background:#fff}
+.vm-head{display:flex;align-items:center;gap:10px;padding:12px 14px 6px}
+.vm-head h1{margin:0;font-size:21px;letter-spacing:-.01em;color:var(--gm-purple);flex:1}
+.vm-icon{width:40px;height:40px;border:0;border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center;color:var(--gm-ink)}
+.vm-icon:hover{background:#eaf3ff}
+.vm-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 12px 10px;border-bottom:1px solid var(--gm-line)}
+.vm-tab{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--gm-line);background:#f4f9ff;border-radius:14px;padding:10px 6px;font-weight:800;font-size:14px;color:var(--gm-ink)}
+.vm-tab[aria-selected="true"]{background:linear-gradient(135deg,var(--gm-purple2),var(--gm-purple));border-color:transparent;color:#fff;box-shadow:0 6px 14px rgba(76,29,149,.25)}
+.vm-tab b{position:absolute;top:-6px;right:-3px;min-width:19px;height:19px;border-radius:10px;background:#ef4444;color:#fff;font:800 11px/19px Arial;text-align:center;padding:0 5px}
+.vm-panel{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.vm-panel[hidden]{display:none}
+.vm-search{position:sticky;top:0;z-index:2;background:#fff;padding:10px 12px;border-bottom:1px solid #e3eefc}
+.vm-search input{width:100%;border:1px solid var(--gm-line);border-radius:14px;padding:11px 14px;font:inherit;background:#f4f9ff;color:var(--gm-ink);outline:none}
+.vm-search input:focus{border-color:var(--gm-blue);box-shadow:0 0 0 3px #1d6fe822;background:#fff}
+.vm-h{margin:0;padding:14px 14px 6px;font-size:13px;font-weight:800;color:var(--gm-muted)}
+.row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #eef5ff;cursor:pointer;min-width:0}
+.row:hover,.row.on{background:#eaf3ff}
+.av{position:relative;width:46px;height:46px;border-radius:50%;flex:0 0 46px;background:linear-gradient(135deg,#1d6fe8,#6d28d9);color:#fff;font-weight:900;font-size:18px;display:flex;align-items:center;justify-content:center;overflow:visible}
+.av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.av.biz{border-radius:14px}.av.biz img{border-radius:14px}
+.av i{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t small{display:flex;align-items:center;gap:4px;color:var(--gm-muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row .t small.red,.red{color:#dc2626}
+.row .r{display:flex;flex-direction:column;align-items:flex-end;gap:5px;font-size:12px;color:var(--gm-muted);flex:0 0 auto}
+.row .r em{background:var(--gm-blue);color:#fff;border-radius:11px;min-width:21px;height:21px;line-height:21px;text-align:center;font:800 12px/21px Arial;font-style:normal;padding:0 6px}
+.acts{display:flex;gap:6px;flex:0 0 auto}
+.pill{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:12px;padding:8px 12px;font-weight:800;font-size:13px;background:linear-gradient(135deg,var(--gm-purple2),var(--gm-purple));color:#fff}
+.pill.ghost{background:#eaf3ff;color:var(--gm-blue)}
+.pill:disabled{opacity:.5;cursor:not-allowed}
+.round{width:38px;height:38px;border-radius:50%;border:0;display:inline-flex;align-items:center;justify-content:center;background:#eaf3ff;color:var(--gm-blue)}
+.round:hover{background:#d9eaff}
+.round.vid{color:var(--gm-purple2)}
+.tag{display:inline-flex;align-items:center;gap:4px;background:#e7f8ee;color:#157347;border-radius:8px;padding:1px 7px;font-size:11px;font-weight:800}
+.empty{padding:34px 22px;text-align:center;color:var(--gm-muted);font-weight:600;line-height:1.5}
+.empty .pill{margin-top:12px}
+.tick{width:17px;height:17px;stroke-width:2.2}.tick.read{stroke:#2b9cf0}
+.mini{width:15px;height:15px;stroke-width:2.2}
+
+/* --- conversation --- */
+.vm-main{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--wall)}
+.vm-hello{margin:auto;max-width:380px;text-align:center;padding:30px;color:var(--gm-muted);line-height:1.55}
+.vm-hello .logo{width:84px;height:84px;margin:0 auto 14px;border-radius:26px;background:linear-gradient(135deg,#1d6fe8,#6d28d9);color:#fff;display:flex;align-items:center;justify-content:center}
+.vm-hello .logo svg{width:42px;height:42px}
+.vm-hello h2{margin:0 0 6px;color:var(--gm-ink)}
+.vm-hello small{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:18px;font-weight:700}
+.conv{display:flex;flex-direction:column;min-height:0;height:100%}
+.conv[hidden]{display:none}
+.ch{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border-bottom:1px solid var(--gm-line);flex:0 0 auto;min-height:62px}
+.ch .who{flex:1;min-width:0;line-height:1.25}
+.ch .who b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .who small{display:block;color:var(--gm-muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .who small.live{color:#16a34a;font-weight:700}
+#back{display:none}
+.menu{position:absolute;right:10px;top:56px;z-index:5;background:#fff;border:1px solid var(--gm-line);border-radius:14px;box-shadow:var(--gm-shadow);min-width:190px;padding:6px}
+.menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:10px;font-weight:700}
+.menu button:hover{background:#eaf3ff}.menu button.danger{color:#dc2626}
+.ch,.vm-main{position:relative}
+#msgs{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:12px 14px;display:flex;flex-direction:column;gap:3px;background-image:radial-gradient(#d6e8ff 1.2px,transparent 1.2px);background-size:22px 22px}
+.day{align-self:center;margin:10px 0 6px;background:#fff;border:1px solid var(--gm-line);color:var(--gm-muted);border-radius:10px;padding:3px 11px;font-size:12px;font-weight:800}
+.notice{align-self:center;max-width:430px;margin:8px 0;background:#fff8e1;border:1px solid #f3dba5;color:#7a5a12;border-radius:12px;padding:9px 13px;font-size:13px;line-height:1.45;text-align:center}
+.m{max-width:min(78%,560px);padding:7px 11px 6px;border-radius:15px;font-size:15px;line-height:1.4;word-break:break-word;white-space:pre-wrap;box-shadow:0 1px 1px rgba(30,60,120,.08)}
+.m.me{align-self:flex-end;background:var(--bubble-me);color:#fff;border-bottom-right-radius:4px}
+.m.them{align-self:flex-start;background:#fff;border:1px solid var(--gm-line);border-bottom-left-radius:4px}
+.m.first{margin-top:6px}
+.m a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.m .meta{display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-top:2px;font-size:10.5px;opacity:.72;white-space:normal}
+.m.me .tick{stroke:rgba(255,255,255,.75)}.m.me .tick.read{stroke:var(--tick)}
+.m.failed{background:#b91c1c}
+.m.failed .meta{opacity:1}.m.failed .meta button{border:0;background:none;color:#fff;text-decoration:underline;font-weight:800}
+.callmsg{align-self:center;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--gm-line);border-radius:14px;padding:7px 13px;margin:6px 0;font-size:13.5px;font-weight:700;color:var(--gm-ink)}
+.callmsg small{color:var(--gm-muted);font-weight:600}
+.typing{align-self:flex-start;display:flex;gap:4px;background:#fff;border:1px solid var(--gm-line);border-radius:15px;border-bottom-left-radius:4px;padding:11px 13px;margin-top:4px}
+.typing i{width:7px;height:7px;border-radius:50%;background:#9db3d6;animation:dot 1.1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+.composer{display:flex;align-items:flex-end;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--gm-line);flex:0 0 auto;position:relative}
+.composer textarea{flex:1;min-width:0;resize:none;border:1px solid var(--gm-line);border-radius:20px;padding:11px 16px;font:inherit;line-height:1.35;max-height:130px;background:#f4f9ff;color:var(--gm-ink);outline:none}
+.composer textarea:focus{border-color:var(--gm-blue);background:#fff;box-shadow:0 0 0 3px #1d6fe822}
+.send{width:46px;height:46px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--gm-purple2),var(--gm-purple));color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 46px;box-shadow:0 6px 14px rgba(76,29,149,.3)}
+.send:disabled{opacity:.45;box-shadow:none}
+.blocked{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px;background:#fff;border-top:1px solid var(--gm-line);font-weight:700;color:var(--gm-muted)}
+.emoji{position:absolute;left:8px;bottom:64px;background:#fff;border:1px solid var(--gm-line);border-radius:16px;box-shadow:var(--gm-shadow);padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;z-index:6;width:min(344px,calc(100vw - 24px))}
+.emoji button{border:0;background:none;font-size:23px;line-height:1;padding:6px;border-radius:8px}.emoji button:hover{background:#eaf3ff}
+
+
+/* --- wallet button (top right) --- */
+.vm-wallet{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 13px;border-radius:19px;background:linear-gradient(135deg,#ffe58a,#ffc83d);color:#3a2a00;font-weight:800;font-size:14px;text-decoration:none;box-shadow:0 1px 3px rgba(120,80,0,.25);white-space:nowrap}
+.vm-wallet:hover{filter:brightness(1.04)}.vm-wallet:focus-visible{outline:3px solid var(--gm-blue);outline-offset:2px}
+.vm-wallet.low{background:linear-gradient(135deg,#ffd1da,#ff8aa0);color:#5b0a1c}
+/* --- photos and voice notes --- */
+.m.media{padding:4px 4px 5px}.m.media .meta{padding:0 7px}
+.m .pic{display:block;max-width:100%;width:260px;max-height:340px;min-height:90px;object-fit:cover;border-radius:12px;background:#dfeafb;cursor:zoom-in}
+.m .pic.wait{display:flex;align-items:center;justify-content:center;color:#5d7096;font-size:13px;font-weight:700;height:160px;cursor:default}
+.m .vn{display:flex;align-items:center;gap:10px;min-width:220px;padding:6px 8px}
+.m .vn button{flex:0 0 38px;width:38px;height:38px;border-radius:50%;border:0;display:flex;align-items:center;justify-content:center;background:var(--gm-blue);color:#fff}
+.m.me .vn button{background:#fff;color:var(--gm-blue)}
+.m .vn svg{width:18px;height:18px}
+.m .vn .bar{flex:1;height:5px;border-radius:3px;background:rgba(93,112,150,.3);position:relative;overflow:hidden}
+.m .vn .bar i{position:absolute;inset:0 auto 0 0;width:0;background:currentColor;border-radius:3px}
+.m .vn .dur{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+.composer .rec{display:none;flex:1;align-items:center;gap:10px;min-height:46px;padding:0 6px;font-weight:800;color:var(--gm-ink)}
+.composer .rec b{width:11px;height:11px;border-radius:50%;background:#e11d48;animation:recpulse 1s infinite}
+@keyframes recpulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.composer .rec b{animation:none}}
+.composer.recording textarea,.composer.recording #emojiBtn,.composer.recording #attachBtn,.composer.recording #micBtn{display:none}
+.composer.recording .rec{display:flex}
+.composer.recording .send{display:flex}
+.composer.recording .send:disabled{opacity:1}
+.composer .rec .x{margin-left:auto;border:0;background:none;color:#b91c1c;font-weight:800;padding:8px 10px}
+.vm-sheet{position:fixed;inset:0;z-index:300;background:rgba(5,10,30,.82);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px}
+.vm-sheet.on{display:flex}
+.vm-sheet img{max-width:100%;max-height:68dvh;border-radius:14px;background:#000}
+.vm-sheet .row{display:flex;gap:10px}
+.vm-sheet .row button{border:0;border-radius:14px;padding:13px 22px;font:800 16px/1 inherit;font-family:inherit}
+.vm-sheet .ok{background:var(--gm-blue);color:#fff}.vm-sheet .no{background:#fff;color:var(--gm-ink)}
+.vm-sheet small{color:#cfe0ff;font-weight:700}
+
+/* --- delete menu and "deleted" marker --- */
+.m .mopt{border:0;background:none;color:inherit;opacity:.55;font-size:15px;line-height:1;padding:0 2px;margin-left:2px;cursor:pointer}
+.m .mopt:hover,.m .mopt:focus-visible{opacity:1}
+.m.gone{background:#eef3fb !important;color:#5d7096 !important;border:1px dashed #c3d4ee !important;font-style:italic;font-size:14px}
+.vm-act{position:fixed;inset:0;z-index:310;background:rgba(5,10,30,.5);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.vm-act .box{width:100%;max-width:420px;background:#fff;border-radius:18px;overflow:hidden;margin-bottom:max(0px,env(safe-area-inset-bottom))}
+.vm-act button{display:block;width:100%;border:0;background:#fff;padding:16px;font:700 16px/1.2 inherit;font-family:inherit;color:var(--gm-ink);border-top:1px solid var(--gm-line)}
+.vm-act button:first-child{border-top:0}.vm-act button:hover,.vm-act button:focus-visible{background:#eef6ff}
+.vm-act .danger{color:#b91c1c}.vm-act .cancel{color:var(--gm-muted)}
+/* --- sign-in / verification (WhatsApp-style steps) --- */
+.vm-gate{max-width:480px;margin:0 auto;padding:18px 16px;height:calc(100dvh - 76px - env(safe-area-inset-bottom));overflow:auto;display:flex;flex-direction:column;justify-content:center}
+.gate-card{background:#fff;border:1px solid var(--gm-line);border-radius:26px;box-shadow:var(--gm-shadow);padding:26px 22px}
+.gate-card .logo{width:62px;height:62px;border-radius:20px;background:linear-gradient(135deg,#1d6fe8,#6d28d9);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.gate-card .logo svg{width:32px;height:32px}
+.gate-card h2{margin:0 0 8px;font-size:23px;letter-spacing:-.01em;color:var(--gm-ink)}
+.gate-card p{margin:0 0 14px;color:var(--gm-muted);line-height:1.55;font-size:14.5px}
+.steps{display:flex;gap:6px;margin-bottom:18px}.steps i{height:5px;flex:1;border-radius:3px;background:#dbe9fb}.steps i.on{background:linear-gradient(90deg,var(--gm-blue),var(--gm-purple2))}
+.f{display:block;font-weight:800;font-size:13px;margin:14px 0 6px;color:var(--gm-ink)}
+.fi{width:100%;border:1px solid var(--gm-line);border-radius:14px;padding:13px 14px;font:inherit;font-size:16px;background:#fff;color:var(--gm-ink);outline:none}
+.fi:focus{border-color:var(--gm-blue);box-shadow:0 0 0 3px #1d6fe822}
+.phone-row{display:grid;grid-template-columns:minmax(150px,190px) 1fr;gap:8px}
+@media(max-width:400px){.phone-row{grid-template-columns:1fr}}
+.code-in{text-align:center;font-size:30px;letter-spacing:.5em;font-weight:900;padding:14px 8px 14px 18px}
+.btn-main{width:100%;margin-top:18px;border:0;border-radius:16px;padding:14px;background:linear-gradient(135deg,var(--gm-purple2),var(--gm-purple));color:#fff;font-weight:800;font-size:16px;box-shadow:0 8px 18px rgba(76,29,149,.28)}
+.btn-main:disabled{opacity:.55;box-shadow:none}
+.link{border:0;background:none;color:var(--gm-blue);font-weight:800;padding:8px 2px;text-decoration:underline;text-underline-offset:3px}
+.link:disabled{color:var(--gm-muted);text-decoration:none;cursor:default}
+.err{margin-top:12px;color:#b91c1c;font-weight:700;font-size:14px;min-height:1px}
+.hint{display:flex;gap:9px;align-items:flex-start;background:#eef6ff;border:1px solid var(--gm-line);border-radius:14px;padding:10px 12px;margin:12px 0 0;font-size:13.5px;color:var(--gm-ink);line-height:1.45}
+.hint button{margin-top:6px}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #eaf2fd;font-size:14.5px}
+.toggle small{display:block;color:var(--gm-muted);font-size:12.5px;margin-top:2px}
+.toggle input{appearance:none;width:46px;height:27px;border-radius:14px;background:#cfdcf0;position:relative;flex:0 0 46px;transition:background .15s;cursor:pointer}
+.toggle input::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.toggle input:checked{background:var(--gm-blue)}.toggle input:checked::after{transform:translateX(19px)}
+.lockline{display:flex;align-items:center;gap:7px;justify-content:center;margin-top:14px;color:var(--gm-muted);font-size:12.5px;font-weight:700}
+.conn{display:none;background:#fff8e1;color:#7a5a12;text-align:center;font-size:12.5px;font-weight:700;padding:5px}
+.conn.on{display:block}
+
+/* --- calls --- */
+#callLayer{position:fixed;inset:0;z-index:200;display:none;background:radial-gradient(120% 90% at 50% 0,#2b3d8f 0,#12183f 55%,#0a0d26 100%);color:#fff;flex-direction:column}
+#callLayer.on{display:flex}
+#callLayer .stage{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px}
+#callLayer video{background:#000}
+#remoteVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+#localVideo{position:absolute;right:14px;top:calc(14px + env(safe-area-inset-top));width:min(32vw,150px);aspect-ratio:3/4;object-fit:cover;border-radius:16px;border:2px solid #ffffff55;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;transform:scaleX(-1);z-index:3}
+.callwho{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+.callwho .big{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#1d6fe8,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;overflow:hidden;box-shadow:0 0 0 8px #ffffff14}
+.callwho .big img{width:100%;height:100%;object-fit:cover}
+.callwho h3{margin:6px 0 0;font-size:26px;letter-spacing:-.01em}
+.callwho p{margin:0;opacity:.85;font-size:16px;font-variant-numeric:tabular-nums}
+.ringing .big{animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 6px #ffffff22}70%{box-shadow:0 0 0 26px #ffffff00}100%{box-shadow:0 0 0 6px #ffffff00}}
+.video-on .callwho{position:absolute;left:0;right:0;top:calc(16px + env(safe-area-inset-top));align-items:flex-start;padding:0 18px;z-index:3}
+.video-on .callwho .big{display:none}.video-on .callwho h3{font-size:19px;margin:0}.video-on .callwho p{font-size:14px}
+.ctl{position:relative;z-index:4;display:flex;justify-content:center;gap:18px;padding:18px 14px calc(26px + env(safe-area-inset-bottom));background:linear-gradient(0deg,#0a0d26cc,transparent)}
+.cbtn{width:62px;height:62px;border-radius:50%;border:0;background:#ffffff24;color:#fff;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.cbtn svg{width:27px;height:27px}
+.cbtn.off{background:#fff;color:#12183f}
+.cbtn.end{background:#e11d48}.cbtn.end svg{transform:rotate(135deg)}
+.cbtn.accept{background:#16a34a}
+.ctl small{display:block;text-align:center;font-size:12px;margin-top:6px;opacity:.85}
+.ctl>div{display:flex;flex-direction:column;align-items:center}
+.ctl.incoming{gap:76px}
+#callBanner{position:fixed;left:0;right:0;top:0;z-index:150}
+
+/* --- phones: one screen at a time, like WhatsApp --- */
 @media(max-width:760px){
-  body.gm[data-gm="messages"] .gm-wrap{height:calc(100dvh - 76px - env(safe-area-inset-bottom))}
-  .pane{grid-template-columns:minmax(0,1fr);height:100%;border-left:0;border-right:0}
-  .pane:not(.chat) .side{display:flex}
-  .pane:not(.chat) .main{display:none}
-  .pane.chat .side{display:none}
-  .pane.chat .main{display:flex}
-  .side,.main{height:100%;min-height:0}
-  .mh button{display:inline-flex;align-items:center;justify-content:center}
+  .vm{grid-template-columns:minmax(0,1fr)}
+  .vm .vm-main{display:none}
+  .vm.in-chat .vm-side{display:none}
+  .vm.in-chat .vm-main{display:flex}
+  #back{display:inline-flex}
+  body.vm-inchat{padding-bottom:0}
+  body.vm-inchat .gm-bar{display:none}
+  body.vm-inchat .vm{height:100dvh}
+  .m{max-width:86%}
+  .acts .pill{padding:8px 10px}
 }
-@media(min-width:761px){
-  .pane .side,.pane .main{display:flex!important}
-}
+@media(prefers-reduced-motion:reduce){.typing i,.ringing .big{animation:none}}
 </style></head>
-<body class="gm" data-gm="messages" data-title="Vico Messages">
-<div class="gm-wrap">
-  <div class="hero"><h1>Vico Messages</h1><p>Chat · Connect · Share with your friends, buyers and sellers.</p></div>
-  <div class="pane" id="pane">
-    <div class="gm-card side"><div class="find"><input id="who" placeholder="Search people by name or username" autocomplete="off" aria-label="Search VicoPay people"><button class="gm-btn sm" id="go" type="button">Search</button></div><div id="searchResults" aria-live="polite"></div><div id="threads"></div></div>
-    <div class="gm-card main"><div class="mh" id="mh"><button id="back" type="button">‹</button><span id="mt">Choose a chat</span></div><div id="msgs"><div class="empty">Choose a contact or search for a VicoPay person by name.</div></div>
-      <form id="f" style="display:none"><input id="in" maxlength="1000" placeholder="Write a message…" autocomplete="off"><button class="gm-btn" style="padding:0 20px">Send</button></form></div>
-  </div>
-</div>
-<script src="auth.js"></script><script src="gm-nav.js"></script>
-<script>
-var cur=null,lastId=0,timer=null;
-function av(p){return p.avatar?'<img class="av" src="'+gmEsc(p.avatar)+'" alt="">':'<div class="av">'+gmEsc((p.displayName||"?").charAt(0).toUpperCase())+'</div>';}
-function ago(t){var s=(Date.now()-t)/1000;if(s<60)return"now";if(s<3600)return Math.floor(s/60)+"m";if(s<86400)return Math.floor(s/3600)+"h";return new Date(t).toLocaleDateString();}
-function loadThreads(){gmApi("/api/dm/threads").then(function(d){var el=document.getElementById("threads");if(!d.success){el.innerHTML='<div class="empty">'+gmEsc(d.message||"Log in to see your chats.")+'</div>';return;}
-  el.innerHTML=d.threads.map(function(t){return '<div class="th'+(cur===t.handle?' on':'')+'" data-h="'+gmEsc(t.handle)+'">'+av(t)+'<div class="t"><b>'+gmEsc(t.displayName)+'</b><small>'+gmEsc(t.preview)+'</small></div><div style="text-align:right"><small>'+ago(t.lastAt)+'</small>'+(t.unread?'<em>'+t.unread+'</em>':'')+'</div></div>';}).join("")||'<div class="empty">No conversations yet. Search for a person or open a product and tap Vico Message.</div>';});}
-document.getElementById("threads").onclick=function(e){var t=e.target.closest(".th");if(t)openChat(t.dataset.h);};
-var searchTimer=null,searchTerm="";
-function searchPeople(){var q=document.getElementById("who").value.trim().replace(/^@/,""),box=document.getElementById("searchResults");searchTerm=q;if(q.length<2){box.innerHTML="";return;}box.innerHTML='<div class="empty">Searching VicoPay…</div>';gmApi("/api/search/hosts?q="+encodeURIComponent(q)).then(function(d){if(searchTerm!==q)return;var a=(d.results||[]).filter(function(x){return x.handle;});box.innerHTML=a.map(function(x){return '<div class="sr" data-h="'+gmEsc(x.handle)+'">'+av(x)+'<div class="t"><b>'+gmEsc(x.displayName||x.handle)+'</b><small>@'+gmEsc(x.handle)+'</small></div><span>Message</span></div>';}).join("")||'<div class="empty">No VicoPay account matched that search.</div>';}).catch(function(){box.innerHTML='<div class="empty">Could not search people. Please try again.</div>';});}
-document.getElementById("searchResults").onclick=function(e){var t=e.target.closest(".sr");if(t){document.getElementById("searchResults").innerHTML="";document.getElementById("who").value="";openChat(t.dataset.h);}};
-document.getElementById("who").oninput=function(){clearTimeout(searchTimer);searchTimer=setTimeout(searchPeople,250);};
+<body class="gm" data-gm="messages">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-compose" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="2.5"/><path d="M15 10.5l6-3.5v10l-6-3.5z"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-5 4 4 2.5-2.5L20 17"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" style="fill:currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5.5v13M16 5.5v13" style="stroke-width:3.4"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7-7-1z"/><path d="M11 13l9-9"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4.2 4.2 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></symbol>
+  <symbol id="i-check2" viewBox="0 0 24 24"><path d="M2.5 12.5l4.2 4.2L15 8.5"/><path d="M10 15.8l1 .9L21 7"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-micoff" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M9 9v2a3 3 0 0 0 5 2.2M15 9.5V6a3 3 0 0 0-5.7-1.3"/><path d="M5 11a7 7 0 0 0 11.2 5.6M19 11a7 7 0 0 1-.6 2.8M12 18v3"/></symbol>
+  <symbol id="i-camoff" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M9 6h4.5A2.5 2.5 0 0 1 16 8.5V11l5-3v9M3 8.5V16a2 2 0 0 0 2 2h8.5"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M17 7L7 17M7 8v9h9"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+</defs></svg>
 
-function draw(list,mine){var el=document.getElementById("msgs");list.forEach(function(m){var d=document.createElement("div");d.className="m "+(m.mine?"me":"th2");d.innerHTML=gmEsc(m.body)+"<small>"+new Date(m.at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+"</small>";el.appendChild(d);lastId=Math.max(lastId,m.id);});el.scrollTop=el.scrollHeight;}
-function openChat(h){if(!gmSignedIn()){gmNeedLogin();return;}cur=h;lastId=0;document.getElementById("pane").classList.add("chat");
-  gmApi("/api/dm/with/"+encodeURIComponent(h)).then(function(d){if(!d.success){gmToast(d.message||"Could not open the chat.");document.getElementById("pane").classList.remove("chat");return;}
-    document.getElementById("mt").textContent=d.with.displayName+" (@"+d.with.handle+")";document.getElementById("f").style.display="flex";
-    var el=document.getElementById("msgs");el.innerHTML="";if(!d.messages.length)el.innerHTML='<div class="empty">Say hello 👋</div>';else draw(d.messages);loadThreads();clearInterval(timer);timer=setInterval(poll,5000);});}
-function poll(){if(!cur||document.hidden)return;gmApi("/api/dm/with/"+encodeURIComponent(cur)+"?after="+lastId).then(function(d){if(d.success&&d.messages.length){var e=document.querySelector("#msgs .empty");if(e)e.remove();draw(d.messages);loadThreads();}});}
-document.getElementById("f").onsubmit=function(e){e.preventDefault();var i=document.getElementById("in"),b=i.value.trim();if(!b||!cur)return;i.value="";
-  gmApi("/api/dm/with/"+encodeURIComponent(cur),{body:{body:b}}).then(function(d){if(d.success){var e2=document.querySelector("#msgs .empty");if(e2)e2.remove();draw([d.message]);loadThreads();}else{gmToast(d.message||"Could not send.");i.value=b;}});};
-document.getElementById("go").onclick=searchPeople;
-document.getElementById("who").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();searchPeople();}};
-document.getElementById("back").onclick=function(){document.getElementById("pane").classList.remove("chat");cur=null;clearInterval(timer);loadThreads();};
-if(gmSignedIn()){loadThreads();var qs=new URLSearchParams(location.search),to=qs.get("to");if(to){openChat(to);if(qs.get("t"))setTimeout(function(){var i=document.getElementById("in");if(i&&!i.value)i.value="Hi, I am interested in “"+qs.get("t")+"”. Is it still available?";},900);}}else{document.getElementById("threads").innerHTML='<div class="empty">Log in to see your chats.</div>';}
-</script></body></html>
+<div class="conn" id="conn">Reconnecting… messages will still arrive.</div>
+
+<!-- sign in / verify phone / profile -->
+<section class="vm-gate" id="gate" hidden></section>
+
+<!-- the app -->
+<div class="vm" id="vm" hidden>
+  <aside class="vm-side">
+    <header class="vm-head">
+      <a class="vm-icon" href="global-market-community.html" aria-label="Back to Market Community"><svg class="i"><use href="#i-back"/></svg></a>
+      <h1>Vico Message</h1>
+      <a class="vm-wallet" id="walletBtn" href="wallet.html" aria-label="VicoPay Wallet"><span aria-hidden="true">₦</span><span id="walletBal">Wallet</span></a>
+      <button class="vm-icon" id="openSettings" type="button" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
+    </header>
+    <nav class="vm-tabs" role="tablist" aria-label="Vico Message">
+      <button class="vm-tab" role="tab" id="tab-message" data-tab="message" aria-selected="false" type="button"><svg class="i"><use href="#i-compose"/></svg>Message</button>
+      <button class="vm-tab" role="tab" id="tab-chat" data-tab="chat" aria-selected="true" type="button"><svg class="i"><use href="#i-chat"/></svg>Chat<b id="chatBadge" hidden></b></button>
+      <button class="vm-tab" role="tab" id="tab-call" data-tab="call" aria-selected="false" type="button"><svg class="i"><use href="#i-phone"/></svg>Call<b id="callBadge" hidden></b></button>
+    </nav>
+
+    <section class="vm-panel" id="panel-message" role="tabpanel" aria-labelledby="tab-message" hidden>
+      <div class="vm-search"><input id="findPeople" type="search" placeholder="Name, @username or phone number" autocomplete="off" aria-label="Find someone to message"></div>
+      <div id="peopleOut"></div>
+      <h2 class="vm-h" id="bizHead">Businesses on Vico</h2>
+      <div id="bizOut"></div>
+    </section>
+
+    <section class="vm-panel" id="panel-chat" role="tabpanel" aria-labelledby="tab-chat">
+      <div class="vm-search"><input id="filterChats" type="search" placeholder="Search your chats" autocomplete="off" aria-label="Search your chats"></div>
+      <div id="threads"></div>
+    </section>
+
+    <section class="vm-panel" id="panel-call" role="tabpanel" aria-labelledby="tab-call" hidden>
+      <div class="vm-search"><input id="findCall" type="search" placeholder="Call someone: name, @username or phone" autocomplete="off" aria-label="Find someone to call"></div>
+      <div id="callFind"></div>
+      <h2 class="vm-h">Recent calls</h2>
+      <div id="calls"></div>
+    </section>
+  </aside>
+
+  <main class="vm-main" id="main">
+    <div class="vm-hello" id="hello">
+      <div class="logo"><svg class="i" style="stroke-width:1.6"><use href="#i-chat"/></svg></div>
+      <h2>Vico Message</h2>
+      <p>Send messages and make voice or video calls to buyers, sellers, streamers and friends. Pick a chat on the left to begin.</p>
+      <small><svg class="i mini"><use href="#i-lock"/></svg>Verified phone numbers only</small>
+    </div>
+
+    <section class="conv" id="conv" hidden>
+      <header class="ch">
+        <button class="vm-icon" id="back" type="button" aria-label="Back to chats"><svg class="i"><use href="#i-back"/></svg></button>
+        <div class="av" id="chAv"></div>
+        <div class="who"><b id="chName"></b><small id="chSub"></small></div>
+        <button class="round" id="chVoice" type="button" aria-label="Voice call"><svg class="i"><use href="#i-phone"/></svg></button>
+        <button class="round vid" id="chVideo" type="button" aria-label="Video call"><svg class="i"><use href="#i-video"/></svg></button>
+        <button class="vm-icon" id="chMore" type="button" aria-label="More options" aria-haspopup="true"><svg class="i"><use href="#i-more"/></svg></button>
+        <div class="menu" id="chMenu" hidden></div>
+      </header>
+      <div id="msgs" role="log" aria-live="polite"></div>
+      <form class="composer" id="composer" autocomplete="off">
+        <button class="vm-icon" id="emojiBtn" type="button" aria-label="Emoji"><svg class="i"><use href="#i-smile"/></svg></button>
+        <button class="vm-icon" id="attachBtn" type="button" aria-label="Send a photo"><svg class="i"><use href="#i-image"/></svg></button>
+        <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+        <textarea id="in" rows="1" maxlength="2000" placeholder="Type a message" aria-label="Type a message"></textarea>
+        <div class="rec" id="recBar" aria-live="polite"><b></b><span id="recTime">0:00</span><button class="x" id="recCancel" type="button">Cancel</button></div>
+        <button class="vm-icon" id="micBtn" type="button" aria-label="Record a voice note"><svg class="i"><use href="#i-mic"/></svg></button>
+        <button class="send" id="sendBtn" type="submit" aria-label="Send" disabled><svg class="i"><use href="#i-send"/></svg></button>
+        <div class="emoji" id="emoji" hidden></div>
+      </form>
+      <div class="vm-sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Photo"><img id="sheetImg" alt=""><small id="sheetNote"></small><div class="row" id="sheetBtns"><button class="no" id="sheetNo" type="button">Cancel</button><button class="ok" id="sheetOk" type="button">Send photo</button></div></div>
+      <div class="blocked" id="blockedBar" hidden><span>You blocked this contact.</span><button class="pill ghost" id="unblockBtn" type="button">Unblock</button></div>
+    </section>
+  </main>
+</div>
+
+<!-- calling screen (incoming, outgoing, connected) -->
+<div id="callLayer" role="dialog" aria-modal="true" aria-label="Call">
+  <div class="stage" id="callStage">
+    <video id="remoteVideo" autoplay playsinline></video>
+    <video id="localVideo" autoplay playsinline muted></video>
+    <div class="callwho"><div class="big" id="callAv"></div><h3 id="callName"></h3><p id="callState"></p></div>
+  </div>
+  <div class="ctl" id="callCtl"></div>
+</div>
+<div id="audioSink" style="display:none"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/dist/livekit-client.umd.min.js"></script>
+<script src="auth.js"></script><script src="gm-nav.js"></script><script src="vico-messages-app.js"></script>
+</body></html>

@@ -35,8 +35,8 @@ module.exports = function makeEngage({ app, db, requireAuth, requireAdmin, getAu
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try { await client.query("SELECT pg_advisory_lock(727200)"); for (const sql of SCHEMA) await client.query(sql); }
-    finally { try { await client.query("SELECT pg_advisory_unlock(727200)"); } catch (_) { /* ignore */ } client.release(); }
+    try { await client.query("SELECT pg_advisory_lock(727291)"); for (const sql of SCHEMA) await client.query(sql); }
+    finally { try { await client.query("SELECT pg_advisory_unlock(727291)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("ENGAGE MIGRATE ERROR:", e); });
 
   // who owns it, and the advertiser's own website link (ad link first, then the advertiser's website)

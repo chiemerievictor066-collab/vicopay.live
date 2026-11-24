@@ -115,15 +115,8 @@ module.exports = function makeVicoCalls({ app, db, requireAuth, store, vip, live
     await db.run("UPDATE vico_call_requests SET status='ended',updated_at=? WHERE id=?",[now(),id]); res.json({success:true});
   });
   app.get('/api/calls/incoming', requireAuth, async (req,res) => {
-    await ready; const roomId=String(req.query.room||'');
-    const rows=await db.all("SELECT c.id AS \"callId\",c.room_id AS \"roomId\",c.source,c.created_at AS \"createdAt\",c.caller AS \"callerEmail\",u.display_name AS \"displayName\" FROM vico_call_requests c LEFT JOIN users u ON LOWER(u.email)=c.caller WHERE c.host=? AND c.status='requested' AND (?='' OR c.room_id=?) ORDER BY c.created_at DESC LIMIT 5",[req.userEmail,roomId,roomId]);
-    const calls=rows.map(x=>({callId:x.callId,roomId:x.roomId,source:x.source,createdAt:x.createdAt,displayName:x.displayName,callerIdentity:store.publicHandle(x.callerEmail)}));
-    res.set('Cache-Control','no-store'); res.json({success:true,calls});
-  });
-  app.get('/api/calls/status/:id', requireAuth, async (req,res) => {
-    await ready; const row=await db.get("SELECT id AS \"callId\",room_id AS \"roomId\",status FROM vico_call_requests WHERE id=? AND caller=?",[String(req.params.id),req.userEmail]);
-    if(!row) return bad(res,404,'Call request not found.');
-    res.set('Cache-Control','no-store'); res.json({success:true,call:row});
+    await ready; const rows=await db.all("SELECT c.id AS \"callId\",c.room_id AS \"roomId\",c.source,c.created_at AS \"createdAt\",u.handle,u.display_name AS \"displayName\" FROM vico_call_requests c LEFT JOIN users u ON LOWER(u.email)=c.caller WHERE c.host=? AND c.status='requested' ORDER BY c.created_at DESC LIMIT 5",[req.userEmail]);
+    res.json({success:true,calls:rows});
   });
   app.get('/api/calls/request/:id', requireAuth, async (req,res) => {
     await ready; const row=await db.get("SELECT id,caller,host,room_id AS \"roomId\",status FROM vico_call_requests WHERE id=? AND host=?",[String(req.params.id),req.userEmail]);
@@ -140,9 +133,9 @@ module.exports = function makeVicoCalls({ app, db, requireAuth, store, vip, live
   });
   async function authorizeCaller(email,roomId) {
     await ready;
-    const row=await db.get("SELECT id,status FROM vico_call_requests WHERE caller=? AND room_id=? AND status IN ('accepted','connected') ORDER BY created_at DESC LIMIT 1",[email,String(roomId)]);
+    const row=await db.get("SELECT id FROM vico_call_requests WHERE caller=? AND room_id=? AND status IN ('accepted','connected') ORDER BY created_at DESC LIMIT 1",[email,String(roomId)]);
     if(!row) return false;
-    if(row.status==='accepted') await db.run("UPDATE vico_call_requests SET status='connected',updated_at=? WHERE id=?",[now(),row.id]); return true;
+    await db.run("UPDATE vico_call_requests SET status='connected',updated_at=? WHERE id=?",[now(),row.id]); return true;
   }
-  return {ready,authorizeCaller};
+  return {ready,authorizeCaller,access};
 };

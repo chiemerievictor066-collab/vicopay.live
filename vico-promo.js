@@ -2,23 +2,21 @@
 // Vico Pay Live — LIVE PROMOTION ("Processing Promotion" -> "Promotion Successful") and the $12 Promotional Duration
 // =====================================================
 // A streamer is PROMOTED when ANY of these is true:
-//   1. they bought the Promotional Duration (USD 12 by default, paid through Paystack, valid for two calendar months)
+//   1. they bought the Promotional Duration (USD 12 by default, paid through Paystack, valid PROMO_DURATION_DAYS days; 0 = forever)
 //   2. they reached ALL the free goals: followers, likes, Golden Stars (and views, if PROMO_MIN_VIEWS is more than 0)
 //   3. they already have VIP (an admin gave it to them, or it was earned)
 // Being promoted gives the streamer VIP (a row in vip_eligibility), so every VIP feature built before (entrance, frames,
 // badges, VIP gifts, VIP rooms) switches on by itself. The live page shows a blue "Processing Promotion" button until then,
 // and a green "Promotion Successful" button afterwards.
 // New table only: promo_purchases. Nothing else is changed.
-// .env (optional prices): PROMO_PRICE_USD=12  PROMO_PRICE_NGN=19000; qualification period is fixed at two calendar months
+// .env (all optional):  PROMO_PRICE_USD=12  PROMO_PRICE_NGN=19000  PROMO_DURATION_DAYS=30
 //                       PROMO_MIN_FOLLOWERS=1000  PROMO_MIN_LIKES=1000000  PROMO_MIN_STARS=12000  PROMO_MIN_VIEWS=0
 // =====================================================
 const TYPE = "live_promotion";
 const num = (k, d) => { const v = process.env[k] === undefined || process.env[k] === "" ? NaN : Number(process.env[k]); return Number.isFinite(v) && v >= 0 ? v : d; };
-const cfg = () => ({ priceUsd: num("PROMO_PRICE_USD", 12), priceNgn: num("PROMO_PRICE_NGN", 19000), months: 2, days: 60,
+const cfg = () => ({ priceUsd: num("PROMO_PRICE_USD", 12), priceNgn: num("PROMO_PRICE_NGN", 19000), days: num("PROMO_DURATION_DAYS", 30),
   minFollowers: num("PROMO_MIN_FOLLOWERS", 1000), minLikes: num("PROMO_MIN_LIKES", 1000000), minStars: num("PROMO_MIN_STARS", 12000), minViews: num("PROMO_MIN_VIEWS", 0) });
 const minorFor = (c, currency) => Math.round((currency === "USD" ? c.priceUsd : c.priceNgn) * 100);
-// Calendar-month expiry: a purchase on 31 January expires on the last valid day two months later.
-function addMonths(timestamp, months) { const d = new Date(Number(timestamp)); const day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + Number(months)); const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); d.setDate(Math.min(day, last)); return d.getTime(); }
 // the "about me" text a streamer writes when starting a live: plain text only, short
 function cleanStory(v) {
   return String(v == null ? "" : v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").replace(/\r\n?/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 500);
@@ -31,22 +29,14 @@ function meetsGoals(f, c) {
 module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRooms }) {
   const lc = (v) => String(v || "").trim().toLowerCase();
   const now = () => Date.now();
-  const COINS_PER_STAR = Math.max(1, Number(store && store.COINS_PER_STAR) || 2);
   const fail = (res, code, message, extra) => res.status(code).json({ success: false, message, ...(extra || {}) });
   const SCHEMA = [
     `CREATE TABLE IF NOT EXISTS promo_purchases (reference TEXT PRIMARY KEY, user_email TEXT NOT NULL, currency TEXT NOT NULL, amount_minor BIGINT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at BIGINT NOT NULL, paid_at BIGINT, expires_at BIGINT)`,
-    `CREATE INDEX IF NOT EXISTS idx_promo_user ON promo_purchases(user_email, status)`,
-    `CREATE INDEX IF NOT EXISTS idx_promo_expiry ON promo_purchases(status, expires_at)`
+    `CREATE INDEX IF NOT EXISTS idx_promo_user ON promo_purchases(user_email, status)`
   ];
   const ready = (async function migrate() {
     const client = await db.pool.connect();
-    try {
-      await client.query("SELECT pg_advisory_lock(727292)");
-      for (const sql of SCHEMA) await client.query(sql);
-      // Existing still-active promotions created under the old 30-day default are migrated to two calendar months.
-      await client.query(`UPDATE promo_purchases SET expires_at = (EXTRACT(EPOCH FROM (to_timestamp(paid_at / 1000.0) + INTERVAL '2 months')) * 1000)::bigint
-        WHERE status = 'paid' AND paid_at IS NOT NULL AND expires_at IS NOT NULL AND expires_at > (EXTRACT(EPOCH FROM NOW()) * 1000)::bigint`);
-    }
+    try { await client.query("SELECT pg_advisory_lock(727292)"); for (const sql of SCHEMA) await client.query(sql); }
     finally { try { await client.query("SELECT pg_advisory_unlock(727292)"); } catch (_) { /* ignore */ } client.release(); }
   })().catch((e) => { console.error("PROMO MIGRATE ERROR:", e); });
 
@@ -58,27 +48,16 @@ module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRoom
     let stars = 0; try { stars = await vip.lifetimeStars(email); } catch (_) { /* vip module not ready */ }
     return { followers: Number(f.c), likes: Number((s && s.loves) || 0), views: Number((s && s.viewers) || 0), stars };
   }
-  // Only gifts received AFTER this promotion payment count toward the 12,000-star qualification target.
-  // Circular/self-gifting is excluded using the same netting rule as lifetimeStars.
-  async function starsSince(email, paidAt) {
-    const start = new Date(Number(paidAt)).toISOString();
-    const pos = await db.get("SELECT COALESCE(SUM(coin), 0) AS v FROM gift_transactions WHERE host_id = ? AND coin > 0 AND created_at::timestamptz >= ?::timestamptz", [email, start]);
-    const circ = await db.get(
-      `SELECT COALESCE(SUM(CASE WHEN r.amt < s.amt THEN r.amt ELSE s.amt END), 0) AS v
-         FROM (SELECT sender_id AS other, SUM(coin) AS amt FROM gift_transactions WHERE host_id = ? AND created_at::timestamptz >= ?::timestamptz GROUP BY sender_id HAVING SUM(coin) > 0) r
-         JOIN (SELECT host_id AS other, SUM(coin) AS amt FROM gift_transactions WHERE sender_id = ? AND created_at::timestamptz >= ?::timestamptz GROUP BY host_id HAVING SUM(coin) > 0) s
-           ON s.other = r.other`, [email, start, email, start]);
-    return Math.max(0, Math.floor((Number(pos.v || 0) - Number(circ.v || 0)) / COINS_PER_STAR));
+  async function activePurchase(email) {
+    return db.get("SELECT reference, paid_at AS \"paidAt\", expires_at AS \"expiresAt\" FROM promo_purchases WHERE user_email = ? AND status = 'paid' AND (expires_at IS NULL OR expires_at > ?) ORDER BY paid_at DESC LIMIT 1", [email, now()]);
   }
-  // Give the streamer VIP (silver) so VIP features turn on. Never lowers a higher VIP or overrides an admin revoke.
+  // give the streamer VIP (silver) so the VIP features turn on. Never lowers a higher VIP and never overrides an admin "revoked".
   async function grantVip(email, reason, expiresAt) {
     try {
-      const row = await db.get("SELECT tier, status, reason, expires_at AS \"expiresAt\" FROM vip_eligibility WHERE user_id = ?", [email]);
-      if (row && row.status === "revoked" && !String(row.reason || "").startsWith("PROMO_EXPIRED_NO_12000_STARS")) return { blocked: true };
+      const row = await db.get("SELECT tier, status, expires_at AS \"expiresAt\" FROM vip_eligibility WHERE user_id = ?", [email]);
+      if (row && row.status === "revoked") return { blocked: true };
       const active = row && row.status === "approved" && (!row.expiresAt || Number(row.expiresAt) > now());
-      if (active && vip.rankOf(row.tier) >= vip.rankOf("silver")) {
-        if ((!expiresAt && !row.expiresAt) || (expiresAt && (!row.expiresAt || Number(row.expiresAt) >= expiresAt))) return { kept: true };
-      }
+      if (active && vip.rankOf(row.tier) >= vip.rankOf("silver") && (!expiresAt || (row.expiresAt && Number(row.expiresAt) >= expiresAt) || !row.expiresAt)) return { kept: true };
       await db.run(`INSERT INTO vip_eligibility (user_id, tier, status, verified_streamer, reason, granted_by, granted_at, expires_at) VALUES (?, 'silver', 'approved', 0, ?, 'promotion', ?, ?)
         ON CONFLICT (user_id) DO UPDATE SET tier = CASE WHEN vip_eligibility.status = 'approved' AND vip_eligibility.tier <> 'none' THEN vip_eligibility.tier ELSE 'silver' END, status = 'approved', reason = EXCLUDED.reason, granted_by = EXCLUDED.granted_by, granted_at = EXCLUDED.granted_at, expires_at = EXCLUDED.expires_at`,
         [email, reason, now(), expiresAt || null]);
@@ -89,39 +68,12 @@ module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRoom
 
   async function evaluate(email) {
     email = lc(email); await ready;
-    const c = cfg(), f = await facts(email);
-    const purchase = await db.get("SELECT reference, status, paid_at AS \"paidAt\", expires_at AS \"expiresAt\" FROM promo_purchases WHERE user_email = ? AND status IN ('paid','qualified') ORDER BY paid_at DESC LIMIT 1", [email]);
-    let source = "none", expiresAt = null, qualificationStars = 0;
-    if (purchase && purchase.status === "qualified") {
-      source = "qualified"; // earned VIP is permanent after meeting the target in the paid window
-    } else if (purchase && purchase.status === "paid") {
-      expiresAt = purchase.expiresAt ? Number(purchase.expiresAt) : null;
-      qualificationStars = await starsSince(email, purchase.paidAt);
-      if (qualificationStars >= c.minStars) {
-        const g = await grantVip(email, "Qualified for permanent VIP by earning 12,000 stars during the two-month promotion", null);
-        if (!g.blocked && !g.error) {
-          await db.run("UPDATE promo_purchases SET status = 'qualified', expires_at = NULL WHERE reference = ? AND status = 'paid'", [purchase.reference]);
-          source = "qualified"; expiresAt = null;
-        }
-      } else if (expiresAt && expiresAt <= now()) {
-        await db.run("UPDATE promo_purchases SET status = 'expired' WHERE reference = ? AND status = 'paid'", [purchase.reference]);
-        // Mark as a promotion expiry (not an administrator ban); a new verified $12 purchase can reactivate this account.
-        const currentVip = await db.get("SELECT status, reason FROM vip_eligibility WHERE user_id = ?", [email]);
-        // Never overwrite an administrator's independent revoke decision.
-        if (!currentVip || currentVip.status !== "revoked" || String(currentVip.reason || "").startsWith("PROMO_EXPIRED_NO_12000_STARS")) {
-          await db.run(`INSERT INTO vip_eligibility (user_id, tier, status, verified_streamer, reason, granted_by, granted_at, expires_at)
-            VALUES (?, 'none', 'revoked', 0, 'PROMO_EXPIRED_NO_12000_STARS', 'promotion-expiry', ?, NULL)
-            ON CONFLICT (user_id) DO UPDATE SET tier='none', status='revoked', verified_streamer=0, reason='PROMO_EXPIRED_NO_12000_STARS', granted_by='promotion-expiry', granted_at=EXCLUDED.granted_at, expires_at=NULL`, [email, now()]);
-        }
-        vip.dropCache(email);
-        source = "none"; expiresAt = null;
-      } else {
-        source = "paid";
-      }
-    }
-    if (source === "none" && meetsGoals(f, c)) source = "earned";
-    else if (source === "none") { try { const t = await vip.tierOf(email); if (t && t.rank > 0) source = "vip"; } catch (_) { /* not ready */ } }
-    return { promoted: source !== "none", source, expiresAt, qualificationStars, facts: f, goals: { followers: c.minFollowers, likes: c.minLikes, stars: c.minStars, views: c.minViews }, priceUsd: c.priceUsd, priceNgn: c.priceNgn, days: c.days, months: c.months };
+    const c = cfg(), f = await facts(email), paid = await activePurchase(email);
+    let source = "none", expiresAt = null;
+    if (paid) { source = "paid"; expiresAt = paid.expiresAt ? Number(paid.expiresAt) : null; }
+    else if (meetsGoals(f, c)) source = "earned";
+    else { try { const t = await vip.tierOf(email); if (t && t.rank > 0) source = "vip"; } catch (_) { /* not ready */ } }
+    return { promoted: source !== "none", source, expiresAt, facts: f, goals: { followers: c.minFollowers, likes: c.minLikes, stars: c.minStars, views: c.minViews }, priceUsd: c.priceUsd, priceNgn: c.priceNgn, days: c.days };
   }
   const cache = new Map();   // email -> { at, v }
   async function isPromoted(email) {
@@ -135,7 +87,7 @@ module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRoom
   const drop = (email) => cache.delete(lc(email));
 
   // ---------- status ----------
-  app.get("/api/promo/plans", (req, res) => { const c = cfg(); res.json({ success: true, priceUsd: c.priceUsd, priceNgn: c.priceNgn, days: c.days, months: c.months, goals: { followers: c.minFollowers, likes: c.minLikes, stars: c.minStars, views: c.minViews } }); });
+  app.get("/api/promo/plans", (req, res) => { const c = cfg(); res.json({ success: true, priceUsd: c.priceUsd, priceNgn: c.priceNgn, days: c.days, goals: { followers: c.minFollowers, likes: c.minLikes, stars: c.minStars, views: c.minViews } }); });
   app.get("/api/promo/status", requireAuth, async (req, res) => {
     try { drop(req.userEmail); const s = await evaluate(req.userEmail); res.set("Cache-Control", "no-store"); res.json({ success: true, ...s, vipOn: await vip.isEnabled().catch(() => false) }); }
     catch (e) { console.error("promo status:", e.message); fail(res, 500, "Could not check your promotion."); }
@@ -148,7 +100,7 @@ module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRoom
       if (currency !== "USD" && currency !== "NGN") return fail(res, 400, "Choose USD or NGN.");
       const key = process.env.PAYSTACK_SECRET_KEY; if (!key) return fail(res, 500, "Payments are not set up yet (PAYSTACK_SECRET_KEY is missing).");
       const s = await evaluate(req.userEmail);
-      if (s.promoted) return fail(res, 400, "Your VIP promotion is already active. You can pay again only after this two-month period ends without qualification.", { already: true });
+      if (s.promoted && s.source !== "paid") return fail(res, 400, "You are already promoted. You do not need to pay.", { already: true });
       const host = String(req.get("host") || "").trim();
       const site = /^[a-z0-9.-]+(:\d{1,5})?$/i.test(host) ? req.protocol + "://" + host : String(process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
       const axios = require("axios");
@@ -156,7 +108,7 @@ module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRoom
       try {
         r = await axios.post("https://api.paystack.co/transaction/initialize", {
           email: req.userEmail, amount: minorFor(c, currency), currency,
-          metadata: { type: TYPE, website: "Victopay", currency, months: c.months },
+          metadata: { type: TYPE, website: "Victopay", currency, days: c.days },
           callback_url: site + "/promotion-return.html"
         }, { headers: { Authorization: "Bearer " + key, "Content-Type": "application/json" }, timeout: 20000 });
       } catch (e) {
@@ -186,10 +138,11 @@ module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRoom
     const c = cfg(), currency = String(p.currency || "").toUpperCase();
     if ((currency !== "USD" && currency !== "NGN") || Number(p.amount) < minorFor(c, currency)) return { ok: false, message: "The amount paid does not match the Promotional Duration price." };
     const row = await db.get("SELECT status FROM promo_purchases WHERE reference = ?", [reference]);
-    if (row && row.status !== "pending") { drop(email); return { ok: true, already: true, email }; }
-    // Every $12 payment starts its own two-calendar-month qualification window.
-    const t = now();
-    const expiresAt = addMonths(t, c.months);
+    if (row && row.status === "paid") { drop(email); return { ok: true, already: true, email }; }
+    // extend from the end of a running promotion
+    const cur = await activePurchase(email), t = now();
+    const base = cur && cur.expiresAt ? Math.max(t, Number(cur.expiresAt)) : t;
+    const expiresAt = c.days > 0 ? base + c.days * 86400000 : null;
     const upd = await db.run("UPDATE promo_purchases SET status = 'paid', paid_at = ?, expires_at = ? WHERE reference = ? AND status <> 'paid'", [t, expiresAt, reference]);
     if (!upd.changes) await db.run("INSERT INTO promo_purchases (reference, user_email, currency, amount_minor, status, created_at, paid_at, expires_at) VALUES (?,?,?,?, 'paid', ?, ?, ?) ON CONFLICT (reference) DO NOTHING", [reference, email, currency, Number(p.amount), t, t, expiresAt]);
     const g = await grantVip(email, "Bought the Promotional Duration", expiresAt);
@@ -208,15 +161,9 @@ module.exports = function makePromo({ app, db, requireAuth, store, vip, liveRoom
   const isPromoPayment = (payment) => !!(payment && payment.metadata && payment.metadata.type === TYPE);
 
   // keep the "promoted" flag of every running live fresh (viewers see it change without refreshing)
-  async function refreshRooms() {
-    for (const room of Array.from(liveRooms.values())) { try { room.promoted = await isPromoted(room.hostId); } catch (_) { /* keep */ } }
-    // Expire/qualify paid promotions even when the streamer is offline and never opens the VIP page.
-    const due = await db.all("SELECT DISTINCT user_email FROM promo_purchases WHERE status = 'paid' AND expires_at IS NOT NULL AND expires_at <= ?", [now()]);
-    for (const row of due) { try { drop(row.user_email); await evaluate(row.user_email); } catch (e) { console.error("PROMO EXPIRY CHECK:", e.message); } }
-  }
+  async function refreshRooms() { for (const room of Array.from(liveRooms.values())) { try { room.promoted = await isPromoted(room.hostId); } catch (_) { /* keep */ } } }
   const timer = setInterval(() => refreshRooms().catch(() => {}), 15000); if (timer.unref) timer.unref();
-  ready.then(() => refreshRooms().catch(() => {})).catch(() => {});
 
   return { ready, isPromoted, evaluate, confirm, isPromoPayment, cleanStory, drop };
 };
-module.exports.cleanStory = cleanStory; module.exports.meetsGoals = meetsGoals; module.exports.minorFor = minorFor; module.exports.cfg = cfg; module.exports.addMonths = addMonths;
+module.exports.cleanStory = cleanStory; module.exports.meetsGoals = meetsGoals; module.exports.minorFor = minorFor; module.exports.cfg = cfg;
