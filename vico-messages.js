@@ -1,8 +1,9 @@
 // =====================================================
 // Vico Message — WhatsApp-style chat + calls for Vico Pay Live
 // =====================================================
-// 1. Activation: a person must verify a real phone number with a one-time SMS code (and set a name) before they can chat or call.
-//    One verified number belongs to ONE account. See vico-phone.js for the SMS providers.
+// 1. Activation: a person verifies their VicoPay account email (using the existing email-verify / Resend flow) and sets a name.
+//    Email verification confirms control of the email address; it does not verify ownership of a phone number.
+//    Existing accounts with a previously SMS-verified phone remain active.
 // 2. Chat: private one-to-one messages in PostgreSQL, delivered instantly through a server-sent-events stream (/api/vm/stream),
 //    with sent / delivered / read ticks, "typing…", online / last seen and block. The page falls back to polling if the stream drops.
 // 3. Calls: voice and video through LiveKit. See vico-message-calls.js.
@@ -17,7 +18,7 @@ const makeMessageCalls = require("./vico-message-calls");
 
 const HOUR = 3600 * 1000, RESEND_MS = 60 * 1000, MAX_SENDS_PER_HOUR = 5, MAX_WRONG = 5, MAX_BODY = 2000;
 
-module.exports = function makeMessages({ app, db, requireAuth, store, callAccess, axios, env, wallet }) {
+module.exports = function makeMessages({ app, db, requireAuth, store, callAccess, axios, env, wallet, isEmailVerified }) {
   env = env || process.env;
   const { users, publicHandle, displayNameOf, avatarUrl } = store;
   const lc = (v) => String(v || "").trim().toLowerCase();
@@ -47,7 +48,8 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
     `ALTER TABLE dm_messages ADD COLUMN IF NOT EXISTS deleted_at BIGINT`,
     `CREATE TABLE IF NOT EXISTS vm_msg_hidden (message_id BIGINT NOT NULL, email TEXT NOT NULL, created_at BIGINT NOT NULL, PRIMARY KEY (message_id, email))`,
     // one row per activated person: the VERIFIED number is stored here only after the code was confirmed
-    `CREATE TABLE IF NOT EXISTS vm_profiles (email TEXT PRIMARY KEY, phone TEXT, phone_verified_at BIGINT, about TEXT NOT NULL DEFAULT '', discoverable SMALLINT NOT NULL DEFAULT 1, show_online SMALLINT NOT NULL DEFAULT 1, last_seen_at BIGINT, created_at BIGINT NOT NULL, updated_at BIGINT NOT NULL)`,
+    `CREATE TABLE IF NOT EXISTS vm_profiles (email TEXT PRIMARY KEY, phone TEXT, phone_verified_at BIGINT, email_verified_at BIGINT, about TEXT NOT NULL DEFAULT '', discoverable SMALLINT NOT NULL DEFAULT 1, show_online SMALLINT NOT NULL DEFAULT 1, last_seen_at BIGINT, created_at BIGINT NOT NULL, updated_at BIGINT NOT NULL)`,
+    `ALTER TABLE vm_profiles ADD COLUMN IF NOT EXISTS email_verified_at BIGINT`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_vm_profiles_phone ON vm_profiles(phone)`,
     // the pending code (hashed, never stored in clear)
     `CREATE TABLE IF NOT EXISTS vm_otps (email TEXT PRIMARY KEY, phone TEXT NOT NULL, salt TEXT NOT NULL, code_hash TEXT NOT NULL, expires_at BIGINT NOT NULL, wrong_tries INTEGER NOT NULL DEFAULT 0, last_sent_at BIGINT NOT NULL DEFAULT 0, sends_hour_start BIGINT NOT NULL DEFAULT 0, sends_in_hour INTEGER NOT NULL DEFAULT 0)`,
@@ -88,12 +90,29 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
   };
 
   // ---------- accounts ----------
-  const profile = (email) => db.get("SELECT email, phone, phone_verified_at, about, discoverable, show_online, last_seen_at FROM vm_profiles WHERE email = ?", [lc(email)]);
+  const profile = (email) => db.get("SELECT email, phone, phone_verified_at, email_verified_at, about, discoverable, show_online, last_seen_at FROM vm_profiles WHERE email = ?", [lc(email)]);
+  async function emailIsVerified(email) {
+    if (typeof isEmailVerified !== "function") return false;
+    try { return !!(await isEmailVerified(lc(email))); } catch (e) { console.error("VM EMAIL STATUS:", e.message); return false; }
+  }
+  async function ensureEmailProfile(email) {
+    const me = lc(email), t = now();
+    await db.run(
+      `INSERT INTO vm_profiles (email, email_verified_at, created_at, updated_at) VALUES (?,?,?,?)
+       ON CONFLICT (email) DO UPDATE SET email_verified_at = COALESCE(vm_profiles.email_verified_at, EXCLUDED.email_verified_at), updated_at = EXCLUDED.updated_at`,
+      [me, t, t, t]);
+    return profile(me);
+  }
   const requireActivated = async (req, res, next) => {
     try {
-      await ready; const p = await profile(req.userEmail);
-      if (!p || !p.phone) return bad(res, 403, "Verify your phone number to use Vico Message.", { needsVerification: true });
-      req.vm = p; next();
+      await ready;
+      const me = lc(req.userEmail);
+      let p = await profile(me);
+      // Keep existing SMS-verified accounts working; new accounts activate through verified email.
+      if (p && p.phone) { req.vm = p; return next(); }
+      if (!(await emailIsVerified(me))) return bad(res, 403, "Verify your VicoPay account email to use Vico Message.", { needsVerification: true, needsEmailVerification: true });
+      p = await ensureEmailProfile(me);
+      req.vm = p; return next();
     } catch (e) { next(e); }
   };
   async function target(handle) { const email = await users.resolveHandle(String(handle || "").replace(/^@/, "")); return email ? lc(email) : null; }
@@ -105,10 +124,10 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
   }
   async function presenceOf(other) {
     const p = await profile(other);
-    if (!p || !p.phone || Number(p.show_online) === 0) return { visible: false };
+    if (!p || Number(p.show_online) === 0) return { visible: false };
     return hub.online(other) ? { visible: true, online: true } : { visible: true, online: false, lastSeen: Number(p.last_seen_at) || null };
   }
-  const person = (email, p) => ({ handle: publicHandle(email), displayName: displayNameOf(email), avatar: avatarUrl(email), about: (p && p.about) || "", activated: !!(p && p.phone) });
+  const person = (email, p) => ({ handle: publicHandle(email), displayName: displayNameOf(email), avatar: avatarUrl(email), about: (p && p.about) || "", activated: !!(p && (p.phone || p.email_verified_at)) });
   // only these fields of a media message's meta ever reach a browser
   function mediaMeta(raw) {
     let m = {}; try { m = JSON.parse(raw || "{}"); } catch (_) { /* ignore */ }
@@ -135,19 +154,24 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
   }
 
   // =====================================================
-  // 1. ACTIVATION (phone number + code + profile)
+  // 1. ACTIVATION (verified account email + profile; legacy SMS verification routes remain for existing users)
   // =====================================================
   app.get("/api/vm/status", requireAuth, async (req, res) => {
     try {
       await ready; const me = lc(req.userEmail); await users.warm([me]);
-      const p = await profile(me), biz = await businessProfileOf(me);
+      let p = await profile(me);
+      const emailVerified = await emailIsVerified(me);
+      if (emailVerified) p = await ensureEmailProfile(me);
+      const biz = await businessProfileOf(me);
       let suggested = null;
       if (biz && biz.phone) { const n = phoneLib.normalizePhone(biz.phone); if (n.ok) suggested = { phone: n.e164, businessName: biz.businessName || "" }; }
+      const phoneVerified = !!(p && p.phone);
       const provider = phoneLib.providerName(env);
       res.json({
-        success: true, activated: !!(p && p.phone), phone: p && p.phone ? p.phone : "", phoneMasked: p && p.phone ? phoneLib.maskPhone(p.phone) : "",
+        success: true, activated: !!(p && (p.phone || p.email_verified_at)), emailVerified, email: me,
+        phoneVerified, phone: phoneVerified ? p.phone : "", phoneMasked: phoneVerified ? phoneLib.maskPhone(p.phone) : "",
         me: { ...person(me, p) }, discoverable: p ? Number(p.discoverable) !== 0 : true, showOnline: p ? Number(p.show_online) !== 0 : true,
-        suggestedPhone: p && p.phone ? null : suggested, countries: phoneLib.COUNTRIES,
+        suggestedPhone: phoneVerified ? null : suggested, countries: phoneLib.COUNTRIES,
         smsReady: provider !== "none" || env.NODE_ENV !== "production", callsReady: !!(env.LIVEKIT_URL && env.LIVEKIT_API_KEY && env.LIVEKIT_API_SECRET)
       });
     } catch (e) { console.error("VM STATUS:", e); bad(res, 500, "Could not load Vico Message."); }
@@ -288,7 +312,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
         seen.add(e);
         const p = await profile(e); await users.warm([e]);
         out.push({ ...person(e, p), businessName: r.businessName, description: String(r.description || "").slice(0, 140), city: r.city || "", country: r.country || "",
-          phone: r.phone || "", whatsapp: r.whatsapp || "", canCall: !!(p && p.phone), numberVerified: !!(p && p.phone && phoneLib.samePhone(p.phone, r.phone)) });
+          phone: r.phone || "", whatsapp: r.whatsapp || "", canCall: !!(p && (p.phone || p.email_verified_at)), numberVerified: !!(p && p.phone && phoneLib.samePhone(p.phone, r.phone)) });
         if (out.length >= 40) break;
       }
       res.json({ success: true, businesses: out });
