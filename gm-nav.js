@@ -7,8 +7,9 @@
     { k: "home", icon: "🏠", label: "Home", href: "global-market-community.html", ready: true },
     { k: "live", icon: "📡", label: "Live", href: "live-room.html", ready: true },
     { k: "videos", icon: "▶️", label: "Videos", href: "vico-videos.html", ready: false },
-    { k: "messages", icon: "💬", label: "Messages", href: "vico-messages.html", ready: true },
+    { k: "messages", icon: "💬", label: "Vico Message", href: "vico-messages.html", ready: true },
     { k: "wallet", icon: "👛", label: "Vico Wallet", href: "vico-wallet.html", ready: true },
+    { k: "ai", icon: '<img src="vico-ai-guide.gif" alt="" class="gmAiNavIcon">', label: "Vico AI", href: "vico-ai.html", ready: true },
     { k: "ads", icon: "📢", label: "Ad Center", href: "vico-ad-center.html", ready: true },
     { k: "market", icon: "🛒", label: "Marketplace", href: "vico-marketplace.html", ready: true },
     { k: "partnership", icon: "🎬", label: "Creator Partnership", href: "creator-partnership.html", ready: true },
@@ -77,6 +78,27 @@
     }).catch(function () {});
   }
 
+  /* ---- someone is calling you on Vico Message: a banner on any Market Community page (the full call screen is on the Vico Message page) ---- */
+  function ring() {
+    if (!window.gmSignedIn() || document.body.getAttribute("data-gm") === "messages") return;
+    var bn = null, dismissed = {};
+    function hide() { if (bn) { bn.remove(); bn = null; } }
+    function check() {
+      if (document.hidden) return;
+      window.gmApi("/api/vm/calls/incoming").then(function (d) {
+        var c = d && d.calls && d.calls.filter(function (x) { return !dismissed[x.callId]; })[0];
+        if (!c) return hide(); if (bn) return;
+        bn = document.createElement("div"); bn.setAttribute("role", "alert");
+        bn.style.cssText = "position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:300;max-width:460px;margin:0 auto;background:linear-gradient(135deg,#4c1d95,#1d3b8f);color:#fff;border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 14px 34px rgba(30,40,110,.45);font:700 15px system-ui,Arial";
+        bn.innerHTML = '<span style="font-size:24px">\uD83D\uDCDE</span><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + window.gmEsc(c.from.displayName) + '<br><small style="font-weight:600;opacity:.85">Incoming ' + (c.kind === "video" ? "video" : "voice") + ' call</small></div>' +
+          '<button type="button" style="border:0;border-radius:12px;padding:9px 12px;background:#ffffff26;color:#fff;font:800 14px system-ui">Decline</button><a href="vico-messages.html" style="border-radius:12px;padding:9px 14px;background:#16a34a;color:#fff;text-decoration:none;font:800 14px system-ui">Answer</a>';
+        bn.querySelector("button").onclick = function () { dismissed[c.callId] = 1; window.gmApi("/api/vm/calls/" + c.callId + "/decline", { body: {} }); hide(); };
+        document.body.appendChild(bn);
+      }).catch(function () {});
+    }
+    check(); setInterval(check, 7000);
+  }
+
   /* ---- floating Vico AI (bottom-right). Pages opt in with  data-ai="ads|market|wallet" ---- */
   function floatAi(ctx) {
     var css = document.createElement("style");
@@ -124,7 +146,7 @@
     if (ttl) { var h = document.createElement("div"); h.className = "gm-wrap"; h.style.paddingBottom = "0";
       h.innerHTML = '<div class="gm-top"><a class="gm-me" href="global-market-community.html" style="padding:8px 14px">‹ Back</a><div class="gm-logo" style="margin-left:6px"><i>▶</i><div>' + window.gmEsc(ttl) + '<small>Vico Pay Live</small></div></div></div>';
       document.body.insertBefore(h, document.body.firstChild); }
-    badge(); // Vico AI is intentionally removed from the shared Market Community navigation and overlay.
+    badge(); ring(); var f = document.body.getAttribute("data-ai"); if (f) floatAi(f);
   }
   if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
 })();

@@ -985,7 +985,6 @@ let vicoLiveKitTracks = [];
 let pendingStory = "";
 let vicoPendingCaller = null;
 let vicoActiveCaller = null;
-const vicoCallerAudio = new Set();
 let vicoActiveCallId = null;
 
 function toggleLive() {
@@ -1096,22 +1095,13 @@ async function startLive() {
       } catch (e) { /* ignore malformed data messages */ }
     });
     vicoLiveKitRoom.on(LK.RoomEvent.TrackSubscribed, (track, publication, participant) => {
-      if (!participant) return;
-      if (track.kind === LK.Track.Kind.Video) {
+      if (participant && track.kind === LK.Track.Kind.Video) {
         vicoActiveCaller = participant.identity;
         const pip = document.getElementById("hostCallPip");
         track.attach(document.getElementById("hostCallVideo"));
         document.getElementById("hostCallName").textContent = participant.name || "Video caller";
         pip.classList.add("on");
-      } else if (track.kind === LK.Track.Kind.Audio) {
-        const audio = track.attach();
-        audio.autoplay = true; audio.playsInline = true; audio.dataset.vicoCallerAudio = participant.identity;
-        document.body.appendChild(audio); vicoCallerAudio.add(audio);
-        audio.play().catch(() => {});
       }
-    });
-    vicoLiveKitRoom.on(LK.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
-      try { track.detach().forEach(el => { if (el && el.dataset && el.dataset.vicoCallerAudio) { vicoCallerAudio.delete(el); el.remove(); } }); } catch (_) {}
     });
     vicoLiveKitRoom.on(LK.RoomEvent.ParticipantDisconnected, (participant) => {
       if (participant && participant.identity === vicoActiveCaller) {
@@ -1119,7 +1109,6 @@ async function startLive() {
         document.getElementById("hostCallPip").classList.remove("on");
         document.getElementById("hostCallVideo").srcObject = null;
       }
-      if (participant) { vicoCallerAudio.forEach(a => { if (a.dataset.vicoCallerAudio === participant.identity) { a.remove(); vicoCallerAudio.delete(a); } }); }
       updateViewerCount();
     });
 
@@ -1204,7 +1193,6 @@ document.getElementById("hostCallEnd").addEventListener("click", async () => {
   }
   if (window.vicoPendingCallId) fetch(API_BASE+"/api/calls/end",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({callId:window.vicoPendingCallId})}).catch(()=>{});
   vicoActiveCaller = null;
-  vicoCallerAudio.forEach(a => a.remove()); vicoCallerAudio.clear();
   document.getElementById("hostCallPip").classList.remove("on");
   document.getElementById("hostCallVideo").srcObject = null;
 });
