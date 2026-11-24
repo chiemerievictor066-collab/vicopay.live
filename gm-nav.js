@@ -9,7 +9,6 @@
     { k: "videos", icon: "▶️", label: "Videos", href: "vico-videos.html", ready: false },
     { k: "messages", icon: "💬", label: "Vico Message", href: "vico-messages.html", ready: true },
     { k: "wallet", icon: "👛", label: "Vico Wallet", href: "vico-wallet.html", ready: true },
-    { k: "ai", icon: '<img src="vico-ai-guide.gif" alt="" class="gmAiNavIcon">', label: "Vico AI", href: "vico-ai.html", ready: true },
     { k: "ads", icon: "📢", label: "Ad Center", href: "vico-ad-center.html", ready: true },
     { k: "market", icon: "🛒", label: "Marketplace", href: "vico-marketplace.html", ready: true },
     { k: "partnership", icon: "🎬", label: "Creator Partnership", href: "creator-partnership.html", ready: true },
@@ -61,11 +60,11 @@
   function curToggle() {
     var w = document.createElement("div"); w.className = "gm-cur"; w.innerHTML = '<button type="button" data-c="NGN">₦ Naira</button><button type="button" data-c="USD">$ Dollar</button>';
     w.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b && window.VicoCurrency) VicoCurrency.set(b.dataset.c); });
-    function mark() { var c = window.VicoCurrency ? VicoCurrency.get() : "NGN"; [].forEach.call(w.querySelectorAll("button"), function (b) { b.classList.toggle("on", b.dataset.c === c); }); }
+    function mark() { var c = window.VicoCurrency ? VicoCurrency.get() : "NGN";[].forEach.call(w.querySelectorAll("button"), function (b) { b.classList.toggle("on", b.dataset.c === c); }); }
     mark(); window.__gmCurMark = mark; return w;
   }
   function loadCurrency(cb) {
-    function ready() { if (window.VicoCurrency) VicoCurrency.on(function () { paintMoney(); if (window.__gmCurMark) window.__gmCurMark(); if (window.gmOnCurrency) window.gmOnCurrency(); }); fetch("/api/currency/rate").then(function (r) { return r.json(); }).then(function (d) { if (d && d.ngnPerUsd) { RATE = d.ngnPerUsd; paintMoney(); } }).catch(function () {}); cb(); }
+    function ready() { if (window.VicoCurrency) VicoCurrency.on(function () { paintMoney(); if (window.__gmCurMark) window.__gmCurMark(); if (window.gmOnCurrency) window.gmOnCurrency(); }); fetch("/api/currency/rate").then(function (r) { return r.json(); }).then(function (d) { if (d && d.ngnPerUsd) { RATE = d.ngnPerUsd; paintMoney(); } }).catch(function () { }); cb(); }
     if (window.VicoCurrency) return ready();
     var sc = document.createElement("script"); sc.src = "vico-currency.js"; sc.onload = ready; sc.onerror = cb; document.head.appendChild(sc);
   }
@@ -75,7 +74,7 @@
     if (!window.gmSignedIn()) return;
     window.gmApi("/api/dm/unread").then(function (d) {
       if (d && d.unread > 0) { var a = nav.querySelector('a[data-k="messages"]'); if (a && !a.querySelector("b")) { var b = document.createElement("b"); b.textContent = d.unread > 99 ? "99+" : d.unread; a.appendChild(b); } }
-    }).catch(function () {});
+    }).catch(function () { });
   }
 
   /* ---- someone is calling you on Vico Message: a banner on any Market Community page (the full call screen is on the Vico Message page) ---- */
@@ -94,7 +93,7 @@
           '<button type="button" style="border:0;border-radius:12px;padding:9px 12px;background:#ffffff26;color:#fff;font:800 14px system-ui">Decline</button><a href="vico-messages.html" style="border-radius:12px;padding:9px 14px;background:#16a34a;color:#fff;text-decoration:none;font:800 14px system-ui">Answer</a>';
         bn.querySelector("button").onclick = function () { dismissed[c.callId] = 1; window.gmApi("/api/vm/calls/" + c.callId + "/decline", { body: {} }); hide(); };
         document.body.appendChild(bn);
-      }).catch(function () {});
+      }).catch(function () { });
     }
     check(); setInterval(check, 7000);
   }
@@ -112,7 +111,7 @@
     if (mascot) css.textContent += "#gmAiBtn.mascot{padding:0;background:none;box-shadow:none;border-radius:22px;overflow:hidden;bottom:88px}#gmAiBtn.mascot img{display:block;width:clamp(104px,28vw,150px);height:auto;border-radius:22px;box-shadow:0 10px 26px rgba(30,60,200,.45);}#gmAiPanel.mascot{bottom:min(290px,40vh)}#gmAiPanel .gmAiTitle{display:flex;align-items:center;gap:8px}#gmAiPanel .gmAiTitle img{width:34px;height:30px;object-fit:contain;border-radius:8px}.gmAiNavIcon{width:28px;height:26px;object-fit:contain;vertical-align:middle}";
     document.head.appendChild(css);
     var btn = document.createElement("button"); btn.id = "gmAiBtn"; btn.className = "mascot"; btn.setAttribute("aria-label", "Vico AI: ask a question"); btn.innerHTML = '<img alt="Vico AI animated question guide" src="' + mascot.replace(/[^A-Za-z0-9_.-]/g, "") + '">';
-        var p = document.createElement("div"); p.id = "gmAiPanel";
+    var p = document.createElement("div"); p.id = "gmAiPanel";
     if (mascot) p.className = "mascot";
     p.innerHTML = '<header><span class="gmAiTitle"><img src="' + mascot.replace(/[^A-Za-z0-9_.-]/g, "") + '" alt="">Vico AI</span><button type="button" aria-label="Close">×</button></header><div id="gmAiLog"></div><form id="gmAiForm"><input id="gmAiIn" maxlength="2000" placeholder="Ask Vico AI…" autocomplete="off"><button>Send</button></form>';
     document.body.appendChild(btn); document.body.appendChild(p);
@@ -143,9 +142,11 @@
     document.body.appendChild(bar); document.body.appendChild(t);
     var on = nav.querySelector("a.on"); if (on && on.scrollIntoView) on.scrollIntoView({ inline: "center", block: "nearest" });
     var ttl = document.body.getAttribute("data-title");
-    if (ttl) { var h = document.createElement("div"); h.className = "gm-wrap"; h.style.paddingBottom = "0";
+    if (ttl) {
+      var h = document.createElement("div"); h.className = "gm-wrap"; h.style.paddingBottom = "0";
       h.innerHTML = '<div class="gm-top"><a class="gm-me" href="global-market-community.html" style="padding:8px 14px">‹ Back</a><div class="gm-logo" style="margin-left:6px"><i>▶</i><div>' + window.gmEsc(ttl) + '<small>Vico Pay Live</small></div></div></div>';
-      document.body.insertBefore(h, document.body.firstChild); }
+      document.body.insertBefore(h, document.body.firstChild);
+    }
     badge(); ring(); var f = document.body.getAttribute("data-ai"); if (f) floatAi(f);
   }
   if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
