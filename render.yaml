@@ -32,3 +32,14 @@ services:
         sync: false
       - key: LIVEKIT_API_SECRET
         sync: false
+      # Vico Message phone verification (SMS). Fill the Termii OR the Twilio ones.
+      - key: TERMII_API_KEY
+        sync: false
+      - key: TERMII_SENDER_ID
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM
+        sync: false

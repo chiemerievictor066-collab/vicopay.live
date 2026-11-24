@@ -11,7 +11,12 @@ assert.strictEqual(promo.meetsGoals({ ...full, views: 100 }, { ...c, minViews: 1
 delete process.env.PROMO_PRICE_USD; delete process.env.PROMO_PRICE_NGN;
 assert.strictEqual(promo.minorFor(promo.cfg(), "USD"), 1200); assert.strictEqual(promo.minorFor(promo.cfg(), "NGN"), 1900000);
 process.env.PROMO_PRICE_USD = "15"; assert.strictEqual(promo.minorFor(promo.cfg(), "USD"), 1500); delete process.env.PROMO_PRICE_USD;
-assert.strictEqual(promo.cfg().days, 30);
+assert.strictEqual(promo.cfg().months, 2);
+assert.strictEqual(promo.cfg().days, 60);
+const jan31 = new Date("2026-01-31T12:00:00.000Z").getTime();
+assert.strictEqual(new Date(promo.addMonths(jan31, 2)).toISOString(), "2026-03-31T12:00:00.000Z");
+const dec31 = new Date("2026-12-31T12:00:00.000Z").getTime();
+assert.strictEqual(new Date(promo.addMonths(dec31, 2)).toISOString(), "2027-02-28T12:00:00.000Z");
 // the story a streamer writes: plain text, short, no control characters
 assert.strictEqual(promo.cleanStory("  Hi\u0000 there  "), "Hi there");
 assert.strictEqual(promo.cleanStory("a\n\n\n\nb"), "a\n\nb");

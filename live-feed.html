@@ -83,8 +83,6 @@ html,body{height:100%;margin:0;background:#020a1f;color:#fff;font-family:var(--f
 .bar2 input{flex:1;min-width:0;height:44px;border-radius:22px;border:1px solid rgba(255,255,255,.22);background:rgba(3,28,93,.55);backdrop-filter:blur(8px);color:#fff;padding:0 16px;font:inherit;font-size:14px;outline:none}
 .bar2 input::placeholder{color:#a9c9ea}
 .bar2 button{width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--sky),var(--blue));color:#fff;font-size:18px;cursor:pointer;flex:none}
-.bar2 button.call-bottom{width:auto;min-width:76px;padding:0 13px;border-radius:22px;background:linear-gradient(135deg,#20c997,#087fe8);border:1px solid #b8fff0;font-size:13px;font-weight:900;box-shadow:0 4px 18px #008cbb88;white-space:nowrap}
-.bar2 button.call-bottom:active{transform:scale(.96)}
 
 .fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .fly{position:absolute;left:50%;bottom:34%;transform:translateX(-50%);text-align:center;animation:fly 3.2s ease-out forwards;text-shadow:0 4px 18px #000}
@@ -238,12 +236,13 @@ function slideHTML(r){
       '<button class="rb" data-act="pk"><span class="ic">⚔️</span>PK</button>' +
       '<button class="rb" data-act="fans"><span class="ic">💜</span>Fans</button>' +
       '<button class="rb" data-act="people"><span class="ic">👥</span>Followers</button>' +
+      '<button class="rb call" data-act="call"><span class="ic">📹</span>Video Call</button>' +
       '<button class="rb" data-act="share"><span class="ic">↗️</span>Share</button>' +
       '<a class="rb" href="Go-Live.html"><span class="ic">🎥</span>Go Live</a>' +
     '</div>' +
     (r.product ? '<div class="plive"><span class="pi">' + (r.product.imageUrl ? '<img alt="" src="' + U.esc(r.product.imageUrl) + '">' : '🛍️') + '</span><div class="pt"><b>' + U.esc(r.product.title) + '</b><span><em>Selling live</em>₦' + Number(r.product.price).toLocaleString() + '</span></div><a href="vico-product.html?id=' + encodeURIComponent(r.product.id) + '" target="_blank" rel="noopener">Buy Now</a></div>' : '') +
     '<div class="lstack"><div class="chat"><div class="msgs" aria-live="polite"></div></div><div class="vlp-slot"></div></div>' +
-    '<div class="bar2"><input maxlength="200" placeholder="Say something…" aria-label="Chat message"><button class="call-bottom" data-act="call" aria-label="Request a face-to-face video call">📹 Call</button><button data-act="send" aria-label="Send">➤</button><button data-act="gift" aria-label="Gift">🎁</button></div>' +
+    '<div class="bar2"><input maxlength="200" placeholder="Say something…" aria-label="Chat message"><button data-act="send" aria-label="Send">➤</button><button data-act="gift" aria-label="Gift">🎁</button></div>' +
     '<div class="call-pip"><video playsinline autoplay muted></video><span class="pip-name">Video caller</span></div>' +
     '<div class="call-controls"><button data-call="mic" aria-label="Mute microphone">🎙️</button><button data-call="camera" aria-label="Turn camera off">📷</button><button class="end" data-call="end" aria-label="End call">☎</button></div>' +
     '<div class="call-layer"><div class="call-card"><h3>📹 Vico Video Call</h3><p class="call-copy">Request a face-to-face call with this streamer while the livestream continues.</p><div class="call-actions"><button class="secondary" data-call="cancel">Cancel</button><button data-call="request">Request call</button></div></div></div>' +

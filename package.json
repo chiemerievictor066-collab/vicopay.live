@@ -20,6 +20,8 @@
     "test:ads": "node tests/ad-jobs.test.js",
     "test:company-verification": "node tests/company-verification-flow.test.js",
     "test:promo": "node tests/promo.test.js",
+    "test:message": "node tests/vico-message.test.js",
+    "test:wallet": "node tests/vico-wallet.test.js && node tests/vico-wallet-charging.test.js && node tests/vico-media.test.js && node tests/vico-delete.test.js",
     "check:deploy": "node check-deploy-config.js"
   },
   "dependencies": {

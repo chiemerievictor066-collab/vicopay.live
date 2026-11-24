@@ -38,12 +38,12 @@ body{min-height:100vh;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Ar
     <div class="goals" id="goals"></div></section>
   <div class="or"><b>OR</b></div>
   <section class="panel violet"><h2>Promotional Duration (Direct Upgrade)</h2>
-    <div class="lead" style="margin-top:14px">Pay $12 to activate VIP immediately for two calendar months.</div>
+    <div class="lead" style="margin-top:14px">If you do not want to wait, you can get the promotion straight away by purchasing the Promotional Duration.</div>
     <div class="buy"><img class="vip" src="vico-promo-vip.jpg" alt="VIP Go Live"><div class="price"><b id="price">$12</b><span>Only</span></div>
       <ul class="checks"><li>Upgrade to VIP Instantly</li><li>Unlock Premium Features</li><li>Boost Your Live Audience</li><li>Enjoy More Visibility</li></ul></div>
     <div class="cur" id="cur"><button type="button" data-c="USD" class="on">Pay in Dollars</button><button type="button" data-c="NGN">Pay in Naira</button></div>
   </section>
-  <div class="note"><i>i</i><div><b>VIP Promotion Rules:</b><ul><li>Pay <em id="p2">$12</em> to activate VIP immediately for <em>two calendar months</em>.</li><li>During those two months, earn at least <em>12,000 Golden Stars</em> from gifts received after your payment to keep VIP permanently.</li><li>If you do not reach 12,000 stars before the two-month period ends, VIP is automatically revoked and your account returns to a normal live-streamer account.</li><li>After revocation, you must pay <em>$12</em> again to rejoin VIP.</li></ul></div></div>
+  <div class="note"><i>i</i><div><b>Important Note:</b><ul><li>A normal <u>live</u> stream without these achievements <em>cannot</em> be upgraded.</li><li>You must either <u>reach</u> the required goals or make a payment of <em id="p2">$12</em> for the <em>Promotional Duration</em> to upgrade to VIP.</li></ul></div></div>
   <button class="cta" id="pay" type="button"><span class="di">💎</span><span><b>Get Promotional Duration</b><span class="s" id="payFor">for $12</span></span><span class="go">›</span></button>
   <div class="msg" id="msg" role="status"></div>
 </div>
@@ -62,10 +62,8 @@ function draw(){var g=S.goals,f=S.facts;
  paintPrice();
  var st=$("state");
  if(S.promoted){st.className="state on";var until=S.expiresAt?" until "+new Date(S.expiresAt).toLocaleDateString():"";
-  var message=S.source==="paid"?"✔ VIP active"+until:S.source==="qualified"?"✔ You earned 12,000 stars during your two-month promotion. VIP continues permanently.":S.source==="earned"?"✔ You reached the free promotion goals. You are promoted!":"✔ You already have VIP";
-  var detail=S.source==="paid"?"Qualification progress: "+n(S.qualificationStars||0)+" / 12,000 Golden Stars earned since payment. Reach the target before the expiry date to keep VIP permanently.":"Go back to your live and tap Promotion Successful.";
-  st.innerHTML=message+"<small>"+detail+"</small>";
-  $("pay").disabled=true;$("pay").style.display="none";}
+  st.innerHTML=(S.source==="paid"?"✔ Promotion active"+until:S.source==="earned"?"✔ You reached the goals. You are promoted!":"✔ You already have VIP")+"<small>Go back to your live and tap Promotion Successful.</small>";
+  if(S.source!=="paid"){$("pay").disabled=true;$("pay").style.display="none";}else{$("payFor").textContent="to extend ("+money()+")";}}
 }
 function load(){fetch("/api/promo/status",{credentials:"same-origin",cache:"no-store"}).then(function(r){return r.json();}).then(function(d){if(d&&d.success){S=d;draw();}}).catch(function(){});}
 $("cur").onclick=function(e){var b=e.target.closest("button");if(!b)return;cur=b.dataset.c;[].forEach.call(this.children,function(x){x.className=x===b?"on":"";});paintPrice();};
