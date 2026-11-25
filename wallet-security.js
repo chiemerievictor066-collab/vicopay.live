@@ -20,8 +20,8 @@
 const crypto = require("crypto");
 
 const OTP_MINUTES = 10, MAX_WRONG_OTP = 5, OTP_COOLDOWN_MS = 60 * 1000, MAX_OTP_PER_HOUR = 5, MAX_WRONG_PIN = 5;
-const TOKEN_MS = { withdraw: 5 * 60000, gift: 10 * 60000 }, TOKEN_USES = { withdraw: 1, gift: 300 }, COOL_OFF_MS = 24 * 3600000;
-const ACTIONS = ["withdraw", "gift"];
+const TOKEN_MS = { withdraw: 5 * 60000, gift: 10 * 60000, wallet: 10 * 60000 }, TOKEN_USES = { withdraw: 1, gift: 300, wallet: 5000 }, COOL_OFF_MS = 24 * 3600000;
+const ACTIONS = ["withdraw", "gift", "wallet"];   // "wallet" = opening the VicoPay Wallet page (PIN + email code, then open for WALLET_OPEN minutes)
 
 // ---- pure rules (tested) ----
 function validPin(p) {
@@ -40,6 +40,7 @@ function limitError({ amount, maxTx, daily, usedToday }) {
 }
 // when a one-time code is also needed ("" = PIN is enough)
 function otpReason({ action, amount, otpAbove, newDevice, justChanged }) {
+  if (action === "wallet") return "wallet";   // opening the wallet always needs the email code as well as the PIN
   if (newDevice) return "device"; if (justChanged) return "cooloff";
   if (action === "withdraw" && amount >= otpAbove) return "amount"; return "";
 }
@@ -193,7 +194,7 @@ module.exports = function makeWalletSecurity({ app, db, requireAuth, getAuthEmai
       const reason = otpReason({ action, amount, otpAbove: c.otpAbove, newDevice: !known, justChanged: !!recent });
       if (reason) {
         if (!b.otp) {
-          const s = await sendOtp(email, "authorize", action === "withdraw" ? "withdrawal of ₦" + amount.toLocaleString() : "paid gift");
+          const s = await sendOtp(email, "authorize", action === "withdraw" ? "withdrawal of ₦" + amount.toLocaleString() : action === "wallet" ? "opening your wallet" : "paid gift");
           return res.json({ success: false, otpRequired: true, reason, maskedEmail: maskEmail(email), cooldownSeconds: s.wait || OTP_COOLDOWN_MS / 1000, tooMany: !!s.tooMany });
         }
         const o = await checkOtp(email, "authorize", b.otp); if (o.error) return bad(res, 400, o.error, { wrongOtp: true });
@@ -233,6 +234,22 @@ module.exports = function makeWalletSecurity({ app, db, requireAuth, getAuthEmai
       });
     }
   }
-  return { ready, guard };
+  // Door for the VicoPay Wallet page (used by vico-wallet.js): the request must carry a "wallet" token that came from PIN + email code.
+  // Unlike the money-out guard the token is reusable for its 10 minutes, so the page can load its balance, history and recharge without asking again.
+  function unlock(action) {
+    return async (req, res, next) => {
+      try {
+        if (!cfg().enabled) return next();
+        const email = lc(req.userEmail || (getAuthEmail && getAuthEmail(req))); if (!email) return next();   // not signed in: the route's own check answers
+        await ready;
+        const need = async (message) => res.status(428).json({ success: false, walletAuthRequired: true, action, hasPin: !!(await pinRow(email)), message: message || "Enter your Wallet PIN to open your wallet." });
+        const raw = String(req.headers["x-wallet-auth"] || ""); if (!raw) return need();
+        const got = await db.get("UPDATE wallet_auth SET uses = uses + 1 WHERE token_hash = ? AND email = ? AND action = ? AND expires_at > ? AND uses < max_uses RETURNING uses", [sha(raw), email, action, now()]);
+        if (!got) return need("Your wallet was locked. Enter your PIN again.");
+        return next();
+      } catch (e) { console.error("WALLET UNLOCK ERROR:", e); return res.status(503).json({ success: false, message: "Wallet security is not available right now. Please try again." }); }
+    };
+  }
+  return { ready, guard, unlock };
 };
 Object.assign(module.exports, { validPin, lockMinutes, maskEmail, limitError, otpReason });

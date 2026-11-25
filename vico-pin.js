@@ -130,7 +130,7 @@
     return oldStep().then(otpStep).then(newStep);
   }
   function authorize(o) {
-    o = o || {}; var action = o.action === "gift" ? "gift" : "withdraw";
+    o = o || {}; var action = o.action === "gift" ? "gift" : o.action === "wallet" ? "wallet" : "withdraw";
     return api("/status").then(function (st) {
       if (!st.success) return Promise.reject({ message: st.message || "Could not check wallet security." });
       if (!st.enabled) return { token: "" };
@@ -139,7 +139,7 @@
       return first.then(function () { return action === "withdraw" && o.details ? detailsScreen({ title: "Confirm withdrawal", amountText: money(o.amount), details: o.details }) : null; }).then(function () { return pinStep(); });
       function submitAuth(pin, otp) { return api("/authorize", { action: action, amount: o.amount || 0, pin: pin, otp: otp || undefined }); }
       function pinStep() {
-        return pinScreen({ title: "Enter your Wallet PIN", sub: action === "withdraw" ? "To withdraw " + money(o.amount) : "To send your gift", forgot: true }, function (p) {
+        return pinScreen({ title: "Enter your Wallet PIN", sub: action === "withdraw" ? "To withdraw " + money(o.amount) : action === "wallet" ? "To open your VicoPay Wallet" : "To send your gift", forgot: true }, function (p) {
           return submitAuth(p).then(function (r) {
             if (r.success) return { done: true, value: { token: r.token } };
             if (r.otpRequired) return { done: true, value: { pin: p, info: r } };

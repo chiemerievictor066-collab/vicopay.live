@@ -13,7 +13,7 @@ const TYPE = "vico_wallet_recharge";
 const AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
 const RATES = { firstMessage: 3, message: 1, callMinute: 1 };   // naira; edit here to change prices
 
-module.exports = function makeWallet({ app, db, requireAuth, axios, siteUrlOf, env }) {
+module.exports = function makeWallet({ app, db, requireAuth, axios, siteUrlOf, env, walletSecurity }) {
   env = env || process.env;
   const lc = (v) => String(v || "").trim().toLowerCase();
   const now = () => Date.now();
@@ -99,12 +99,15 @@ module.exports = function makeWallet({ app, db, requireAuth, axios, siteUrlOf, e
   }
 
   // ---------- routes ----------
+  // The wallet page's own data (history, recharge) is behind the Wallet PIN + email code ("wallet" unlock, see wallet-security.js).
+  // The balance number stays open because the chat header shows it, and the Paystack return check stays open because the person has already paid.
+  const open = walletSecurity && walletSecurity.unlock ? walletSecurity.unlock("wallet") : (req, res, next) => next();
   app.get("/api/wallet/balance", requireAuth, async (req, res) => {
     try { res.json({ success: true, balance: await balanceOf(req.userEmail), amounts: AMOUNTS, rates: RATES }); }
     catch (e) { console.error("WALLET BALANCE:", e); bad(res, 500, "Could not load your wallet."); }
   });
 
-  app.get("/api/wallet/history", requireAuth, async (req, res) => {
+  app.get("/api/wallet/history", requireAuth, open, async (req, res) => {
     try {
       await ready;
       const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 30, 1), 100);
@@ -113,7 +116,7 @@ module.exports = function makeWallet({ app, db, requireAuth, axios, siteUrlOf, e
     } catch (e) { console.error("WALLET HISTORY:", e); bad(res, 500, "Could not load your history."); }
   });
 
-  app.post("/api/wallet/recharge/initialize", requireAuth, async (req, res) => {
+  app.post("/api/wallet/recharge/initialize", requireAuth, open, async (req, res) => {
     try {
       const amount = Number(req.body && req.body.amount);
       if (!AMOUNTS.includes(amount)) return bad(res, 400, "Choose one of the recharge amounts.");

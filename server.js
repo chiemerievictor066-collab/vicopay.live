@@ -3425,10 +3425,10 @@ const emailVerify = require("./email-verify")({ app, db, requireAuth, onBounce: 
 const referrals = require("./referrals")({ app, db, requireAuth, requireAdmin, ledger, emailVerified: emailVerify.isVerified });
 // Market Community: Vico AI, Vico Messages, Vico Marketplace and the Vico Ad Center. New tables only. See vico-ai.js, vico-messages.js, vico-market.js, vico-ads.js.
 require("./vico-ai")({ app, db, requireAuth, requireAdmin, axios });
-// Vico Message: email-verified chat + voice/video calls (legacy phone-verified accounts remain supported). Email verification reuses the existing Resend flow.
+// Vico Message: phone-verified chat + voice/video calls (vico-messages.js, vico-message-calls.js, vico-phone.js). Private calls with a VIP follow the same paid-call rule as live calls.
 // VicoPay Wallet: one central naira balance for paid messages and calls, recharged with Paystack. New tables only. See vico-wallet.js.
-vicoWallet = require("./vico-wallet")({ app, db, requireAuth, axios, siteUrlOf });
-const vicoMessage = require("./vico-messages")({ app, db, requireAuth, store, axios, callAccess: callSystem && callSystem.access, wallet: vicoWallet, isEmailVerified: emailVerify.isVerified });
+vicoWallet = require("./vico-wallet")({ app, db, requireAuth, axios, siteUrlOf, walletSecurity });
+const vicoMessage = require("./vico-messages")({ app, db, requireAuth, store, axios, callAccess: callSystem && callSystem.access, wallet: vicoWallet });
 require("./vico-market")({ app, db, requireAuth, requireAdmin, store });
 const videos = require("./vico-videos")({ app, db, requireAuth, requireAdmin, store, getAuthEmail });
 // Creator video partnership: public Marketplace publishing + Paystack verified company funding + bank transfer settlement.

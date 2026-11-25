@@ -47,12 +47,30 @@
   .plus { color:var(--ok); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .minus { color:var(--bad); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .empty { padding:18px 14px; color:var(--muted); font-size:14px; }
+  /* PIN gate: the first and only thing visible until the PIN and email code are done */
+  .lock { position:fixed; inset:0; z-index:50; background:linear-gradient(180deg,#1c3a6e,#16315f); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; }
+  .lock .ico { font-size:64px; }
+  .lock h1 { font-size:26px; margin:14px 0 6px; }
+  .lock p { color:#b9d5f7; margin:0 0 26px; max-width:300px; }
+  .lock button { width:min(280px,100%); border:0; border-radius:14px; padding:15px; font:inherit; font-size:17px; font-weight:700; background:#7cc4ff; color:#06224f; cursor:pointer; }
+  .lock a { color:#9fd3ff; margin-top:16px; font-weight:700; text-decoration:none; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; }
+  .linkbtn { border:0; background:none; color:var(--blue); font:inherit; font-weight:700; font-size:14px; cursor:pointer; padding:6px 0; }
+  .foot { margin-top:26px; text-align:center; }
   @media (prefers-reduced-motion: no-preference) { .balance .amt { transition: color .3s; } .bump { color:var(--gold); } }
 </style>
 </head>
 <body>
-<main>
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Wallet locked">
+  <div class="ico" aria-hidden="true">🔒</div>
   <h1>VicoPay Wallet</h1>
+  <p id="lockTxt">Enter your PIN to open your wallet.</p>
+  <button type="button" id="lockBtn">Enter PIN</button>
+  <a href="vico-messages.html" id="lockBack">Back to messages</a>
+</div>
+
+<main id="app" hidden>
+  <div class="topbar"><h1>VicoPay Wallet</h1><button type="button" class="linkbtn" id="lockNow">🔒 Lock</button></div>
 
   <section class="balance" id="balanceCard" aria-live="polite">
     <small>Available balance</small>
@@ -73,20 +91,53 @@
 
   <h2>Recent activity</h2>
   <div class="hist" id="hist"><div class="empty">Loading…</div></div>
+  <div class="foot"><button type="button" class="linkbtn" id="chgPin">Change Wallet PIN</button></div>
 </main>
 
 <script src="auth.js"></script>
+<script src="vico-pin.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var naira = function (n) { return "₦" + Number(n || 0).toLocaleString("en-NG"); };
-  var state = { amount: 0, rates: { firstMessage: 3, message: 1, callMinute: 1 }, amounts: [100, 200, 500, 1000, 2000, 5000] };
+  var state = { token: null, amount: 0, rates: { firstMessage: 3, message: 1, callMinute: 1 }, amounts: [100, 200, 500, 1000, 2000, 5000] };
 
   function show(kind, text) { var m = $("msg"); m.className = "msg show " + kind; m.textContent = text; }
   function hide() { $("msg").className = "msg"; }
 
+  // ---- the PIN gate ----
+  // Nothing of the wallet is loaded or shown until the PIN (and the email code) are done. The proof is kept for this tab only, for 9 minutes
+  // (the server accepts it for 10). The server checks it on every wallet request too, so hiding the page is not the only protection.
+  var TK = "vpWalletAuth";
+  function saved() { try { var o = JSON.parse(sessionStorage.getItem(TK) || "null"); if (o && o.exp > Date.now()) return o; } catch (e) {} return null; }
+  function clearSaved() { try { sessionStorage.removeItem(TK); } catch (e) {} state.token = null; }
+  function showLock(text, canRetry) { $("app").hidden = true; $("lock").style.display = "flex"; $("lockTxt").textContent = text || "Enter your PIN to open your wallet."; $("lockBtn").hidden = !canRetry; }
+  function unlock() {
+    var s0 = saved(); if (s0) { state.token = s0.t; return Promise.resolve(); }
+    return window.VicoPin.authorize({ action: "wallet" }).then(function (r) {
+      state.token = (r && r.token) || "";
+      try { sessionStorage.setItem(TK, JSON.stringify({ t: state.token, exp: Date.now() + 9 * 60 * 1000 })); } catch (e) {}
+    });
+  }
+  function openWallet() {
+    $("lock").style.display = "none"; $("app").hidden = false;
+    return confirmReturn().catch(function () { show("err", "Could not confirm the payment. If you were charged, your balance will update automatically."); }).then(load);
+  }
+  function boot() {
+    showLock("Opening…", false);
+    unlock().then(openWallet, function (e) {
+      showLock(e && e.cancel ? "Your wallet is locked. Enter your PIN to open it." : ((e && e.message) || "Could not check wallet security. Try again."), true);
+    });
+  }
   function api(path, opts) {
-    return fetch(path, opts).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { d._status = r.status; return d; }); });
+    if (state.token !== null && state.token !== undefined && !saved()) { clearSaved(); showLock("Your wallet locked itself for your safety. Enter your PIN to open it again.", true); return Promise.resolve({ success: false, message: "Wallet locked.", _status: 428 }); }
+    opts = opts || {};
+    if (state.token) opts.headers = Object.assign({}, opts.headers || {}, { "x-wallet-auth": state.token });
+    return fetch(path, opts).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) {
+      d._status = r.status;
+      if (r.status === 428 && d.walletAuthRequired) { clearSaved(); showLock("Your wallet is locked. Enter your PIN to open it.", true); }
+      return d;
+    }); });
   }
 
   function paintBalance(b) {
@@ -179,7 +230,10 @@
     return once();
   }
 
-  confirmReturn().catch(function () { show("err", "Could not confirm the payment. If you were charged, your balance will update automatically."); }).then(load);
+  $("lockBtn").onclick = boot;
+  $("lockNow").onclick = function () { clearSaved(); showLock("Your wallet is locked. Enter your PIN to open it.", true); };
+  $("chgPin").onclick = function () { window.VicoPin.change().then(function () { show("ok", "Your Wallet PIN was changed."); }, function (e) { if (e && !e.cancel) show("err", (e && e.message) || "Could not change your PIN."); }); };
+  boot();
 })();
 </script>
 </body>
