@@ -1,0 +1,34 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Creator Performance | VicoPay Admin</title>
+<style>
+body{margin:0;background:#0b1424;color:#e8f0fb;font:14px Inter,Arial,sans-serif;padding:18px}
+h1{margin:0 0 4px;font-size:20px}.muted{color:#93a8c6;font-size:12px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+input,select,button{background:#0a1730;color:#fff;border:1px solid #34507a;border-radius:8px;padding:9px 11px;font:inherit}button{cursor:pointer;background:#1677f8;border-color:#1677f8;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.card{background:#101f38;border:1px solid #243c63;border-radius:12px;padding:12px}.card b{display:block;font-size:22px;margin-top:4px}
+.wrap{overflow-x:auto;background:#101f38;border:1px solid #243c63;border-radius:12px}table{border-collapse:collapse;width:100%;min-width:900px}
+th,td{padding:9px 11px;text-align:left;border-bottom:1px solid #1d3254;white-space:nowrap}th{color:#93a8c6;font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+.empty{padding:28px;text-align:center;color:#93a8c6}.err{color:#ff8c8c}
+</style></head><body>
+<h1>Creator Performance &amp; Earnings</h1><div class="muted">Real data from your own database: gifts, live sessions and withdrawal requests. <span id="stamp"></span></div>
+<div class="bar" id="keybar" style="display:none"><input id="key" type="password" placeholder="Admin password"><button id="go">Load</button></div>
+<div class="bar"><label class="muted">Period</label><select id="days"><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select><button id="refresh">Refresh</button><span id="msg" class="err"></span></div>
+<div class="cards" id="cards"></div>
+<div class="wrap"><table><thead><tr><th>#</th><th>Creator</th><th>Coins (period)</th><th>Gifts (period)</th><th>Live hours</th><th>Sessions</th><th>Last live</th><th>All-time coins</th><th>Loves</th><th>Viewers (saved total)</th><th>Pending withdrawals</th></tr></thead><tbody id="rows"></tbody></table></div>
+<script>
+const $=id=>document.getElementById(id),f=v=>Number(v||0).toLocaleString(),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let KEY=sessionStorage.getItem('vk')||'';
+async function load(){
+ if(!KEY){$('keybar').style.display='flex';return}
+ $('msg').textContent='';
+ try{
+  const r=await fetch('/api/admin/creator-performance?days='+$('days').value,{headers:{'x-admin-key':KEY}});
+  const d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'Request failed ('+r.status+')');
+  const t=d.totals;$('stamp').textContent='· Updated '+new Date(d.generatedAt).toLocaleTimeString();
+  $('cards').innerHTML=[['Creators with activity',f(t.creators)],['Live now',f(t.liveNow)],['Coins received',f(t.coinsPeriod)],['Gifts received',f(t.giftsPeriod)],['Live hours',f(t.liveHoursPeriod)],['Live sessions',f(t.sessionsPeriod)],['Pending withdrawals (₦)',f(t.pendingWithdrawalAmount)]].map(c=>`<div class="card"><span class="muted">${c[0]}</span><b>${c[1]}</b></div>`).join('');
+  $('rows').innerHTML=d.rows.length?d.rows.map((c,i)=>`<tr><td>${i+1}</td><td><b>${esc(c.displayName||c.username||c.email)}</b><br><span class="muted">${esc(c.email)}</span></td><td>${f(c.coinsPeriod)}</td><td>${f(c.giftsPeriod)}</td><td>${c.liveHours}</td><td>${f(c.sessions)}</td><td>${c.lastLive?new Date(c.lastLive).toLocaleString():'—'}</td><td>${f(c.coinsAll)}</td><td>${f(c.loves)}</td><td>${f(c.viewersAll)}</td><td>${c.pendingRequests?f(c.pendingRequests)+' · ₦'+f(c.pendingAmount):'—'}</td></tr>`).join(''):'<tr><td colspan="11" class="empty">No creator activity recorded yet. This fills in as real creators go live and receive gifts.</td></tr>';
+ }catch(e){$('msg').textContent=e.message;if(/denied|403/.test(e.message)){sessionStorage.removeItem('vk');KEY='';$('keybar').style.display='flex'}}
+}
+$('go').onclick=()=>{KEY=$('key').value.trim();sessionStorage.setItem('vk',KEY);$('keybar').style.display='none';load()};
+$('refresh').onclick=load;$('days').onchange=load;load();setInterval(()=>{if(KEY)load()},30000);
+</script></body></html>

@@ -3460,6 +3460,9 @@ commandCenter = require("./admin-command-center")({
   app, db, requireAdmin, liveRooms,
   livekit: { url: LIVEKIT_URL, key: LIVEKIT_API_KEY, secret: LIVEKIT_API_SECRET }
 });
+// Super Admin Monitoring + Creator Performance + Marketplace Operations (read-only, ADMIN_KEY protected).
+require("./super-admin-monitoring")({ app, db, requireAdmin });
+require("./admin-creator-market")({ app, db, requireAdmin });
 // Individual administrator accounts, TOTP MFA, role permissions, enforcement actions and immutable-by-API audit history.
 adminControl = require("./admin-control-center")({ app, db, requireAdmin, store, bannedUsers, authSecret: AUTH_SECRET });
 const platformOps = require("./admin-platform-operations")({ app, db, requireAdmin, getMaintenance: () => platformMaintenance, setMaintenance: (v) => { platformMaintenance = v; }, env: process.env, livekit: { url: LIVEKIT_URL, key: LIVEKIT_API_KEY, secret: LIVEKIT_API_SECRET } });

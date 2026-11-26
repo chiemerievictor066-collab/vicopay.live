@@ -1,0 +1,47 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Marketplace Operations | VicoPay Admin</title>
+<style>
+body{margin:0;background:#0b1424;color:#e8f0fb;font:14px Inter,Arial,sans-serif;padding:18px}
+h1{margin:0 0 4px;font-size:20px}h2{font-size:15px;margin:22px 0 8px}.muted{color:#93a8c6;font-size:12px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+input,button{background:#0a1730;color:#fff;border:1px solid #34507a;border-radius:8px;padding:9px 11px;font:inherit}button{cursor:pointer;background:#1677f8;border-color:#1677f8;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.card{background:#101f38;border:1px solid #243c63;border-radius:12px;padding:12px}.card b{display:block;font-size:22px;margin-top:4px}
+.wrap{overflow-x:auto;background:#101f38;border:1px solid #243c63;border-radius:12px}table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:9px 11px;text-align:left;border-bottom:1px solid #1d3254}th{color:#93a8c6;font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+.empty{padding:22px;text-align:center;color:#93a8c6}.err{color:#ff8c8c}
+</style></head><body>
+<h1>Marketplace &amp; Seller Operations</h1><div class="muted">Real data from your own marketplace tables (orders, listings, reports, seller wallet). <span id="stamp"></span></div>
+<div class="bar" id="keybar" style="display:none"><input id="key" type="password" placeholder="Admin password"><button id="go">Load</button></div>
+<div class="bar"><button id="refresh">Refresh</button><span id="msg" class="err"></span></div>
+<div class="cards" id="cards"></div>
+<h2>Orders by status</h2><div class="wrap"><table><thead><tr><th>Status</th><th>Orders</th><th>Value (₦)</th></tr></thead><tbody id="orderStatus"></tbody></table></div>
+<h2>Disputed orders</h2><div class="wrap"><table><thead><tr><th>Order</th><th>Item</th><th>Seller</th><th>Buyer</th><th>₦</th><th>Reason</th><th>Date</th></tr></thead><tbody id="disputes"></tbody></table></div>
+<h2>Top sellers</h2><div class="wrap"><table><thead><tr><th>Seller</th><th>Orders</th><th>Completed</th><th>Disputed</th><th>Completed sales (₦)</th><th>Active listings</th></tr></thead><tbody id="sellers"></tbody></table></div>
+<h2>Listing reports</h2><div class="wrap"><table><thead><tr><th>Report</th><th>Listing</th><th>Seller</th><th>Reason</th><th>Date</th></tr></thead><tbody id="reports"></tbody></table></div>
+<h2>Latest orders</h2><div class="wrap"><table><thead><tr><th>Order</th><th>Item</th><th>Seller</th><th>Buyer</th><th>₦</th><th>Status</th><th>Date</th></tr></thead><tbody id="latest"></tbody></table></div>
+<script>
+const $=id=>document.getElementById(id),f=v=>Number(v||0).toLocaleString(),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dt=t=>t?new Date(Number(t)).toLocaleString():'—';
+let KEY=sessionStorage.getItem('vk')||'';
+const fill=(id,rows,cols,empty)=>{$(id).innerHTML=rows.length?rows.map(r=>'<tr>'+cols(r).map(c=>'<td>'+c+'</td>').join('')+'</tr>').join(''):'<tr><td colspan="9" class="empty">'+empty+'</td></tr>'};
+async function load(){
+ if(!KEY){$('keybar').style.display='flex';return}
+ $('msg').textContent='';
+ try{
+  const r=await fetch('/api/admin/marketplace-ops',{headers:{'x-admin-key':KEY}});
+  const d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'Request failed ('+r.status+')');
+  $('stamp').textContent='· Updated '+new Date(d.generatedAt).toLocaleTimeString();
+  const os=Object.fromEntries(d.orderStatus.map(x=>[x.status,x])),ls=Object.fromEntries(d.listingStatus.map(x=>[x.status,x]));
+  const ws=Object.fromEntries(d.wallet.map(x=>[x.status,x])),sw=Object.fromEntries(d.sellerWithdrawals.map(x=>[x.status,x]));
+  const totalOrders=d.orderStatus.reduce((a,x)=>a+x.count,0);
+  $('cards').innerHTML=[['Orders (last 24h)',f(d.last24h.orders)],['Paid value, 24h (₦)',f(d.last24h.ngn)],['All orders',f(totalOrders)],['Disputed orders',f(os.disputed?.count)],['Active listings',f(ls.active?.count)],['Seller payouts pending (₦)',f(sw.requested?.amount)],['Seller funds held (₦)',f(ws.pending?.net)],['Commission earned (₦)',f(d.wallet.reduce((a,x)=>a+Number(x.commission||0),0))]].map(c=>`<div class="card"><span class="muted">${c[0]}</span><b>${c[1]}</b></div>`).join('');
+  fill('orderStatus',d.orderStatus,x=>[esc(x.status),f(x.count),f(x.ngn)],'No orders yet.');
+  fill('disputes',d.disputes,x=>['#'+x.id,esc(x.title),esc(x.seller),esc(x.buyer),f(x.amountNgn),esc(x.reason||'—'),dt(x.createdAt)],'No disputed orders.');
+  fill('sellers',d.sellers,x=>['<b>'+esc(x.displayName||x.username||x.email)+'</b><br><span class="muted">'+esc(x.email)+'</span>',f(x.orders),f(x.completed),f(x.disputed),f(x.salesNgn),f(x.activeListings)],'No seller activity yet.');
+  fill('reports',d.reports,x=>['#'+x.id,esc(x.title||'Listing #'+x.listingId),esc(x.seller||'—'),esc(x.reason||'—'),dt(x.createdAt)],'No listing reports.');
+  fill('latest',d.latestOrders,x=>['#'+x.id,esc(x.title),esc(x.seller),esc(x.buyer),f(x.amountNgn),esc(x.status),dt(x.createdAt)],'No orders yet. This fills in as real customers buy.');
+ }catch(e){$('msg').textContent=e.message;if(/denied|403/.test(e.message)){sessionStorage.removeItem('vk');KEY='';$('keybar').style.display='flex'}}
+}
+$('go').onclick=()=>{KEY=$('key').value.trim();sessionStorage.setItem('vk',KEY);$('keybar').style.display='none';load()};
+$('refresh').onclick=load;load();setInterval(()=>{if(KEY)load()},30000);
+</script></body></html>
