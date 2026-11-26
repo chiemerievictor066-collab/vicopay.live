@@ -1,60 +1,226 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>Vehicle Admin Administration | VicoPay</title>
+<meta name="robots" content="noindex"><title>Vehicle Admin | VicoPay</title>
 <style>
 :root{--bg:#071225;--panel:#0d1c34;--line:#223858;--blue:#1677f8;--muted:#9bb0ce}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#edf5ff;font:14px Inter,Arial,sans-serif}
-header{height:auto;min-height:76px;padding:14px 20px;background:#091a33;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.brand{font-size:20px;font-weight:900;margin-right:auto}.brand span{color:#3fc8ff}.sub{color:var(--muted);font-size:12px}
-.login{display:flex;gap:8px;align-items:center;flex-wrap:wrap}input{background:#061126;color:#fff;border:1px solid #345078;border-radius:9px;padding:10px 12px;min-width:220px}button{cursor:pointer;border:1px solid #355276;background:#102746;color:#eaf4ff;border-radius:9px;padding:10px 12px;font-weight:700}button.active,button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
-.shell{display:grid;grid-template-columns:250px minmax(0,1fr);height:calc(100vh - 76px);min-height:560px}
-aside{background:#09182e;border-right:1px solid var(--line);padding:14px;overflow:auto}.group{margin:12px 0 7px;color:#7f9bbb;text-transform:uppercase;font-size:10px;font-weight:900;letter-spacing:1.2px}
-nav button{display:block;width:100%;text-align:left;margin:4px 0;background:transparent;border-color:transparent;color:#c8d9ef}nav button:hover,nav button.active{background:#12325b;border-color:#2d5b91;color:#fff}
-main{min-width:0;display:flex;flex-direction:column}.toolbar{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}#currentTitle{font-weight:800;font-size:15px;margin-right:auto}.hint{color:var(--muted);font-size:12px}
-iframe{width:100%;height:100%;border:0;background:#f3f6fb}.framewrap{flex:1;min-height:0;position:relative}.cover{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#071225;z-index:3;padding:20px;text-align:center}.cover.show{display:flex}.coverbox{max-width:440px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
-@media(max-width:760px){.shell{grid-template-columns:1fr;height:auto;min-height:calc(100vh - 76px)}aside{border-right:0;border-bottom:1px solid var(--line);max-height:210px}nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}nav button{margin:0;font-size:12px;padding:9px}.framewrap{height:75vh;min-height:600px}header{padding:12px}}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:#edf5ff;font:14px Inter,Arial,sans-serif}
+.hidden{display:none!important}
+button,input{font:inherit}
+input{background:#061126;color:#fff;border:1px solid #345078;border-radius:9px;padding:10px 12px}
+button{cursor:pointer;border:1px solid #355276;background:#102746;color:#eaf4ff;border-radius:9px;padding:10px 12px;font-weight:700}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+/* login gate */
+#gate{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
+.gatebox{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
+.brand{font-size:22px;font-weight:900}.brand span{color:#3fc8ff}
+.gatebox p{color:var(--muted);margin:8px 0 18px;line-height:1.5}
+.gatebox input{width:100%;margin-bottom:12px}.gatebox button{width:100%}
+#gateErr{color:#ff8c8c;min-height:18px;margin-top:10px;font-size:13px}
+/* shell */
+#app{height:100%;display:flex;flex-direction:column}
+header{padding:12px 18px;background:#091a33;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+header .sub{color:var(--muted);font-size:12px;margin-right:auto}
+.shell{flex:1;min-height:0;display:grid;grid-template-columns:270px minmax(0,1fr)}
+aside{background:#09182e;border-right:1px solid var(--line);padding:12px;overflow:auto}
+#search{width:100%;margin-bottom:6px}
+.group{margin:14px 0 6px;color:#7f9bbb;text-transform:uppercase;font-size:10px;font-weight:900;letter-spacing:1.2px}
+nav button{display:block;width:100%;text-align:left;margin:3px 0;background:transparent;border-color:transparent;color:#c8d9ef;padding:9px 10px}
+nav button:hover,nav button.active{background:#12325b;border-color:#2d5b91;color:#fff}
+main{min-width:0;display:flex;flex-direction:column}
+.toolbar{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+#currentTitle{font-weight:800;font-size:15px;margin-right:auto}
+.framewrap{flex:1;min-height:0}
+iframe{width:100%;height:100%;border:0;background:#f3f6fb}
+@media(max-width:760px){
+ .shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+ aside{border-right:0;border-bottom:1px solid var(--line);max-height:200px}
+ header .sub{display:none}header{justify-content:space-between}
+}
 </style></head><body>
-<header><div><div class="brand">VicoPay <span>Vehicle Admin</span></div><div class="sub">Vehicle Admin Administration · One control centre for all admin tools</div></div>
-<div class="login"><input id="adminKey" type="password" autocomplete="current-password" placeholder="Enter your existing ADMIN_KEY"><button class="primary" id="saveKey">Connect admin</button></div></header>
-<div class="shell"><aside><div class="group">Administration menu</div><nav id="menu"></nav></aside>
-<main><div class="toolbar"><div id="currentTitle">Main Dashboard</div><div class="hint">Choose a section on the left. Existing tools remain intact.</div><button id="reload">Reload section</button></div>
-<div class="framewrap"><iframe id="adminFrame" title="Vehicle Admin section" src="about:blank"></iframe><div class="cover show" id="cover"><div class="coverbox"><h2>Vehicle Admin Administration</h2><p>Enter your existing VicoPay ADMIN_KEY above, then choose an administration section.</p><p class="hint">Your key is kept only in this browser tab's session storage and is not sent anywhere by this page except to the existing admin tools.</p></div></div></div></main></div>
+
+<!-- ONE PASSWORD SCREEN -->
+<div id="gate">
+ <div class="gatebox">
+  <div class="brand">VicoPay <span>Vehicle Admin</span></div>
+  <p>Enter your admin password once. Every admin page opens after that, with no more password prompts.</p>
+  <input id="pw" type="password" autocomplete="current-password" placeholder="Admin password" autofocus>
+  <button class="primary" id="enter">Open Vehicle Admin</button>
+  <div id="gateErr"></div>
+ </div>
+</div>
+
+<!-- EVERYTHING ADMIN IN ONE PLACE -->
+<div id="app" class="hidden">
+ <header>
+  <div class="brand">VicoPay <span>Vehicle Admin</span></div>
+  <div class="sub">All admin pages in one place · one password</div>
+  <button id="lock">Lock</button>
+ </header>
+ <div class="shell">
+  <aside><input id="search" type="search" placeholder="Search admin pages…"><nav id="menu"></nav></aside>
+  <main>
+   <div class="toolbar"><div id="currentTitle">Main Dashboard</div><button id="reload">Reload page</button></div>
+   <div class="framewrap"><iframe id="frame" title="Admin page" src="about:blank"></iframe></div>
+  </main>
+ </div>
+</div>
+
 <script>
-const pages=[{"file": "admin-overview.html", "label": "Main Dashboard", "group": "Overview"}, {"file": "admin-campaigns.html", "label": "Event Creator Studio", "group": "Competitions"}, {"file": "campaign-competition-admin.html", "label": "Competition Control Room", "group": "Competitions"}, {"file": "campaign-applications-admin.html", "label": "Competition Applications", "group": "Competitions"}, {"file": "campaign-feedback-admin.html", "label": "Competition Feedback Review", "group": "Competitions"}, {"file": "admin-payouts.html", "label": "Payout Management", "group": "Finance"}, {"file": "admin-analytics.html", "label": "Analytics", "group": "Reports"}, {"file": "admin-ad-jobs.html", "label": "Advertising Jobs", "group": "Advertising"}, {"file": "admin-company-verification.html", "label": "Company Verification", "group": "Business"}, {"file": "admin-trusted-business.html", "label": "Trusted Businesses", "group": "Business"}, {"file": "admin-global-enquiries.html", "label": "Global Enquiries", "group": "Business"}, {"file": "admin-vip.html", "label": "VIP Management", "group": "Community"}, {"file": "admin-community.html", "label": "Community Management", "group": "Community"}, {"file": "admin-blocked-users.html", "label": "Blocked Users", "group": "Community"}, {"file": "admin-referrals.html", "label": "Referral Management", "group": "Growth"}];
-const menu=document.getElementById('menu'),frame=document.getElementById('adminFrame'),cover=document.getElementById('cover');
-let current='admin-overview.html';
-const groups=[...new Set(pages.map(p=>p.group))];
-for(const group of groups){
- const heading=document.createElement('div');heading.className='group';heading.textContent=group;menu.appendChild(heading);
- for(const p of pages.filter(x=>x.group===group)){
-  const b=document.createElement('button');b.textContent=p.label;b.dataset.file=p.file;b.addEventListener('click',()=>openPage(p.file,p.label));menu.appendChild(b);
+/* Every admin page in the project. Add a new admin page by adding one line here. */
+const pages=[
+ {file:'admin-overview.html',label:'Main Dashboard',group:'Overview'},
+ {file:'super-admin-master.html',label:'Master Admin',group:'Overview'},
+ {file:'super-admin-command-center.html',label:'Super Admin Command Centre',group:'Overview'},
+ {file:'super-admin-command-center-mock.html',label:'Command Centre (Demo)',group:'Overview'},
+ {file:'super-admin-action-centre.html',label:'Admin Action Centre',group:'Overview'},
+
+ {file:'admin-campaigns.html',label:'Event Creator Studio',group:'Competitions'},
+ {file:'campaign-competition-admin.html',label:'Competition Control Room',group:'Competitions'},
+ {file:'campaign-applications-admin.html',label:'Competition Applications',group:'Competitions'},
+ {file:'campaign-feedback-admin.html',label:'Competition Feedback Review',group:'Competitions'},
+
+ {file:'admin-payouts.html',label:'Payout Management',group:'Finance'},
+ {file:'super-admin-financial-operations.html',label:'Financial Operations',group:'Finance'},
+ {file:'super-admin-wallet-coin-economy-control-centre.html',label:'Wallet & Coin Economy',group:'Finance'},
+
+ {file:'admin-analytics.html',label:'Analytics',group:'Reports & Analytics'},
+ {file:'super-admin-analytics-business-intelligence-centre.html',label:'Business Intelligence',group:'Reports & Analytics'},
+ {file:'super-admin-creator-performance-earnings-centre.html',label:'Creator Performance & Earnings',group:'Reports & Analytics'},
+
+ {file:'admin-ad-jobs.html',label:'Advertising Jobs',group:'Advertising'},
+
+ {file:'admin-company-verification.html',label:'Company Verification',group:'Business'},
+ {file:'admin-trusted-business.html',label:'Trusted Businesses',group:'Business'},
+ {file:'admin-global-enquiries.html',label:'Global Enquiries',group:'Business'},
+ {file:'super-admin-marketplace-seller-operations-centre.html',label:'Marketplace & Seller Operations',group:'Business'},
+
+ {file:'admin-vip.html',label:'VIP Management',group:'Community'},
+ {file:'admin-community.html',label:'Community Management',group:'Community'},
+ {file:'admin-blocked-users.html',label:'Blocked Users',group:'Community'},
+ {file:'super-admin-customer-creator-centre.html',label:'Customer & Creator Management',group:'Community'},
+ {file:'super-admin-creator-verification-centre.html',label:'Creator Verification',group:'Community'},
+ {file:'super-admin-support-notifications-moderation-centre.html',label:'Support, Notifications & Moderation',group:'Community'},
+
+ {file:'admin-referrals.html',label:'Referral Management',group:'Growth'},
+
+ {file:'super-admin-control-center.html',label:'Control Centre (Staff & Holds)',group:'Security & Monitoring'},
+ {file:'super-admin-monitoring.html',label:'Super Admin Monitoring',group:'Security & Monitoring'},
+ {file:'super-admin-platform-health.html',label:'Platform Health',group:'Security & Monitoring'},
+ {file:'super-admin-real-time-operations.html',label:'Real-Time Operations',group:'Security & Monitoring'},
+ {file:'super-admin-risk-intelligence.html',label:'Risk Intelligence',group:'Security & Monitoring'}
+];
+
+/* Every place the existing admin pages look for the key */
+const STORAGE_KEYS=['vk','vicoCampaignAdminKey','ADMIN_KEY','vicoAdminKey','vico_admin_key','vicoSuperAdminKey','vico_master_owner'];
+const MASTER_TOKEN_KEYS=['vico_master_token'];
+
+const $=id=>document.getElementById(id);
+const menu=$('menu'),frame=$('frame');
+let KEY='',current=pages[0];
+
+/* ---------- menu ---------- */
+function buildMenu(filter=''){
+ menu.innerHTML='';const q=filter.trim().toLowerCase();
+ for(const group of [...new Set(pages.map(p=>p.group))]){
+  const items=pages.filter(p=>p.group===group&&(!q||p.label.toLowerCase().includes(q)||p.file.includes(q)));
+  if(!items.length)continue;
+  const h=document.createElement('div');h.className='group';h.textContent=group;menu.appendChild(h);
+  for(const p of items){
+   const b=document.createElement('button');b.textContent=p.label;b.dataset.file=p.file;
+   b.classList.toggle('active',p.file===current.file);
+   b.onclick=()=>openPage(p);menu.appendChild(b);
+  }
  }
 }
-function openPage(file,label){
- current=file;document.getElementById('currentTitle').textContent=label||pages.find(p=>p.file===file)?.label||file;
- for(const b of menu.querySelectorAll('button'))b.classList.toggle('active',b.dataset.file===file);
- cover.classList.remove('show');frame.src=file;
+function openPage(p){
+ current=p;$('currentTitle').textContent=p.label;
+ for(const b of menu.querySelectorAll('button'))b.classList.toggle('active',b.dataset.file===p.file);
+ frame.src=p.file;
 }
-document.getElementById('saveKey').addEventListener('click',()=>{
- const key=document.getElementById('adminKey').value.trim();
- if(!key){alert('Enter your existing ADMIN_KEY.');return;}
- sessionStorage.setItem('vk',key);
- sessionStorage.setItem('vicoCampaignAdminKey',key);
- sessionStorage.setItem('ADMIN_KEY',key);
- openPage(current,'Main Dashboard');
-});
-document.getElementById('reload').addEventListener('click',()=>{frame.contentWindow.location.reload();});
-frame.addEventListener('load',()=>{
+$('search').oninput=e=>buildMenu(e.target.value);
+$('reload').onclick=()=>{try{frame.contentWindow.location.reload()}catch(e){frame.src=current.file}};
+
+/* ---------- one password ---------- */
+async function checkKey(k){
+ const r=await fetch('/api/admin/overview',{headers:{'x-admin-key':k}});
+ return r.ok;
+}
+function saveKey(k){KEY=k;for(const n of STORAGE_KEYS)sessionStorage.setItem(n,k)}
+function lockAll(){
+ KEY='';for(const n of [...STORAGE_KEYS,...MASTER_TOKEN_KEYS])sessionStorage.removeItem(n);
+ frame.src='about:blank';$('app').classList.add('hidden');$('gate').classList.remove('hidden');
+ $('pw').value='';$('gateErr').textContent='';$('pw').focus();
+}
+window.lockAll=lockAll;
+function showApp(){
+ $('gate').classList.add('hidden');$('app').classList.remove('hidden');
+ buildMenu();openPage(current);
+}
+async function tryEnter(k){
+ if(!k){$('gateErr').textContent='Enter your admin password.';return}
+ $('enter').disabled=true;$('gateErr').textContent='';
  try{
-  const doc=frame.contentDocument;
-  if(!doc)return;
-  doc.addEventListener('click',e=>{
-   const a=e.target.closest('a[href]');if(!a)return;
-   const u=new URL(a.href,location.href);
-   if(u.origin!==location.origin)return;
-   const target=pages.find(p=>p.file===u.pathname.split('/').pop());
-   if(target){e.preventDefault();openPage(target.file,target.label);}
-  },true);
- }catch(e){}
+  if(await checkKey(k)){saveKey(k);showApp()}
+  else $('gateErr').textContent='Wrong password.';
+ }catch(e){$('gateErr').textContent='Cannot reach the server. Open this page from your running site.'}
+ finally{$('enter').disabled=false}
+}
+$('enter').onclick=()=>tryEnter($('pw').value.trim());
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('enter').click()});
+$('lock').onclick=lockAll;
+
+/* ---------- unlock each page automatically ---------- */
+function setVal(w,el,v){if(!el)return false;el.value=v;el.dispatchEvent(new w.Event('input',{bubbles:true}));return true}
+function patchFetch(w){
+ if(w.__vehiclePatched)return;w.__vehiclePatched=true;
+ const orig=w.fetch.bind(w);
+ w.fetch=(u,o={})=>{
+  const url=typeof u==='string'?u:(u&&u.url)||'';
+  if(/\/api\//.test(url)){
+   const h=new w.Headers(o.headers||{});
+   if(!h.has('x-admin-key'))h.set('x-admin-key',KEY);
+   o={...o,headers:h};
+  }
+  return orig(u,o);
+ };
+}
+const hooks={
+ 'admin-global-enquiries.html':(w,d)=>{setVal(w,d.querySelector('#key'),KEY);d.querySelector('#load')?.click()},
+ 'admin-trusted-business.html':(w,d)=>{setVal(w,d.querySelector('#key'),KEY);d.querySelector('#save')?.click()},
+ 'super-admin-risk-intelligence.html':(w,d)=>{setVal(w,d.querySelector('#key'),KEY);w.refresh?.()},
+ 'super-admin-platform-health.html':(w,d)=>{setVal(w,d.querySelector('#key'),KEY);w.refresh?.()},
+ 'super-admin-real-time-operations.html':(w,d)=>{setVal(w,d.querySelector('#key'),KEY);d.querySelector('#connect')?.click()},
+ 'super-admin-financial-operations.html':(w,d)=>{setVal(w,d.querySelector('#key'),KEY);w.connect?.()},
+ 'super-admin-control-center.html':(w,d)=>{setVal(w,d.querySelector('#rootKey'),KEY);w.useRoot?.()},
+ 'super-admin-monitoring.html':(w,d)=>{const g=d.querySelector('#gate');if(g&&!g.hidden){setVal(w,d.querySelector('#key'),KEY);w.enter?.()}}
+};
+frame.addEventListener('load',()=>{
+ if(!KEY)return;
+ let w,d;try{w=frame.contentWindow;d=w.document;if(!d||w.location.href==='about:blank')return}catch(e){return}
+ patchFetch(w);
+ const file=w.location.pathname.split('/').pop();
+ /* any "Lock"/"Logout" button inside a page locks the whole Vehicle Admin */
+ for(const b of d.querySelectorAll('button,a')){
+  const oc=(b.getAttribute('onclick')||'');
+  if(/removeItem/.test(oc)||b.id==='logout'||b.id==='lock'){b.removeAttribute('onclick');b.onclick=e=>{e.preventDefault();lockAll()}}
+ }
+ /* links to other admin pages open inside Vehicle Admin */
+ d.addEventListener('click',e=>{
+  const a=e.target.closest&&e.target.closest('a[href]');if(!a)return;
+  let u;try{u=new URL(a.href,w.location.href)}catch(_){return}
+  if(u.origin!==location.origin)return;
+  const f=u.pathname.split('/').pop();
+  if(f==='admin.html'||f==='vehicle-admin.html'){e.preventDefault();openPage(pages[0]);return}
+  const t=pages.find(p=>p.file===f);
+  if(t){e.preventDefault();openPage(t)}
+ },true);
+ setTimeout(()=>{try{hooks[file]?.(w,d)}catch(e){console.warn('auto-unlock skipped for',file,e)}},60);
 });
+
+/* ---------- reopen without asking again in the same tab ---------- */
+(async()=>{
+ const saved=sessionStorage.getItem('vk');
+ if(saved){try{if(await checkKey(saved)){saveKey(saved);showApp();return}}catch(e){}}
+ $('pw').focus();
+})();
 </script></body></html>
