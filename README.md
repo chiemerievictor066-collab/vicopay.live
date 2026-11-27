@@ -159,7 +159,7 @@ Reached from **Settings → Help & Support** (and `help-center.html` directly). 
 ## Host payout rules (current)
 
 * **Normal host:** at least 3,000 Golden Stars in the month, **$9 per full 3,000 stars** (6,000 = $18, 9,000 = $27 ...).
-* **VIP host:** at least 12,000 Golden Stars in the month, **$10.80 per full 3,000 stars** (12,000 = $43.20, 15,000 = $54.00, 18,000 = $64.80, 21,000 = $75.60, 24,000 = $86.40, 30,000 = $108.00). 13,000 or 14,500 stars are paid as 12,000.
+* **VIP host:** at least 9,000 Golden Stars in the month, **$10.80 per full 3,000 stars** (9,000 = $32.40, 12,000 = $43.20, 15,000 = $54.00, 18,000 = $64.80, 21,000 = $75.60, 24,000 = $86.40, 30,000 = $108.00). 10,000 or 11,500 stars are paid as 9,000.
 * Payouts are always whole blocks of 3,000 stars; stars left over after the last complete block are not paid.
 * **Both:** go live **every day of the month for at least 1 hour** and complete **at least 30 live hours in the month**. Only 1 hour per day is added to the monthly hours: after the hour a host is free to keep streaming (extra hours that day are not added, stars still count), and a new day starts a new hour (a live past midnight counts on both days).
 * The numbers live in `CREATOR_RULES` / `VIP_RULES` near the top of `server.js` and in `live-hours.js` (shared by the wallet and the monthly payout engine). The pages and Help Center text were updated to match.

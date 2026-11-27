@@ -3,9 +3,9 @@
 ## New rule
 - A verified $12 Promotional Duration payment grants Silver VIP immediately.
 - The paid VIP period lasts exactly two calendar months from the verified payment time.
-- The streamer must earn at least 12,000 Golden Stars from gifts received after that payment and before the two-month expiry.
-- Reaching 12,000 qualifying stars converts the promotion to permanent VIP (no expiry).
-- If the deadline passes before 12,000 qualifying stars are reached, the paid promotion expires and the account returns to normal live-streamer status.
+- The streamer must earn at least 9,000 Golden Stars from gifts received after that payment and before the two-month expiry.
+- Reaching 9,000 qualifying stars converts the promotion to permanent VIP (no expiry).
+- If the deadline passes before 9,000 qualifying stars are reached, the paid promotion expires and the account returns to normal live-streamer status.
 - After an unsuccessful expiry, another verified $12 payment is required to start a new two-month qualification period.
 - The payment button is hidden while a promotion is active; a second payment cannot be made early to extend the current period.
 
@@ -30,4 +30,4 @@ Existing still-active paid promotions created under the old 30-day setting are m
 
 The existing `PROMO_DURATION_DAYS` environment variable is no longer used. The duration is fixed in server code at two calendar months. The $12 price remains controlled by the existing `PROMO_PRICE_USD` / `PROMO_PRICE_NGN` settings.
 
-The 12,000-star target is measured using qualifying gifts received after the successful payment, excluding circular/self-gifting using the project's existing netting approach. This is a server-side check; a browser message alone cannot grant VIP.
+The 9,000-star target is measured using qualifying gifts received after the successful payment, excluding circular/self-gifting using the project's existing netting approach. This is a server-side check; a browser message alone cannot grant VIP.

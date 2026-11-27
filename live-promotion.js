@@ -14,7 +14,7 @@
       '<div class="lp-status" style="display:inline-flex;align-items:center;padding:8px 12px;border-radius:20px;background:#e7eef5;color:#53677d;font-weight:900;font-size:12px">NOT PROMOTED</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:14px">' +
       '<div>Followers<div class="lp-followers" style="font-size:24px;font-weight:900">—</div><small>Requirement: 1,000</small></div>' +
-      '<div>Golden Stars<div class="lp-stars" style="font-size:24px;font-weight:900">—</div><small>Requirement: 12,000</small></div>' +
+      '<div>Golden Stars<div class="lp-stars" style="font-size:24px;font-weight:900">—</div><small>Requirement: 9,000</small></div>' +
       '<div>Total live time<div class="lp-hours" style="font-size:24px;font-weight:900">—</div><small>Saved in Vico Pay Live</small></div></div>' +
       '<div class="lp-profile" style="margin-top:12px;font-size:13px;color:#45617f">Your profile story and joining date will appear here.</div>' +
       '<div style="margin-top:8px;font-size:12px;color:#45617f">Promotion is automatic when both requirements are met.</div>';

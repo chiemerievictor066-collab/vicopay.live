@@ -647,7 +647,7 @@ footer {
 
         <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px">
             <tr style="color:#9fb3c8;text-align:left"><th style="padding:6px 4px">Requirement</th><th style="padding:6px 4px">Normal host</th><th style="padding:6px 4px">VIP host</th></tr>
-            <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Stars per month</td><td>3,000</td><td>12,000</td></tr>
+            <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Stars per month</td><td>3,000</td><td>9,000</td></tr>
             <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Days streamed</td><td>every day</td><td>every day</td></tr>
             <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Streaming hours per day</td><td>at least 1 hour</td><td>at least 1 hour</td></tr>
             <tr style="border-top:1px solid #203352"><td style="padding:7px 4px">Total live-stream hours per month</td><td>30 hours</td><td>30 hours</td></tr>
@@ -670,6 +670,10 @@ footer {
 
         <h3 style="margin:18px 0 8px;font-size:15px">👑 VIP host</h3>
 
+        <div class="payout-row">
+            <span>9,000 Golden Stars</span>
+            <strong>$32.40</strong>
+        </div>
         <div class="payout-row">
             <span>12,000 Golden Stars</span>
             <strong>$43.20</strong>
@@ -699,8 +703,8 @@ footer {
             Payouts are made in <strong>complete blocks of 3,000 stars</strong>.
             <strong>Normal host:</strong> 4,000 stars is paid as 3,000 stars ($9), and 7,000 stars
             is paid as 6,000 stars ($18).
-            <strong>VIP host:</strong> 13,000 or 14,500 stars is paid as 12,000 stars ($43.20),
-            and 15,000 stars is paid as 15,000 stars ($54.00). The stars left over after the last
+            <strong>VIP host:</strong> 10,000 or 11,500 stars is paid as 9,000 stars ($32.40),
+            and 12,000 stars is paid as 12,000 stars ($43.20). The stars left over after the last
             complete block are not paid.
         </p>
 
@@ -859,7 +863,7 @@ async function loadWallet(){
 const usdText = (n) => "$" + (Math.round(n * 100) % 100 === 0 ? Math.round(n) : n.toFixed(2));
 function paintWalletStars(monthly){
     const BLOCK = 3000;                                        // a payout block is always 3,000 stars
-    const MIN = Number(monthly.minimumStars || 3000);          // stars needed: 3,000 normal host, 12,000 VIP host
+    const MIN = Number(monthly.minimumStars || 3000);          // stars needed: 3,000 normal host, 9,000 VIP host
     const blockUsd = Number(monthly.blockUsd || 9);            // $9.00 normal, $10.80 VIP, per block
     const have = Number(monthly.earnedStars != null ? monthly.earnedStars : (monthly.stars || 0));
     const free = Number(monthly.stars || 0);                 // released, can be withdrawn

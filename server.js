@@ -144,7 +144,7 @@ const recordSessionStart = (h, r) => store.sessionStart(h, r).catch((e) => conso
 const recordSessionEnd = (h, r) => store.sessionEnd(h, r).catch((e) => console.error("SESSION END ERROR:", e.message));
 // Monthly requirements (the same wording is shown to hosts; the maths is in live-hours.js and is shared with payouts.js):
 //   Normal host: 3,000 stars,  live EVERY day for at least 1 hour, and at least 30 live hours in the month. $9.00  per 3,000 stars.
-//   VIP host:   12,000 stars,  live EVERY day for at least 1 hour, and at least 30 live hours in the month. $10.80 per 3,000 stars.
+//   VIP host:   9,000 stars,  live EVERY day for at least 1 hour, and at least 30 live hours in the month. $10.80 per 3,000 stars.
 // The "every day, at least 1 hour" check is the existing per-day check in the store (it takes the hours-per-day as a number);
 // the monthly TOTAL is counted here from live_sessions, in the Nigeria month, with overlapping rooms merged.
 const liveHoursLib = require("./live-hours");
@@ -189,11 +189,11 @@ const CREATOR_RULES = {
   dailyLiveHours: 1,        // live every day for at least 1 hour
   monthlyLiveHours: 30      // and at least 30 hours in the month
 };
-const VIP_RULES = { minimumStars: 12000, dailyLiveHours: 1, monthlyLiveHours: 30 };   // VIP: 12,000 stars, every day 1 hour, 30 hours a month
+const VIP_RULES = { minimumStars: 9000, dailyLiveHours: 1, monthlyLiveHours: 30 };   // VIP: 9,000 stars, every day 1 hour, 30 hours a month
 
 // $9 per every complete 3,000 Golden Stars for a normal host (3,000 -> $9, 6,000 -> $18, 9,000 -> $27 ...),
 // $10.80 for a VIP host. Both tables are shown on host-wallet.html.
-// VIP hosts are paid $10.80 per 3,000 stars ($3.60 per 1,000: 12,000 -> $43.20 ... 30,000 -> $108.00). Same whole-block rule, counted in cents.
+// VIP hosts are paid $10.80 per 3,000 stars ($3.60 per 1,000: 9,000 -> $32.40, 12,000 -> $43.20 ... 30,000 -> $108.00). Same whole-block rule, counted in cents.
 // blockCents defaults to the normal $9.00, so any caller that does not know about VIP behaves exactly as before.
 function calculateCreatorPayout(stars, blockCents) {
   if (stars < CREATOR_RULES.minimumStars) return 0;
@@ -220,7 +220,7 @@ async function getCreatorEligibility(creatorId) {
   const starsComplete = stars >= hostRules.minStars;
   const liveRequirementComplete = live.monthlyRequirementComplete;
   const eligible = starsComplete && liveRequirementComplete;
-  // only whole 3,000-star blocks are paid: a VIP with 13,000 or 14,500 stars is paid for 12,000; with 15,000 for 15,000 ...
+  // only whole 3,000-star blocks are paid: a VIP with 10,000 or 11,500 stars is paid for 9,000; with 12,000 for 12,000 ...
   const payout = eligible ? calculateCreatorPayout(stars, hostRules.blockCents) : 0;
 
   return {

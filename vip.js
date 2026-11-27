@@ -144,18 +144,18 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
     try {
       await client.query("SELECT pg_advisory_lock(727275)");   // different lock number from db.js, so start-ups never block each other
       for (const sql of SCHEMA) await client.query(sql);
-      // Earned tiers also need 6000 lifetime Golden Stars. Added to the (new) VIP table only, once; later admin edits are never overwritten.
+      // Earned tiers also need 9000 lifetime Golden Stars. Added to the (new) VIP table only, once; later admin edits are never overwritten.
       const hasStars = await client.query("SELECT 1 FROM information_schema.columns WHERE table_name = 'vip_badges' AND column_name = 'min_stars'");
       if (!hasStars.rowCount) {
         await client.query("ALTER TABLE vip_badges ADD COLUMN min_stars BIGINT NOT NULL DEFAULT 0");
-        await client.query("UPDATE vip_badges SET min_stars = 6000 WHERE id IN ('badge-silver','badge-gold','badge-diamond')");
+        await client.query("UPDATE vip_badges SET min_stars = 9000 WHERE id IN ('badge-silver','badge-gold','badge-diamond')");
       }
       const ts = now();
       let i = 0;
       for (const b of SEED_BADGES) {
         await client.query(
           "INSERT INTO vip_badges (id, name, tier, icon, color, min_followers, min_live_hours, min_stars, auto_unlock, admin_only, sort, active, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,1,$12) ON CONFLICT (id) DO NOTHING",
-          [b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7] ? 6000 : 0, b[7], 0, ++i, ts]);
+          [b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7] ? 9000 : 0, b[7], 0, ++i, ts]);
       }
       i = 0;
       for (const f of SEED_FRAMES) {
@@ -183,6 +183,12 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
       }
       // The VIP system has no global on/off switch any more: it always runs. Admins control individual people (approve / revoke, with an optional end date).
       await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('max_open_reports','3',$1) ON CONFLICT (key) DO NOTHING", [ts]);
+      // One time only: the automatic-VIP star requirement is now 9,000 (it was 6,000). After this has run once, later edits in admin-vip.html are never overwritten.
+      const moved = await client.query("SELECT 1 FROM vip_settings WHERE key = 'min_stars_9000_v1'");
+      if (!moved.rowCount) {
+        await client.query("UPDATE vip_badges SET min_stars = 9000 WHERE auto_unlock = 1 AND min_stars > 0");
+        await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('min_stars_9000_v1','1',$1) ON CONFLICT (key) DO NOTHING", [ts]);
+      }
     } finally {
       try { await client.query("SELECT pg_advisory_unlock(727275)"); } catch (_) { /* ignore */ }
       client.release();

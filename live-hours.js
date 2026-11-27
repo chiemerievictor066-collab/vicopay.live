@@ -51,10 +51,10 @@ const totalHours = (perDay, dailyCap) => {
 
 // THE MONTHLY RULES (one place, used everywhere)
 //   Normal host: 3,000 stars | live EVERY day for at least 1 hour | at least 30 live hours in the month | $9.00  per 3,000 stars
-//   VIP host:   12,000 stars | live EVERY day for at least 1 hour | at least 30 live hours in the month | $10.80 per 3,000 stars
+//   VIP host:   9,000 stars | live EVERY day for at least 1 hour | at least 30 live hours in the month | $10.80 per 3,000 stars
 const RULES = {
   normal: { minStars: 3000,  dailyHours: 1, monthlyHours: 30, blockStars: 3000, blockCents: 900 },
-  vip:    { minStars: 12000, dailyHours: 1, monthlyHours: 30, blockStars: 3000, blockCents: 1080 }
+  vip:    { minStars: 9000,  dailyHours: 1, monthlyHours: 30, blockStars: 3000, blockCents: 1080 }
 };
 // does one host meet the live rules for a month? perDay = liveHoursPerDay(...), rules = RULES.normal | RULES.vip
 function checkLive(perDay, rules) {
@@ -62,7 +62,7 @@ function checkLive(perDay, rules) {
   const hours = totalHours(perDay, rules.dailyHours);
   return { liveDays, days: perDay.length, hours, everyDay: liveDays >= perDay.length, enoughHours: hours >= rules.monthlyHours };
 }
-// dollars for a number of stars: whole 3,000-star blocks only (13,000 and 14,500 stars are both paid as 12,000), counted in cents
+// dollars for a number of stars: whole 3,000-star blocks only (10,000 and 11,500 stars are both paid as 9,000), counted in cents
 const payoutUsd = (stars, rules) => Math.floor(Math.max(0, Number(stars) || 0) / rules.blockStars) * rules.blockCents / 100;
 
 module.exports = { DAY, DAILY_CAP_HOURS, monthWindow, currentMonthKey, currentMonthWindow, liveHoursPerDay, totalHours, RULES, checkLive, payoutUsd };

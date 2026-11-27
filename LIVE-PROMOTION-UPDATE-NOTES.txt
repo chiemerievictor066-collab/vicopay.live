@@ -1,7 +1,7 @@
 Vico Pay Live - Promotion and Live Hours update
 
 Implemented:
-- Promotion threshold is 1,000 followers AND 12,000 earned gift stars.
+- Promotion threshold is 1,000 followers AND 9,000 earned gift stars.
 - Watch Live and VIP Watch Live show streamer promotion status, profile story/bio, Vico Pay Live join date, stream start time, and elapsed live duration.
 - When a stream ends, the viewer page requests the stored session record and displays the end time and final duration.
 - PostgreSQL live_sessions remains the source of truth for session start/end times; create/end handlers now await the session writes.

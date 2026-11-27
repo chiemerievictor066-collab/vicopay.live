@@ -10,12 +10,12 @@
 // and a green "Promotion Successful" button afterwards.
 // New table only: promo_purchases. Nothing else is changed.
 // .env (all optional):  PROMO_PRICE_USD=12  PROMO_PRICE_NGN=19000  PROMO_DURATION_DAYS=30
-//                       PROMO_MIN_FOLLOWERS=1000  PROMO_MIN_LIKES=1000000  PROMO_MIN_STARS=12000  PROMO_MIN_VIEWS=0
+//                       PROMO_MIN_FOLLOWERS=1000  PROMO_MIN_LIKES=1000000  PROMO_MIN_STARS=9000  PROMO_MIN_VIEWS=0
 // =====================================================
 const TYPE = "live_promotion";
 const num = (k, d) => { const v = process.env[k] === undefined || process.env[k] === "" ? NaN : Number(process.env[k]); return Number.isFinite(v) && v >= 0 ? v : d; };
 const cfg = () => ({ priceUsd: num("PROMO_PRICE_USD", 12), priceNgn: num("PROMO_PRICE_NGN", 19000), days: num("PROMO_DURATION_DAYS", 30),
-  minFollowers: num("PROMO_MIN_FOLLOWERS", 1000), minLikes: num("PROMO_MIN_LIKES", 1000000), minStars: num("PROMO_MIN_STARS", 12000), minViews: num("PROMO_MIN_VIEWS", 0) });
+  minFollowers: num("PROMO_MIN_FOLLOWERS", 1000), minLikes: num("PROMO_MIN_LIKES", 1000000), minStars: num("PROMO_MIN_STARS", 9000), minViews: num("PROMO_MIN_VIEWS", 0) });
 const minorFor = (c, currency) => Math.round((currency === "USD" ? c.priceUsd : c.priceNgn) * 100);
 // the "about me" text a streamer writes when starting a live: plain text only, short
 function cleanStory(v) {
