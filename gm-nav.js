@@ -29,7 +29,10 @@
   var t = document.createElement("div"); t.id = "gmToast";
   function toast(m) { t.textContent = m; t.className = "on"; clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = ""; }, 2200); }
   window.gmToast = toast;
-  window.gmOpen = function (k) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].k === k) { if (ITEMS[i].ready) location.href = ITEMS[i].href; else toast(ITEMS[i].label + " is opening soon."); return; } };
+  window.gmOpen = function (k) {
+    if (k === "ai") { window.gmOpenAi(); return; }   // Vico AI is not a page: it opens the chat panel on the current page
+    for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].k === k) { if (ITEMS[i].ready) location.href = ITEMS[i].href; else toast(ITEMS[i].label + " is opening soon."); return; }
+  };
   /* ---- helpers every Market Community page can use ---- */
   window.gmApi = function (path, opts) {
     opts = opts || {}; var init = { method: opts.method || (opts.body ? "POST" : "GET"), headers: { "Content-Type": "application/json" } };
@@ -117,8 +120,10 @@
     document.body.appendChild(btn); document.body.appendChild(p);
     var log = p.querySelector("#gmAiLog"), conv = null, busy = false;
     function add(cls, text) { var d = document.createElement("div"); d.className = "gmB " + cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
-    add("a", "Hello! I'm Vico AI, your personal advertising and business assistant. What would you like to achieve today?");
-    btn.onclick = function () { p.classList.toggle("on"); };
+    add("a", ctx === "ads" ? "Hello! I'm Vico AI, your personal advertising and business assistant. What would you like to achieve today?" : "Hello! I'm Vico AI, your smart assistant. Ask me anything, get business ideas, or have me write and translate for you. What would you like to do?");
+    function openPanel() { p.classList.add("on"); var i = p.querySelector("#gmAiIn"); if (i) setTimeout(function () { try { i.focus(); } catch (e) { } }, 50); }
+    floatAi.open = openPanel;
+    btn.onclick = function () { if (p.classList.contains("on")) p.classList.remove("on"); else openPanel(); };
     p.querySelector("header button").onclick = function () { p.classList.remove("on"); };
     p.querySelector("#gmAiForm").onsubmit = function (e) {
       e.preventDefault(); var i = p.querySelector("#gmAiIn"), m = i.value.trim(); if (!m || busy) return;
@@ -130,6 +135,12 @@
       }).catch(function () { busy = false; w.textContent = "Vico AI could not answer. Please try again."; });
     };
   }
+
+  // "Chat Now" / any Vico AI button: open the Vico AI chat on this page (the panel is built on demand when the page did not already have it)
+  window.gmOpenAi = function () {
+    if (!floatAi.open) floatAi(document.body.getAttribute("data-ai") || "general");
+    if (floatAi.open) floatAi.open();
+  };
 
   function start() {
     loadCurrency(function () {

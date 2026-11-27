@@ -6,6 +6,8 @@
 //    Existing accounts with a previously SMS-verified phone remain active.
 // 2. Chat: private one-to-one messages in PostgreSQL, delivered instantly through a server-sent-events stream (/api/vm/stream),
 //    with sent / delivered / read ticks, "typing…", online / last seen and block. The page falls back to polling if the stream drops.
+//    Phone verification (the "verify your number" step): VicoPay creates, hashes, expires and checks ONE six-digit code for every delivery
+//    method. SMS goes out through Infobip (vico-phone.js). Push goes to the person's registered browser / Android devices (vico-push.js).
 // 3. Calls: voice and video through LiveKit. See vico-message-calls.js.
 // 4. Business contacts: advertisers who finished Ad Center registration (payment + business information + approved ID) appear in the
 //    "Businesses" list with the contact details they entered, so buyers can message or call them.
@@ -15,6 +17,7 @@
 const crypto = require("crypto");
 const phoneLib = require("./vico-phone");
 const makeMessageCalls = require("./vico-message-calls");
+const makePush = require("./vico-push");
 
 const HOUR = 3600 * 1000, RESEND_MS = 60 * 1000, MAX_SENDS_PER_HOUR = 5, MAX_WRONG = 5, MAX_BODY = 2000;
 
@@ -33,7 +36,9 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
     message: "Your VicoPay Wallet balance is too low to " + what + " (₦" + needed + " needed, you have ₦" + balance + "). Recharge your wallet to continue." });
   const isUnique = (e) => e && (e.code === "23505" || /UNIQUE constraint/i.test(String(e.message)));
 
+  const push = makePush({ db, axios, env });
   const SCHEMA = [
+    ...push.SCHEMA,
     `CREATE TABLE IF NOT EXISTS dm_conversations (id BIGSERIAL PRIMARY KEY, user_a TEXT NOT NULL, user_b TEXT NOT NULL, created_at BIGINT NOT NULL, updated_at BIGINT NOT NULL, UNIQUE(user_a,user_b), CHECK(user_a <> user_b))`,
     `CREATE INDEX IF NOT EXISTS idx_dm_conversations_a ON dm_conversations(user_a,updated_at DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_dm_conversations_b ON dm_conversations(user_b,updated_at DESC)`,
@@ -51,8 +56,12 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
     `CREATE TABLE IF NOT EXISTS vm_profiles (email TEXT PRIMARY KEY, phone TEXT, phone_verified_at BIGINT, email_verified_at BIGINT, about TEXT NOT NULL DEFAULT '', discoverable SMALLINT NOT NULL DEFAULT 1, show_online SMALLINT NOT NULL DEFAULT 1, last_seen_at BIGINT, created_at BIGINT NOT NULL, updated_at BIGINT NOT NULL)`,
     `ALTER TABLE vm_profiles ADD COLUMN IF NOT EXISTS email_verified_at BIGINT`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_vm_profiles_phone ON vm_profiles(phone)`,
+    // how the number was proven: "sms" (a code that reached the phone number itself) or "push" (a code sent to the person's own signed-in device).
+    // Older rows have no value and were always SMS.
+    `ALTER TABLE vm_profiles ADD COLUMN IF NOT EXISTS phone_verified_via TEXT`,
     // the pending code (hashed, never stored in clear)
     `CREATE TABLE IF NOT EXISTS vm_otps (email TEXT PRIMARY KEY, phone TEXT NOT NULL, salt TEXT NOT NULL, code_hash TEXT NOT NULL, expires_at BIGINT NOT NULL, wrong_tries INTEGER NOT NULL DEFAULT 0, last_sent_at BIGINT NOT NULL DEFAULT 0, sends_hour_start BIGINT NOT NULL DEFAULT 0, sends_in_hour INTEGER NOT NULL DEFAULT 0)`,
+    `ALTER TABLE vm_otps ADD COLUMN IF NOT EXISTS channel TEXT`,
     // stops one phone number being flooded with codes from many accounts
     `CREATE TABLE IF NOT EXISTS vm_phone_throttle (phone TEXT PRIMARY KEY, hour_start BIGINT NOT NULL, sends INTEGER NOT NULL)`,
     `CREATE TABLE IF NOT EXISTS vm_blocks (blocker TEXT NOT NULL, blocked TEXT NOT NULL, created_at BIGINT NOT NULL, PRIMARY KEY (blocker, blocked))`,
@@ -90,7 +99,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
   };
 
   // ---------- accounts ----------
-  const profile = (email) => db.get("SELECT email, phone, phone_verified_at, email_verified_at, about, discoverable, show_online, last_seen_at FROM vm_profiles WHERE email = ?", [lc(email)]);
+  const profile = (email) => db.get("SELECT email, phone, phone_verified_at, phone_verified_via, email_verified_at, about, discoverable, show_online, last_seen_at FROM vm_profiles WHERE email = ?", [lc(email)]);
   async function emailIsVerified(email) {
     if (typeof isEmailVerified !== "function") return false;
     try { return !!(await isEmailVerified(lc(email))); } catch (e) { console.error("VM EMAIL STATUS:", e.message); return false; }
@@ -110,6 +119,8 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
       let p = await profile(me);
       // Keep existing SMS-verified accounts working; new accounts activate through verified email.
       if (p && p.phone) { req.vm = p; return next(); }
+      // VM_REQUIRE_PHONE=on in .env: nobody can use Vico Message until their phone number is verified (default off: email alone still works)
+      if (env.VM_REQUIRE_PHONE === "on") return bad(res, 403, "Verify your phone number to use Vico Message.", { needsVerification: true, needsPhoneVerification: true });
       if (!(await emailIsVerified(me))) return bad(res, 403, "Verify your VicoPay account email to use Vico Message.", { needsVerification: true, needsEmailVerification: true });
       p = await ensureEmailProfile(me);
       req.vm = p; return next();
@@ -171,6 +182,8 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
         success: true, activated: !!(p && (p.phone || p.email_verified_at)), emailVerified, email: me,
         phoneVerified, phone: phoneVerified ? p.phone : "", phoneMasked: phoneVerified ? phoneLib.maskPhone(p.phone) : "",
         me: { ...person(me, p) }, discoverable: p ? Number(p.discoverable) !== 0 : true, showOnline: p ? Number(p.show_online) !== 0 : true,
+        phoneVerifiedVia: phoneVerified ? (p.phone_verified_via || "sms") : "", phoneRequired: env.VM_REQUIRE_PHONE === "on", codeMinutes: phoneLib.CODE_MINUTES,
+        push: { web: push.webReady(), fcm: push.fcmReady(), publicKey: push.publicKey(), devices: await push.counts(me) },
         suggestedPhone: phoneVerified ? null : suggested, countries: phoneLib.COUNTRIES,
         smsReady: provider !== "none" || env.NODE_ENV !== "production", callsReady: !!(env.LIVEKIT_URL && env.LIVEKIT_API_KEY && env.LIVEKIT_API_SECRET)
       });
@@ -180,12 +193,20 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
   app.post("/api/vm/phone/send", requireAuth, async (req, res) => {
     try {
       await ready; const me = lc(req.userEmail), t = now(), body = req.body || {};
+      const channel = String(body.channel || "sms").toLowerCase() === "push" ? "push" : "sms";
       const n = phoneLib.normalizePhone(body.phone, body.country);
       if (!n.ok) return bad(res, 400, n.message);
-      const owner = await db.get("SELECT email FROM vm_profiles WHERE phone = ?", [n.e164]);
+      const owner = await db.get("SELECT email, phone_verified_via FROM vm_profiles WHERE phone = ?", [n.e164]);
       if (owner && lc(owner.email) === me) return res.json({ success: true, alreadyVerified: true, phone: n.e164 });
-      if (owner) return bad(res, 409, "This number is already linked to another Vico account. Use a different number, or sign in to the account that owns it.");
+      // A number proven only by a push code (sent to someone's own device, not to the SIM) can be claimed by whoever receives an SMS on it.
+      const claimable = owner && owner.phone_verified_via === "push" && channel === "sms";
+      if (owner && !claimable) return bad(res, 409, "This number is already linked to another Vico account. Use a different number, or sign in to the account that owns it.");
       if (!allow("otp-ip:" + req.ip, 20, HOUR)) return bad(res, 429, "Too many attempts from this connection. Please try again later.");
+      if (channel === "push") {
+        if (!push.anyReady()) return bad(res, 503, "Push codes are not switched on yet. Please use SMS.", { notConfigured: true, useSms: true });
+        const c = await push.counts(me);
+        if (!c.web && !c.fcm) return bad(res, 409, "This device is not set up for push codes yet. Allow notifications, or use SMS.", { noPushDevice: true, useSms: true });
+      }
       const row = await db.get("SELECT * FROM vm_otps WHERE email = ?", [me]);
       if (row) {
         const wait = Number(row.last_sent_at) + RESEND_MS - t;
@@ -199,22 +220,27 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
       const code = phoneLib.makeCode(), salt = phoneLib.makeSalt();
       const newHour = !row || t - Number(row.sends_hour_start) >= HOUR;
       await db.run(
-        `INSERT INTO vm_otps (email, phone, salt, code_hash, expires_at, wrong_tries, last_sent_at, sends_hour_start, sends_in_hour) VALUES (?,?,?,?,?,0,?,?,?)
-         ON CONFLICT (email) DO UPDATE SET phone = EXCLUDED.phone, salt = EXCLUDED.salt, code_hash = EXCLUDED.code_hash, expires_at = EXCLUDED.expires_at, wrong_tries = 0, last_sent_at = EXCLUDED.last_sent_at, sends_hour_start = EXCLUDED.sends_hour_start, sends_in_hour = EXCLUDED.sends_in_hour`,
-        [me, n.e164, salt, phoneLib.hashCode(salt, me, n.e164, code), t + phoneLib.CODE_MINUTES * 60000, t, newHour ? t : Number(row.sends_hour_start), newHour ? 1 : Number(row.sends_in_hour) + 1]);
+        `INSERT INTO vm_otps (email, phone, salt, code_hash, expires_at, wrong_tries, last_sent_at, sends_hour_start, sends_in_hour, channel) VALUES (?,?,?,?,?,0,?,?,?,?)
+         ON CONFLICT (email) DO UPDATE SET phone = EXCLUDED.phone, salt = EXCLUDED.salt, code_hash = EXCLUDED.code_hash, expires_at = EXCLUDED.expires_at, wrong_tries = 0, last_sent_at = EXCLUDED.last_sent_at, sends_hour_start = EXCLUDED.sends_hour_start, sends_in_hour = EXCLUDED.sends_in_hour, channel = EXCLUDED.channel`,
+        [me, n.e164, salt, phoneLib.hashCode(salt, me, n.e164, code), t + phoneLib.CODE_MINUTES * 60000, t, newHour ? t : Number(row.sends_hour_start), newHour ? 1 : Number(row.sends_in_hour) + 1, channel]);
       await db.run(
         `INSERT INTO vm_phone_throttle (phone, hour_start, sends) VALUES (?,?,1) ON CONFLICT (phone) DO UPDATE SET hour_start = ?, sends = ?`,
         [n.e164, t, ptOpen ? Number(pt.hour_start) : t, ptOpen ? Number(pt.sends) + 1 : 1]);
 
       let via;
-      try { via = (await phoneLib.sendSms({ to: n.e164, text: phoneLib.codeText(code), axios, env })).via; }
+      if (channel === "push") {
+        const r = await push.sendToUser(me, { title: "VicoPay verification code", body: "Your Vico Message code is " + code + ". Do not share it. It expires in " + phoneLib.CODE_MINUTES + " minutes.", tag: "vm-code", url: "vico-messages.html",
+          data: { type: "vm_phone_code", code, url: "vico-messages.html" } });
+        if (!r.sent) { await db.run("UPDATE vm_otps SET last_sent_at = 0 WHERE email = ?", [me]); return bad(res, 502, "We could not reach your device. Please use SMS instead.", { useSms: true }); }
+        via = r.kinds.join("+");
+      } else try { via = (await phoneLib.sendSms({ to: n.e164, text: phoneLib.codeText(code, env), axios, env })).via; }
       catch (e) {
         await db.run("UPDATE vm_otps SET last_sent_at = 0 WHERE email = ?", [me]);   // the person may try again straight away
         return e.code === "not_configured"
           ? bad(res, 503, "Phone verification is not switched on yet. The site owner needs to connect an SMS service.", { notConfigured: true })
           : bad(res, 502, "We could not send the SMS right now. Please check the number and try again in a moment.");
       }
-      const out = { success: true, sent: true, phone: n.e164, phoneMasked: phoneLib.maskPhone(n.e164), cooldownSeconds: RESEND_MS / 1000, expiresMinutes: phoneLib.CODE_MINUTES, via };
+      const out = { success: true, sent: true, channel, phone: n.e164, phoneMasked: phoneLib.maskPhone(n.e164), cooldownSeconds: RESEND_MS / 1000, expiresMinutes: phoneLib.CODE_MINUTES, via };
       if (via === "console" && env.NODE_ENV !== "production" && env.VM_DEV_ECHO_CODE === "1") out.devCode = code;   // local testing only
       res.json(out);
     } catch (e) { console.error("VM PHONE SEND:", e); bad(res, 500, "Could not send the code."); }
@@ -236,18 +262,50 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
       }
       try {
         await db.tx(async (tx) => {
+          const via = row.channel === "push" ? "push" : "sms";
+          // an SMS code that reached the number itself outranks an earlier push-only claim on the same number
+          if (via === "sms") await tx.run("UPDATE vm_profiles SET phone = NULL, phone_verified_at = NULL, phone_verified_via = NULL WHERE phone = ? AND email <> ? AND phone_verified_via = 'push'", [row.phone, me]);
           await tx.run(
-            `INSERT INTO vm_profiles (email, phone, phone_verified_at, created_at, updated_at) VALUES (?,?,?,?,?)
-             ON CONFLICT (email) DO UPDATE SET phone = EXCLUDED.phone, phone_verified_at = EXCLUDED.phone_verified_at, updated_at = EXCLUDED.updated_at`,
-            [me, row.phone, t, t, t]);
+            `INSERT INTO vm_profiles (email, phone, phone_verified_at, phone_verified_via, created_at, updated_at) VALUES (?,?,?,?,?,?)
+             ON CONFLICT (email) DO UPDATE SET phone = EXCLUDED.phone, phone_verified_at = EXCLUDED.phone_verified_at, phone_verified_via = EXCLUDED.phone_verified_via, updated_at = EXCLUDED.updated_at`,
+            [me, row.phone, t, via, t, t]);
           await tx.run("DELETE FROM vm_otps WHERE email = ?", [me]);
         });
       } catch (e) {
         if (isUnique(e)) return bad(res, 409, "This number was just linked to another Vico account.");
         throw e;
       }
-      res.json({ success: true, verified: true, phone: row.phone, phoneMasked: phoneLib.maskPhone(row.phone) });
+      res.json({ success: true, verified: true, via: row.channel === "push" ? "push" : "sms", phone: row.phone, phoneMasked: phoneLib.maskPhone(row.phone) });
     } catch (e) { console.error("VM PHONE VERIFY:", e); bad(res, 500, "Could not verify the code."); }
+  });
+
+  // ---- push devices: a browser (Web Push) or the Android app (Firebase) registers itself, so a code can be sent to it ----
+  app.get("/api/vm/push/config", requireAuth, async (req, res) => {
+    try { await ready; res.json({ success: true, web: push.webReady(), fcm: push.fcmReady(), publicKey: push.publicKey(), devices: await push.counts(lc(req.userEmail)) }); }
+    catch (e) { bad(res, 500, "Could not load push settings."); }
+  });
+  app.post("/api/vm/push/subscribe", requireAuth, async (req, res) => {
+    try {
+      await ready; const me = lc(req.userEmail);
+      if (!push.webReady()) return bad(res, 503, "Browser notifications are not switched on yet.", { notConfigured: true });
+      if (!allow("push-reg:" + me, 30, HOUR)) return bad(res, 429, "Too many attempts. Please try again later.");
+      if (!(await push.addWeb(me, (req.body || {}).subscription))) return bad(res, 400, "That browser subscription is not valid.");
+      res.json({ success: true });
+    } catch (e) { console.error("VM PUSH SUBSCRIBE:", e); bad(res, 500, "Could not save this device."); }
+  });
+  // For the Android app (built later): after Firebase gives the app a token, it sends it here with the signed-in session.
+  app.post("/api/vm/push/fcm", requireAuth, async (req, res) => {
+    try {
+      await ready; const me = lc(req.userEmail);
+      if (!push.fcmReady()) return bad(res, 503, "Android notifications are not switched on yet.", { notConfigured: true });
+      if (!allow("push-reg:" + me, 30, HOUR)) return bad(res, 429, "Too many attempts. Please try again later.");
+      if (!(await push.addFcm(me, (req.body || {}).token))) return bad(res, 400, "That device token is not valid.");
+      res.json({ success: true });
+    } catch (e) { console.error("VM PUSH FCM:", e); bad(res, 500, "Could not save this device."); }
+  });
+  app.post("/api/vm/push/unsubscribe", requireAuth, async (req, res) => {
+    try { await ready; const b = req.body || {}; await push.remove(lc(req.userEmail), b.endpoint || b.token); res.json({ success: true }); }
+    catch (e) { bad(res, 500, "Could not remove this device."); }
   });
 
   app.post("/api/vm/profile", requireAuth, requireActivated, async (req, res) => {
@@ -278,7 +336,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
         // find a person by phone number (only people who allow it); limited so numbers cannot be guessed in bulk
         if (!allow("lookup:" + me, 30, HOUR)) return bad(res, 429, "Too many number searches. Try again later.");
         const n = phoneLib.normalizePhone(q, req.query.country);
-        if (n.ok) { const r = await db.get("SELECT email FROM vm_profiles WHERE phone = ? AND discoverable = 1", [n.e164]); if (r) list = [lc(r.email)]; }
+        if (n.ok) { const r = await db.get("SELECT email FROM vm_profiles WHERE phone = ? AND discoverable = 1 AND COALESCE(phone_verified_via, 'sms') = 'sms'", [n.e164]); if (r) list = [lc(r.email)]; }
       } else {
         const found = await users.search(q.replace(/^@/, ""), 20); list = found.map((u) => lc(u.email));
       }
@@ -312,7 +370,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
         seen.add(e);
         const p = await profile(e); await users.warm([e]);
         out.push({ ...person(e, p), businessName: r.businessName, description: String(r.description || "").slice(0, 140), city: r.city || "", country: r.country || "",
-          phone: r.phone || "", whatsapp: r.whatsapp || "", canCall: !!(p && (p.phone || p.email_verified_at)), numberVerified: !!(p && p.phone && phoneLib.samePhone(p.phone, r.phone)) });
+          phone: r.phone || "", whatsapp: r.whatsapp || "", canCall: !!(p && (p.phone || p.email_verified_at)), numberVerified: !!(p && p.phone && (p.phone_verified_via || "sms") === "sms" && phoneLib.samePhone(p.phone, r.phone)) });
         if (out.length >= 40) break;
       }
       res.json({ success: true, businesses: out });
@@ -607,3 +665,4 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
   return { migrate: ready, hub, calls };
 };
 module.exports.phone = phoneLib;
+module.exports.push = makePush;

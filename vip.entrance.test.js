@@ -56,12 +56,12 @@ function call(key, req) {
   assert.strictEqual(got[1].ev.effect, "b");                            // highest entrance the person qualifies for
   console.log("ok  highest qualifying entrance is chosen");
 
-  S.enabled = "0"; await wait(5100);
+  S.enabled = "0"; await wait(5100);                                    // the old global setting no longer matters
   const n = got.length;
   await vip.onViewerJoin({ roomId: "r2", hostId: "h@x.com" }, "cy@x.com", push);
-  assert.strictEqual(got.length, n);                                    // VIP switched off: nothing
+  assert.strictEqual(got.length, n + 1);                                // still works: only a person's own approval / revoke decides
   S.enabled = "1"; await wait(5100);
-  console.log("ok  VIP system OFF -> no entrances");
+  console.log("ok  old global VIP setting is ignored -> entrances keep working");
 
   // flood limit: 20 per minute per live
   const flood = { roomId: "r3", hostId: "h@x.com" }; let c = 0;

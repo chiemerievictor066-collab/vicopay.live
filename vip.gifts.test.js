@@ -33,9 +33,9 @@ function call(key, req) {
   console.log("ok  only active, priced VIP gifts are sellable; normal gifts untouched");
 
   S.enabled = "0"; await wait(5100); await vip.syncGifts();
-  assert.strictEqual(giftPrices["Golden Rose"], undefined);            // VIP system off -> VIP gifts disappear
+  assert.strictEqual(giftPrices["Golden Rose"], 250);                  // the old global setting is ignored: VIP gifts stay on sale
   assert.strictEqual(giftPrices.Rose, 100);
-  console.log("ok  VIP system OFF removes VIP gifts from sale");
+  console.log("ok  old global VIP setting is ignored -> VIP gifts stay on sale");
 
   S.enabled = "1"; await wait(5100);
   let r = await call("GET /api/vip/gifts", {});

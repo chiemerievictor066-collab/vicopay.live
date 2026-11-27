@@ -181,8 +181,7 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
           "INSERT INTO vip_effects (id, name, min_tier, videos, notice, sort, active, created_at) VALUES ($1,$2,$3,$4,'{name} joined the exclusive room',$5,1,$6) ON CONFLICT (id) DO NOTHING",
           [e[0], e[1], e[2], e[3], ++i, ts]);
       }
-      // feature switch: OFF by default
-      await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('enabled','0',$1) ON CONFLICT (key) DO NOTHING", [ts]);
+      // The VIP system has no global on/off switch any more: it always runs. Admins control individual people (approve / revoke, with an optional end date).
       await client.query("INSERT INTO vip_settings (key, value, updated_at) VALUES ('max_open_reports','3',$1) ON CONFLICT (key) DO NOTHING", [ts]);
     } finally {
       try { await client.query("SELECT pg_advisory_unlock(727275)"); } catch (_) { /* ignore */ }
@@ -215,13 +214,8 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
     const r = await db.get("SELECT value FROM vip_settings WHERE key = ?", [key]);
     return r ? r.value : fallback;
   }
-  let enabledCache = { v: false, at: 0 };
-  async function isEnabled() {
-    if (now() - enabledCache.at < 5000) return enabledCache.v;
-    const v = (await setting("enabled", "0")) === "1";
-    enabledCache = { v, at: now() };
-    return v;
-  }
+  // Always open. Kept as a function because other code (and the tests) call it; the old 'enabled' setting is ignored.
+  async function isEnabled() { return true; }
   async function audit(actor, action, target, detail) {
     await db.run("INSERT INTO vip_audit (actor, action, target, detail, created_at) VALUES (?,?,?,?,?)",
       [actor, action, target || null, detail ? String(detail).slice(0, 500) : null, now()]);
@@ -482,16 +476,12 @@ module.exports = function makeVip({ app, db, requireAuth, requireAdmin, store, g
       db.get("SELECT COUNT(*) AS c FROM vip_eligibility WHERE status = 'approved'"),
       db.get("SELECT COUNT(*) AS c FROM vip_equipped")
     ]);
-    res.json({ success: true, enabled: (await setting("enabled", "0")) === "1", maxOpenReports: Number(await setting("max_open_reports", "3")), tiers: TIERS.slice(1), approvedVips: Number(c[0].c), usersWithDecorations: Number(c[1].c) });
+    res.json({ success: true, enabled: true, maxOpenReports: Number(await setting("max_open_reports", "3")), tiers: TIERS.slice(1), approvedVips: Number(c[0].c), usersWithDecorations: Number(c[1].c) });
   });
 
   app.post(A + "/settings", requireAdmin, async (req, res) => {
     const b = req.body || {};
-    if (b.enabled !== undefined) {
-      await db.run("INSERT INTO vip_settings (key, value, updated_at) VALUES ('enabled', ?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at", [b.enabled ? "1" : "0", now()]);
-      enabledCache = { v: !!b.enabled, at: now() };
-      await audit(actor(), "vip_enabled", null, b.enabled ? "on" : "off");
-    }
+    // b.enabled is ignored on purpose: VIP can no longer be switched off for everybody; use revoke on a single person instead.
     if (b.maxOpenReports !== undefined) {
       const n = Math.max(0, Math.min(100, Math.floor(Number(b.maxOpenReports))));
       if (!Number.isFinite(n)) return bad(res, "Reports limit must be a number.");

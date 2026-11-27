@@ -39,10 +39,10 @@ label{font-size:12px;color:#8fa7c5;display:block;margin-bottom:3px}
 <div class="wrap">
   <div class="panel">
     <h3>VIP system</h3>
-    <div class="muted">While OFF, nobody sees any VIP feature and the normal app works exactly as before. Turn it ON only after you have checked the items below.</div>
+    <div class="muted">The VIP system is always running. You control individual people below: approve someone (for example after they pay the VIP promotion fee), set an end date, or revoke them if you receive a report. Revoke switches that person's VIP off; approving again switches it back on.</div>
     <div class="row">
       <b id="stateTxt">…</b>
-      <button class="b green" id="toggleBtn" onclick="toggle()">…</button>
+      <button class="b green" id="toggleBtn" onclick="toggle()" style="display:none">…</button>
       <span class="muted">Auto-VIP is paused for a streamer who has at least</span>
       <input id="maxRep" type="number" min="0" max="100" style="width:80px"> <span class="muted">open reports</span>
       <button class="b gray sm" onclick="saveRep()">Save</button>
@@ -136,8 +136,8 @@ async function enter() {
   showSettings(d); tab("badge");
 }
 function showSettings(d) {
-  document.getElementById("stateTxt").textContent = d.enabled ? "VIP is ON" : "VIP is OFF";
-  document.getElementById("stateTxt").style.color = d.enabled ? "#4ade80" : "#fca5a5";
+  document.getElementById("stateTxt").textContent = "VIP is running";
+  document.getElementById("stateTxt").style.color = "#4ade80";
   var b = document.getElementById("toggleBtn"); b.textContent = d.enabled ? "Turn OFF" : "Turn ON"; b.className = "b " + (d.enabled ? "red" : "green"); b.dataset.on = d.enabled ? "1" : "";
   document.getElementById("maxRep").value = d.maxOpenReports;
   document.getElementById("counts").textContent = d.approvedVips + " admin-approved VIPs • " + d.usersWithDecorations + " people have equipped something";

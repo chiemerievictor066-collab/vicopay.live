@@ -68,12 +68,131 @@
   function gate(html, step) {
     $("vm").hidden = true; document.body.classList.remove("vm-inchat");
     var g = $("gate"); g.hidden = false;
-    var bar = step ? '<div class="steps" aria-hidden="true">' + [1, 2, 3].map(function (i) { return "<i" + (i <= step ? ' class="on"' : "") + "></i>"; }).join("") + "</div>" : "";
+    var bar = step ? '<div class="steps" aria-hidden="true">' + [1, 2, 3, 4].map(function (i) { return "<i" + (i <= step ? ' class="on"' : "") + "></i>"; }).join("") + "</div>" : "";
     g.innerHTML = '<div class="gate-card"><div class="logo">' + ico("chat") + "</div>" + bar + html + "</div>";
   }
   function gateLogin() {
-    gate("<h2>Log in to use Vico Message</h2><p>Chat and call buyers, sellers and streamers. Log in first, then verify the email address on your VicoPay account.</p>" +
+    gate("<h2>Log in to use Vico Message</h2><p>Chat and call buyers, sellers and streamers. Log in first, then verify your phone number and the email address on your VicoPay account.</p>" +
       '<a class="btn-main" style="display:block;text-align:center;text-decoration:none" href="join-now.html?next=vico-messages.html">Log in</a>');
+  }
+
+  /* ---------- phone verification ----------
+     1 number + country  ->  2 six-digit code  ->  then the other verifications (email, profile).
+     VicoPay makes and checks the code itself. It travels by SMS (Infobip) or, if this browser is set up for it, as a push notification to this device. */
+  function pushSupported() { return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window); }
+  function keyBytes(b64) {
+    var r = atob((b64 + "===".slice((b64.length + 3) % 4)).replace(/-/g, "+").replace(/_/g, "/")), o = new Uint8Array(r.length);
+    for (var i = 0; i < r.length; i++) o[i] = r.charCodeAt(i); return o;
+  }
+  function sameBytes(buf, u8) { if (!buf) return false; var a = new Uint8Array(buf); if (a.length !== u8.length) return false; for (var i = 0; i < a.length; i++) if (a[i] !== u8[i]) return false; return true; }
+  // Registers this browser for push codes. Must be called from a tap (the browser asks permission). Resolves { ok, message }.
+  function enablePush() {
+    var pk = S.status && S.status.push && S.status.push.publicKey;
+    if (!pushSupported() || !pk) return Promise.resolve({ ok: false, message: "This browser cannot receive push codes." });
+    var key = keyBytes(pk);
+    return navigator.serviceWorker.register("vico-sw.js", { scope: "/" }).then(function () { return navigator.serviceWorker.ready; }).then(function (reg) {
+      return Notification.requestPermission().then(function (perm) {
+        if (perm !== "granted") return { ok: false, message: "Notifications are blocked for this site. Allow them, or use SMS." };
+        return reg.pushManager.getSubscription().then(function (sub) {
+          if (sub && !sameBytes(sub.options && sub.options.applicationServerKey, key)) return sub.unsubscribe().then(function () { return null; });
+          return sub;
+        }).then(function (sub) { return sub || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }); })
+          .then(function (sub) { return api("/api/vm/push/subscribe", { subscription: sub.toJSON() }); })
+          .then(function (d) { return d.success ? { ok: true } : { ok: false, message: d.message || "Could not set up push codes." }; });
+      });
+    }).catch(function () { return { ok: false, message: "This browser could not set up push codes. Please use SMS." }; });
+  }
+  function splitPhone(e164) {   // "+2348012345678" -> { country: "NG", national: "8012345678" }
+    var d = String(e164 || "").replace(/\D/g, ""), list = ((S.status && S.status.countries) || []).slice().sort(function (a, b) { return b.dial.length - a.dial.length; });
+    for (var i = 0; i < list.length; i++) if (d.indexOf(list[i].dial) === 0) return { country: list[i].code, national: d.slice(list[i].dial.length) };
+    return null;
+  }
+  function gatePhone(prefill) {
+    var st = S.status || {}, cs = st.countries || [], pre = prefill || (st.suggestedPhone ? splitPhone(st.suggestedPhone.phone || st.suggestedPhone) : null) || {};
+    var canPush = !!(st.push && st.push.web && pushSupported());
+    gate("<h2>Verify your phone number</h2><p>Enter your phone number with its country code. VicoPay will send a six-digit code to that exact number.</p>" +
+      '<label class="f" for="pcountry">Country</label><div class="phone-row"><select id="pcountry" class="fi" aria-label="Country code">' +
+      cs.map(function (c) { return '<option value="' + esc(c.code) + '"' + (c.code === (pre.country || "NG") ? " selected" : "") + ">" + esc(c.name) + " (+" + esc(c.dial) + ")</option>"; }).join("") +
+      '</select><input id="pnum" class="fi" type="tel" inputmode="tel" autocomplete="tel-national" maxlength="20" aria-label="Phone number" placeholder="801 234 5678" value="' + esc(pre.national || "") + '"></div>' +
+      '<div class="err" id="gerr" role="alert"></div>' +
+      '<button class="btn-main" id="sendSms" type="button">Send code by SMS</button>' +
+      (canPush ? '<p style="text-align:center;margin:10px 0 0"><button class="link" id="sendPush" type="button">Send the code to this device instead</button></p>' : "") +
+      '<div class="hint">Standard SMS rates from your network may apply. We never show your number to other people unless you allow it.</div>', 1);
+    function go(channel) {
+      var err = $("gerr"), n = $("pnum").value.trim(), b = $(channel === "push" ? "sendPush" : "sendSms"), label = b.textContent;
+      if (!n) { err.textContent = "Enter your phone number."; return; }
+      err.textContent = ""; b.disabled = true; b.textContent = "Sending…";
+      var done = function (d) {
+        b.disabled = false; b.textContent = label;
+        if (!d.success) { err.textContent = d.message || "Could not send the code."; return; }
+        if (d.alreadyVerified) return afterPhone();
+        S.pend = { phone: d.phone, country: $("pcountry").value, masked: d.phoneMasked || d.phone, channel: d.channel || channel, dev: d.devCode || "" };
+        gatePhoneCode(d.cooldownSeconds || 60);
+      };
+      var fail = function () { b.disabled = false; b.textContent = label; err.textContent = "Connection problem. Please try again."; };
+      var send = function () { return api("/api/vm/phone/send", { phone: n, country: $("pcountry").value, channel: channel }); };
+      if (channel === "push") enablePush().then(function (r) { if (!r.ok) { b.disabled = false; b.textContent = label; err.textContent = r.message; return; } return send().then(done); }).catch(fail);
+      else send().then(done).catch(fail);
+    }
+    $("sendSms").onclick = function () { go("sms"); };
+    if ($("sendPush")) $("sendPush").onclick = function () { go("push"); };
+    $("pnum").onkeydown = function (e) { if (e.key === "Enter") go("sms"); };
+  }
+  function gatePhoneCode(wait) {
+    var P = S.pend || {}, viaPush = P.channel === "push";
+    gate("<h2>Enter your code</h2><p>" + (viaPush ? "We sent a six-digit code to this device as a notification." : "We sent a six-digit SMS code to <b>" + esc(P.masked) + "</b>.") + "</p>" +
+      '<input id="codeIn" class="fi code-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" aria-label="6-digit code" placeholder="······">' +
+      (P.dev ? '<div class="hint">Test mode code: <b>' + esc(P.dev) + "</b></div>" : "") +
+      '<div class="err" id="gerr" role="alert"></div><button class="btn-main" id="verifyPhone" type="button" disabled>Verify</button>' +
+      '<p style="text-align:center;margin:12px 0 0"><button class="link" id="resendPhone" type="button" disabled></button></p>' +
+      (viaPush ? '<p style="text-align:center;margin:4px 0 0"><button class="link" id="viaSms" type="button">Send it by SMS instead</button></p>' : "") +
+      '<p style="text-align:center;margin:4px 0 0"><button class="link" id="backPhone" type="button">Change number</button></p>', 2);
+    var inp = $("codeIn"), t = Math.max(0, Number(wait) || 0), iv, ctl = null;
+    inp.focus();
+    function setCode(c) { inp.value = String(c || "").replace(/\D/g, "").slice(0, 6); $("verifyPhone").disabled = inp.value.length !== 6; if (inp.value.length === 6) confirmCode(); }
+    inp.addEventListener("input", function () { setCode(inp.value); });
+    // a push code arriving while this page is open fills the box by itself (vico-sw.js), and Chrome on Android can fill an SMS code with one tap (Web OTP)
+    var onMsg = function (e) { if (e.data && e.data.type === "vm_code" && $("codeIn")) setCode(e.data.code); };
+    if (navigator.serviceWorker) navigator.serviceWorker.addEventListener("message", onMsg);
+    if (!viaPush && "OTPCredential" in window && window.AbortController) {
+      ctl = new AbortController();
+      navigator.credentials.get({ otp: { transport: ["sms"] }, signal: ctl.signal }).then(function (o) { if (o && o.code && $("codeIn")) setCode(o.code); }).catch(function () {});
+    }
+    function cleanup() { clearInterval(iv); if (ctl) try { ctl.abort(); } catch (e) {} if (navigator.serviceWorker) navigator.serviceWorker.removeEventListener("message", onMsg); }
+    function tickDown() {
+      var r = $("resendPhone"); if (!r) return clearInterval(iv);
+      r.disabled = t > 0; r.textContent = t > 0 ? "Resend code in " + t + "s" : "Resend code";
+      if (t-- <= 0) clearInterval(iv);
+    }
+    tickDown(); iv = setInterval(tickDown, 1000);
+    var busy = false;
+    function confirmCode() {
+      var b = $("verifyPhone"), err = $("gerr"); if (busy || inp.value.length !== 6) return;
+      busy = true; err.textContent = ""; b.disabled = true; b.textContent = "Checking…";
+      api("/api/vm/phone/verify", { code: inp.value }).then(function (d) {
+        busy = false;
+        if (!d.success) { b.disabled = false; b.textContent = "Verify"; err.textContent = d.message || "The code could not be verified."; return; }
+        cleanup(); afterPhone();
+      }).catch(function () { busy = false; b.disabled = false; b.textContent = "Verify"; err.textContent = "Connection problem. Please try again."; });
+    }
+    $("verifyPhone").onclick = confirmCode;
+    inp.onkeydown = function (e) { if (e.key === "Enter") confirmCode(); };
+    function resend(channel) {
+      var err = $("gerr"); err.textContent = "";
+      api("/api/vm/phone/send", { phone: P.phone, country: P.country, channel: channel }).then(function (d) {
+        if (!d.success) { err.textContent = d.message || "Could not send a new code."; t = Number(d.waitSeconds) || 0; }
+        else { S.pend.channel = d.channel || channel; if (channel !== P.channel) { cleanup(); return gatePhoneCode(d.cooldownSeconds || 60); } err.textContent = "A new code was sent."; t = Number(d.cooldownSeconds) || 60; }
+        clearInterval(iv); tickDown(); iv = setInterval(tickDown, 1000);
+      }).catch(function () { err.textContent = "Connection problem. Please try again."; });
+    }
+    $("resendPhone").onclick = function () { this.disabled = true; resend(P.channel || "sms"); };
+    if ($("viaSms")) $("viaSms").onclick = function () { resend("sms"); };
+    $("backPhone").onclick = function () { cleanup(); gatePhone({ country: P.country }); };
+  }
+  // Phone verified. Now the other Vico Message verifications: email, then the profile.
+  function afterPhone() {
+    loadStatus().then(function (st) { if (st.emailVerified) gateProfile(false); else gateEmail(); })
+      .catch(function (e) { gate("<h2>Vico Message is not available</h2><p>" + esc(e.message || "Please try again.") + '</p><button class="btn-main" type="button" onclick="location.reload()">Try again</button>'); });
   }
   function finishEmailStep() {
     loadStatus().then(function () {
@@ -85,9 +204,11 @@
   }
   function gateEmail() {
     var email = (S.status && S.status.email) || localStorage.getItem("vicoPayEmail") || "your VicoPay email";
-    gate("<h2>Verify your email</h2><p>VicoPay will send a six-digit verification code to <b>" + esc(email) + "</b>. You do not need SMS or phone verification to use Vico Message.</p>" +
-      '<div class="hint">This confirms that you control this email address. It does not verify ownership of a phone number.</div>' +
-      '<div class="err" id="gerr" role="alert"></div><button class="btn-main" id="sendEmailCode" type="button">Send email code</button>', 1);
+    gate("<h2>Verify your email</h2><p>VicoPay will send a six-digit verification code to <b>" + esc(email) + "</b>.</p>" +
+      '<div class="hint">This confirms that you control this email address.</div>' +
+      '<div class="err" id="gerr" role="alert"></div><button class="btn-main" id="sendEmailCode" type="button">Send email code</button>' +
+      (S.status && S.status.phoneVerified ? '<p style="text-align:center;margin:10px 0 0"><button class="link" id="laterEmail" type="button">Do this later</button></p>' : ""), 3);
+    if ($("laterEmail")) $("laterEmail").onclick = function () { gateProfile(false); };
     $("sendEmailCode").onclick = function () {
       var b = this, err = $("gerr"); b.disabled = true; b.textContent = "Sending…"; err.textContent = "";
       api("/api/email-verify/send", {}).then(function (d) {
@@ -104,7 +225,7 @@
       '<input id="codeIn" class="fi code-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" aria-label="6-digit email code" placeholder="······">' +
       '<div class="err" id="gerr" role="alert"></div><button class="btn-main" id="verifyEmail" type="button" disabled>Verify email</button>' +
       '<p style="text-align:center;margin:12px 0 0"><button class="link" id="resendEmail" type="button" disabled></button></p>' +
-      '<p style="text-align:center;margin:4px 0 0"><button class="link" id="backEmail" type="button">Back</button></p>', 2);
+      '<p style="text-align:center;margin:4px 0 0"><button class="link" id="backEmail" type="button">Back</button></p>', 3);
     var inp = $("codeIn"), t = Math.max(0, Number(wait) || 0), iv;
     inp.focus();
     inp.addEventListener("input", function () { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); $("verifyEmail").disabled = inp.value.length !== 6; });
@@ -139,17 +260,21 @@
     var identityLine = settings
       ? (st.phoneVerified ? "Your account email is verified. Your previously verified phone number is " + esc(st.phoneMasked) + "." : "Your email address is verified. Your Vico Message account is active.")
       : "Your name is what people see in chats and calls.";
+    var phoneRow = settings ? (st.phoneVerified
+      ? '<div class="hint">✔ Phone number verified: <b>' + esc(st.phoneMasked) + "</b></div>"
+      : '<div class="hint">Your phone number is not verified yet.<button class="link" id="verifyPhoneNow" type="button">Verify my phone number</button></div>') : "";
     var discoverToggle = st.phoneVerified
       ? '<label class="toggle" style="margin-top:10px"><span>People can find me by my verified number<small>Only your name and photo are shown, never the number.</small></span><input type="checkbox" id="pdisc"' + (st.discoverable ? " checked" : "") + "></label>"
       : "";
     gate("<h2>" + (settings ? "Your Vico Message profile" : "Set up your profile") + "</h2><p>" + identityLine + "</p>" +
       '<label class="f" for="pname">Name</label><input id="pname" class="fi" maxlength="40" autocomplete="name" value="' + esc(me.displayName === "User" ? "" : me.displayName) + '">' +
       '<label class="f" for="pabout">About</label><input id="pabout" class="fi" maxlength="139" value="' + esc(me.about || "Hey there! I use Vico Message.") + '">' +
-      discoverToggle +
+      phoneRow + discoverToggle +
       '<label class="toggle"><span>Show when I am online<small>If off, you will not see other people\'s status either.</small></span><input type="checkbox" id="ponl"' + (st.showOnline ? " checked" : "") + "></label>" +
       '<div class="err" id="gerr" role="alert"></div><button class="btn-main" id="saveProf" type="button">' + (settings ? "Save" : "Start messaging") + "</button>" +
-      (settings ? '<p style="text-align:center;margin:10px 0 0"><button class="link" id="closeSet" type="button">Close</button></p>' : ""), settings ? 0 : 3);
+      (settings ? '<p style="text-align:center;margin:10px 0 0"><button class="link" id="closeSet" type="button">Close</button></p>' : ""), settings ? 0 : 4);
     if ($("closeSet")) $("closeSet").onclick = enter;
+    if ($("verifyPhoneNow")) $("verifyPhoneNow").onclick = gatePhone;
     $("saveProf").onclick = function () {
       var b = this; b.disabled = true;
       var body = { displayName: $("pname").value, about: $("pabout").value, showOnline: $("ponl").checked };
@@ -193,7 +318,7 @@
       return '<div class="row' + (S.cur === t.handle ? " on" : "") + '" data-h="' + esc(t.handle) + '" role="button" tabindex="0">' + avatar(t) + '<div class="t"><b>' + esc(t.displayName) + "</b>" + pv + '</div><div class="r"><span>' + short(t.lastAt) + "</span>" + (t.unread ? "<em>" + t.unread + "</em>" : "") + "</div></div>";
     }).join("") || '<div class="empty">' + (q ? "No chats match." : "No chats yet.<br>Use <b>Message</b> to find someone and say hello.") + (q ? "" : '<br><button class="pill" data-go="message" type="button">' + ico("compose", "mini") + "New message</button>") + "</div>";
   }
-  function needVerify() { loadStatus().then(function (st) { if (st.emailVerified) gateProfile(false); else gateEmail(); }); }
+  function needVerify() { loadStatus().then(function (st) { if (!st.phoneVerified && (st.phoneRequired || !st.emailVerified)) gatePhone(); else if (st.emailVerified) gateProfile(false); else gateEmail(); }); }
 
   /* ---------- Message tab: people and businesses ---------- */
   function personRow(p, kind) {
@@ -738,7 +863,7 @@
   }
   function init() {
     if (!window.gmSignedIn || !gmSignedIn()) return gateLogin();
-    loadStatus().then(function (st) { if (st.activated) { if (S.status.me.displayName === "User") return gateProfile(false); enter(); } else gateEmail(); })
+    loadStatus().then(function (st) { if (st.activated && !(st.phoneRequired && !st.phoneVerified)) { if (S.status.me.displayName === "User") return gateProfile(false); enter(); } else gatePhone(); })
       .catch(function (e) { gate("<h2>Vico Message is not available</h2><p>" + esc(e.message || "Please try again.") + '</p><button class="btn-main" type="button" onclick="location.reload()">Try again</button>'); });
   }
   window.addEventListener("beforeunload", function () { S.stream.stop = true; if (S.stream.ctl) try { S.stream.ctl.abort(); } catch (e) {} });

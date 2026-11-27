@@ -4,9 +4,12 @@
 // Pure helpers (no database, no network unless sendSms() is called) so they can be tested: tests/vico-message.test.js
 //
 // .env settings for the SMS that carries the verification code (pick ONE provider):
-//   Termii (Nigeria, recommended):  TERMII_API_KEY   TERMII_SENDER_ID   [TERMII_CHANNEL=generic|dnd|whatsapp]   [TERMII_BASE_URL]
+//   Infobip (global, recommended):  INFOBIP_API_KEY   INFOBIP_BASE_URL (e.g. xxxxx.api.infobip.com)   [INFOBIP_SENDER]
+//   Termii (Nigeria):               TERMII_API_KEY   TERMII_SENDER_ID   [TERMII_CHANNEL=generic|dnd|whatsapp]   [TERMII_BASE_URL]
 //   Twilio:                         TWILIO_ACCOUNT_SID   TWILIO_AUTH_TOKEN   TWILIO_FROM  (or TWILIO_MESSAGING_SERVICE_SID)
-//   SMS_PROVIDER=termii|twilio      (optional: only needed when both are configured)
+//   SMS_PROVIDER=infobip|termii|twilio   (optional: only needed when more than one is configured; otherwise Infobip is used first)
+// VicoPay creates, hashes, expires and checks every code itself (vico-messages.js). The provider is only the delivery truck:
+// Infobip is called through its plain "send SMS" API, never through a provider-side OTP/2FA product.
 // Without a provider, codes are printed in the server log while developing. In production (NODE_ENV=production) the app
 // refuses to pretend a code was sent, so nobody is told to wait for an SMS that will never arrive.
 const crypto = require("crypto");
@@ -73,16 +76,33 @@ const hashCode = (salt, email, phone, code) =>
 const safeEq = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
 
 const CODE_MINUTES = 10;
-const codeText = (code) => "Your Vico Message code is " + code + ". Do not share it with anyone. It expires in " + CODE_MINUTES + " minutes.";
+// The last line "@host #code" is the Web OTP format: Chrome on Android offers the code for one-tap autofill when the page is on that host.
+function otpHost(env) {
+  env = env || process.env;
+  try { return new URL(String(env.APP_URL || "")).hostname; } catch (_) { return ""; }
+}
+const codeText = (code, env) => {
+  const host = otpHost(env);
+  return "Your Vico Message code is " + code + ". Do not share it with anyone. It expires in " + CODE_MINUTES + " minutes." + (host ? "\n\n@" + host + " #" + code : "");
+};
 
 // ---- SMS providers ----
+// INFOBIP_BASE_URL is shown in the Infobip portal as "xxxxx.api.infobip.com" (with or without https://). Only the host is kept, always over https.
+function infobipHost(env) {
+  env = env || process.env;
+  const h = String(env.INFOBIP_BASE_URL || "").trim().replace(/^[a-z]+:\/\//i, "").replace(/[\/?#].*$/, "");
+  return /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(h) && h.indexOf(".") > 0 ? h.toLowerCase() : "";
+}
 function providerName(env) {
   env = env || process.env;
   const want = String(env.SMS_PROVIDER || "").toLowerCase();
+  const infobip = !!(env.INFOBIP_API_KEY && infobipHost(env));
   const termii = !!env.TERMII_API_KEY;
   const twilio = !!(env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && (env.TWILIO_FROM || env.TWILIO_MESSAGING_SERVICE_SID));
+  if (want === "infobip" && infobip) return "infobip";
   if (want === "termii" && termii) return "termii";
   if (want === "twilio" && twilio) return "twilio";
+  if (infobip) return "infobip";
   if (termii) return "termii";
   if (twilio) return "twilio";
   return "none";
@@ -95,6 +115,11 @@ function buildSmsRequest(provider, { to, text }, env) {
     const base = String(env.TERMII_BASE_URL || "https://api.ng.termii.com").replace(/\/$/, "");
     return { url: base + "/api/sms/send", headers: { "Content-Type": "application/json" },
       data: { to: String(to).replace(/^\+/, ""), from: env.TERMII_SENDER_ID || "Vico", sms: text, type: "plain", channel: env.TERMII_CHANNEL || "generic", api_key: env.TERMII_API_KEY } };
+  }
+  if (provider === "infobip") {
+    // Infobip "Send SMS" API v3: POST https://{baseUrl}/sms/3/messages, header "Authorization: App {apiKey}"
+    return { url: "https://" + infobipHost(env) + "/sms/3/messages", headers: { "Content-Type": "application/json", Accept: "application/json", Authorization: "App " + env.INFOBIP_API_KEY },
+      data: { messages: [{ sender: env.INFOBIP_SENDER || "InfoSMS", destinations: [{ to: String(to).replace(/^\+/, "") }], content: { text } }] } };
   }
   if (provider === "twilio") {
     const form = new URLSearchParams({ To: to, Body: text });
@@ -120,6 +145,13 @@ async function sendSms({ to, text, axios, env, log }) {
     const r = await (axios || require("axios")).post(rq.url, rq.data, { headers: rq.headers, timeout: 12000 });
     // Termii answers 200 with a message_id on success; Twilio answers 201 with a sid.
     if (provider === "termii" && r.data && r.data.code && String(r.data.code).toLowerCase() !== "ok") throw new Error(String(r.data.message || "Termii refused the message"));
+    // Infobip answers 200 with messages[0].status.groupId: 0 accepted, 1 pending (normal), 2 undeliverable, 4 expired, 5 rejected.
+    if (provider === "infobip") {
+      const m = r.data && Array.isArray(r.data.messages) && r.data.messages[0];
+      const g = m && m.status ? Number(m.status.groupId) : NaN;
+      if (!m || !Number.isFinite(g)) throw new Error("Infobip gave no message status");
+      if (g === 2 || g === 4 || g === 5) throw new Error("Infobip refused the message: " + String((m.status && (m.status.name || m.status.groupName)) || g));
+    }
     return { via: provider };
   } catch (err) {
     const detail = err.response ? JSON.stringify(err.response.data).slice(0, 300) : err.message;
@@ -128,4 +160,4 @@ async function sendSms({ to, text, axios, env, log }) {
   }
 }
 
-module.exports = { COUNTRIES, normalizePhone, samePhone, maskPhone, makeCode, makeSalt, hashCode, safeEq, CODE_MINUTES, codeText, providerName, buildSmsRequest, sendSms };
+module.exports = { COUNTRIES, normalizePhone, samePhone, maskPhone, makeCode, makeSalt, hashCode, safeEq, CODE_MINUTES, codeText, otpHost, infobipHost, providerName, buildSmsRequest, sendSms };

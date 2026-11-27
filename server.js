@@ -69,7 +69,7 @@ app.use((req, res, next) => {
   next();
 });
 const SITE_DIR = __dirname;
-const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "vico-currency.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js", "vip-ui.js", "vip-entrance.js", "share-menu.js", "gm-nav.js", "vico-shell.js", "vico-buy.js", "vico-social.js", "vico-live-panel.js", "vico-pin.js", "vico-animal-filters.js", "campaigns-ui.js", "campaign-calendar.js", "vico-messages-app.js"]);
+const BROWSER_SCRIPTS = new Set(["auth.js", "vico-ui.js", "vico-next.js", "vico-currency.js", "live-effects.js", "vico-gifts.js", "go-live-studio.js", "forex-lab.js", "vip-ui.js", "vip-entrance.js", "share-menu.js", "gm-nav.js", "vico-shell.js", "vico-buy.js", "vico-social.js", "vico-live-panel.js", "vico-pin.js", "vico-animal-filters.js", "campaigns-ui.js", "campaign-calendar.js", "vico-messages-app.js", "vico-sw.js"]);
 // gift videos are ordinary files next to the HTML pages: gift-rose.mp4, gift-lion.mp4 ... (there is NO gifts folder)
 const GIFT_VIDEO = /^gift-[a-z0-9-]+\.(mp4|jpg)$/;   // gift videos + their small thumbnails
 const VIP_FX_IMG = /^(vipfx-[a-z0-9-]+\.webp|vico-art-[a-z0-9-]+\.jpg|vico-animals\.webp|vico-ai-guide\.gif|vico-promo-(?:hero|vip|celebrate|benefits)\.jpg|vico-bc-(?:hero|shield|support)\.jpg)$/;   // VIP emoji / avatar / sticker / frame pictures used by the live Effects
@@ -125,6 +125,8 @@ app.use((req, res, next) => {
   }
   // gift videos: cached, and sendFile supports Range requests so phones can stream them
   if (GIFT_VIDEO.test(name) || VIP_FX_IMG.test(name) || APPRECIATION_ART.has(name)) res.setHeader("Cache-Control", "public, max-age=604800");
+  // the push service worker must always be fresh and may control the whole site
+  if (name === "vico-sw.js") { res.setHeader("Cache-Control", "no-cache"); res.setHeader("Service-Worker-Allowed", "/"); }
   res.sendFile(path.join(SITE_DIR, name), (err) => { if (err && !res.headersSent) next(); });
 });
 // =====================================================
@@ -3428,7 +3430,7 @@ require("./vico-ai")({ app, db, requireAuth, requireAdmin, axios });
 // Vico Message: phone-verified chat + voice/video calls (vico-messages.js, vico-message-calls.js, vico-phone.js). Private calls with a VIP follow the same paid-call rule as live calls.
 // VicoPay Wallet: one central naira balance for paid messages and calls, recharged with Paystack. New tables only. See vico-wallet.js.
 vicoWallet = require("./vico-wallet")({ app, db, requireAuth, axios, siteUrlOf, walletSecurity });
-const vicoMessage = require("./vico-messages")({ app, db, requireAuth, store, axios, callAccess: callSystem && callSystem.access, wallet: vicoWallet });
+const vicoMessage = require("./vico-messages")({ app, db, requireAuth, store, axios, callAccess: callSystem && callSystem.access, wallet: vicoWallet, isEmailVerified: emailVerify.isVerified });
 require("./vico-market")({ app, db, requireAuth, requireAdmin, store });
 const videos = require("./vico-videos")({ app, db, requireAuth, requireAdmin, store, getAuthEmail });
 // Creator video partnership: public Marketplace publishing + Paystack verified company funding + bank transfer settlement.
@@ -3460,9 +3462,6 @@ commandCenter = require("./admin-command-center")({
   app, db, requireAdmin, liveRooms,
   livekit: { url: LIVEKIT_URL, key: LIVEKIT_API_KEY, secret: LIVEKIT_API_SECRET }
 });
-// Super Admin Monitoring + Creator Performance + Marketplace Operations (read-only, ADMIN_KEY protected).
-require("./super-admin-monitoring")({ app, db, requireAdmin });
-require("./admin-creator-market")({ app, db, requireAdmin });
 // Individual administrator accounts, TOTP MFA, role permissions, enforcement actions and immutable-by-API audit history.
 adminControl = require("./admin-control-center")({ app, db, requireAdmin, store, bannedUsers, authSecret: AUTH_SECRET });
 const platformOps = require("./admin-platform-operations")({ app, db, requireAdmin, getMaintenance: () => platformMaintenance, setMaintenance: (v) => { platformMaintenance = v; }, env: process.env, livekit: { url: LIVEKIT_URL, key: LIVEKIT_API_KEY, secret: LIVEKIT_API_SECRET } });

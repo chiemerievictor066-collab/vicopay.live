@@ -108,8 +108,8 @@ const H = 3600000;
   assert.strictEqual(r.code, 403);                                                       // ordinary user cannot self-grant
   S.enabled = "0"; await new Promise((x) => setTimeout(x, 5100)); S.elig = { tier: "gold", status: "approved", verified: 0, expiresAt: null }; vip.dropCache();
   r = await call("POST /api/vip/equip", { body: { slot: "frame", id: "frame-silver" } });
-  assert.strictEqual(r.code, 503);                                                       // switched off
-  console.log("ok  equip: tier checks, admin-only items, unlocks, self-grant blocked, feature switch");
+  assert.strictEqual(r.code, 200);                                                       // the old global setting is ignored; only the person's approval matters
+  console.log("ok  equip: tier checks, admin-only items, unlocks, self-grant blocked, no global switch");
 
   // 4. admin routes refuse everyone without the key
   for (const k of ["POST /api/admin/vip/grant", "POST /api/admin/vip/revoke", "POST /api/admin/vip/settings", "GET /api/admin/vip/users", "POST /api/admin/vip/items/:type", "POST /api/admin/vip/unlock"]) {
