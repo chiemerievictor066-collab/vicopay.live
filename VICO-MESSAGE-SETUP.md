@@ -62,3 +62,14 @@ Local testing without SMS: in `.env` set `VM_DEV_ECHO_CODE=1` (and not `NODE_ENV
 
 ## Tests
 `npm run test:message` (chat rules, then phone verification: Infobip, push encryption against the RFC 8291 example, device registration, number-ownership rules)
+
+## Update: Chat search, no prices, offline alerts, advertiser list
+* **Chat tab**: type a person name; their name appears with a **Chat** button and opens the same page as the Message button.
+* **No prices anywhere** (messages, photos, calls). Low balance says: "You have insufficient balance to message someone new. You have ₦0. Recharge your wallet to continue."
+* **Offline alert**: a message or call to someone who is not on the page sends a phone notification ("You are needed by a customer who needs a product…"), at most once per 10 minutes per sender. People must tap "Turn on notifications" once in Vico Message for the browser to allow it. Set `VM_OFFLINE_SMS=on` to also send an SMS (Infobip) to people who never allowed notifications.
+* **Message tab** now lists **People online (N)** and **Advertisers on Vico Pay** (anyone who put a phone number on a product advert). Advertisers show "Not active yet" until they verify their phone in Vico Message; they can still be messaged/called, and opening Vico Message shows the verify-phone message. `VM_ADVERTISER_VERIFY=off` turns the verification requirement off.
+
+## Update: wallet recharge, wallet PIN, VIP go-live page
+* `wallet.html` (recharge) now opens straight away: balance, amounts (₦100, 200, 500, 1,000, 1,500, 2,000, 4,000, 5,000, 10,000) and a Pay button to Paystack. Prices of messages/calls are no longer shown. Recharge needs no PIN; the activity list asks for the Wallet PIN. Needs `PAYSTACK_SECRET_KEY`.
+* `vico-wallet.html` (Vico Wallet from the Market Community) asks for the Wallet PIN (and email code when required) before it opens.
+* New `vip-go-live.html`: dark gold VIP stage. The VIP button now opens it. Shows VIP status, Go Live as VIP, VIPs live now, entrance preview, VIP live alerts, gift animations.

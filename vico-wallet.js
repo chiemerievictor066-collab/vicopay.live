@@ -2,7 +2,7 @@
 // VicoPay Wallet: ONE central naira balance for paid messaging, voice calls, video calls and later paid services.
 // =====================================================
 // Separate from coins and Golden Stars (those stay exactly as they are for gifts). This wallet is whole naira.
-//  * Recharge: Paystack card payment of 100 / 200 / 500 / 1,000 / 2,000 / 5,000 naira. Credited ONCE per Paystack reference,
+//  * Recharge: Paystack payment of 100 / 200 / 500 / 1,000 / 1,500 / 2,000 / 4,000 / 5,000 / 10,000 naira. Credited ONCE per Paystack reference,
 //    by the verify call from wallet.html and/or the Paystack webhook (whichever arrives first; the other is a harmless no-op).
 //  * Charge: charge() takes naira off the balance in a single statement that can never go below zero, and writes one ledger line.
 //    Stage 2 (vico-messages.js / vico-message-calls.js) calls charge() for chat messages and call minutes.
@@ -10,7 +10,7 @@
 const { maxFeeFor } = require("./payments");
 
 const TYPE = "vico_wallet_recharge";
-const AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
+const AMOUNTS = [100, 200, 500, 1000, 1500, 2000, 4000, 5000, 10000];
 const RATES = { firstMessage: 3, message: 1, callMinute: 1 };   // naira; edit here to change prices
 
 module.exports = function makeWallet({ app, db, requireAuth, axios, siteUrlOf, env, walletSecurity }) {
@@ -116,7 +116,8 @@ module.exports = function makeWallet({ app, db, requireAuth, axios, siteUrlOf, e
     } catch (e) { console.error("WALLET HISTORY:", e); bad(res, 500, "Could not load your history."); }
   });
 
-  app.post("/api/wallet/recharge/initialize", requireAuth, open, async (req, res) => {
+  // Recharging only ADDS money, so it opens without the PIN: a low-balance person must be able to reach Paystack in one tap. History stays behind the PIN.
+  app.post("/api/wallet/recharge/initialize", requireAuth, async (req, res) => {
     try {
       const amount = Number(req.body && req.body.amount);
       if (!AMOUNTS.includes(amount)) return bad(res, 400, "Choose one of the recharge amounts.");

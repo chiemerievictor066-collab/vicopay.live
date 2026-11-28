@@ -32,11 +32,39 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
   // No wallet passed in, or VM_CHARGING=off in .env, means everything stays free.
   const charging = () => !!(wallet && env.VM_CHARGING !== "off");
   const WALLET_URL = "wallet.html";
-  const lowBalance = (res, needed, balance, what) => res.status(402).json({ success: false, insufficient: true, needed, balance, walletUrl: WALLET_URL,
-    message: "Your VicoPay Wallet balance is too low to " + what + " (₦" + needed + " needed, you have ₦" + balance + "). Recharge your wallet to continue." });
+  // No prices are ever shown or sent to the browser: the person only learns that the balance is not enough.
+  const lowBalance = (res, needed, balance, what) => res.status(402).json({ success: false, insufficient: true, balance, walletUrl: WALLET_URL,
+    message: "You have insufficient balance to " + what + ". You have \u20a6" + (Number(balance) || 0).toLocaleString("en-NG") + ". Recharge your wallet to continue." });
   const isUnique = (e) => e && (e.code === "23505" || /UNIQUE constraint/i.test(String(e.message)));
 
   const push = makePush({ db, axios, env });
+  // ---- advertisers: anyone who put a phone number on a Vico Pay product advert is listed in Vico Message ----
+  const AD_NOT_COUNTED = "('draft','cancelled','rejected')";
+  async function adPhoneOf(email) {
+    try {
+      const r = await db.get(`SELECT f.phone AS phone FROM ad_campaigns c JOIN ad_flow f ON f.campaign_id = c.id WHERE c.owner_email = ? AND COALESCE(f.phone,'') <> '' AND c.status NOT IN ${AD_NOT_COUNTED} ORDER BY c.id DESC LIMIT 1`, [lc(email)]);
+      return r && r.phone ? String(r.phone) : "";
+    } catch (_) { return ""; }   // the advert tables do not exist yet
+  }
+  // ---- offline alert: a message or call for someone who is not on the page reaches their phone as a notification (and optionally an SMS) ----
+  const alertLog = new Map();   // "from>to" -> last alert time, so one chatty sender cannot spam someone
+  async function notifyOffline(toEmail, fromEmail, what) {
+    try {
+      const to = lc(toEmail), t = now(), k = lc(fromEmail) + ">" + to;
+      if (hub.online(to)) return;
+      if (t - (alertLog.get(k) || 0) < 10 * 60 * 1000 && what !== "call") return;
+      if (!allow("alert-to:" + to, 8, HOUR)) return;
+      alertLog.set(k, t); if (alertLog.size > 20000) alertLog.clear();
+      await users.warm([fromEmail]);
+      const title = what === "call" ? "Someone is calling you on Vico Message" : "A customer needs you on Vico Message";
+      const body = what === "call" ? "You have a call waiting. Open Vico Message now to answer." : "You are needed by a customer who needs a product. Go online now and reply quickly so you do not lose the sale.";
+      const r = await push.sendToUser(to, { title, body, tag: "vm-needed", url: "vico-messages.html?to=" + encodeURIComponent(publicHandle(fromEmail)), data: { type: "vm_needed", url: "vico-messages.html" } });
+      if (r.sent || env.VM_OFFLINE_SMS !== "on") return;
+      // no phone notification possible (never allowed notifications): optional SMS to their verified or advert number
+      const p = await profile(to), raw = (p && p.phone) || await adPhoneOf(to), n = raw ? phoneLib.normalizePhone(raw) : { ok: false };
+      if (n.ok && allow("alert-sms:" + n.e164, 3, 24 * HOUR)) await phoneLib.sendSms({ to: n.e164, text: "VicoPay: " + body + " Open " + (env.APP_URL || "vicopay.live") + "/vico-messages.html", axios, env });
+    } catch (e) { console.error("VM OFFLINE ALERT:", e.message); }
+  }
   const SCHEMA = [
     ...push.SCHEMA,
     `CREATE TABLE IF NOT EXISTS dm_conversations (id BIGSERIAL PRIMARY KEY, user_a TEXT NOT NULL, user_b TEXT NOT NULL, created_at BIGINT NOT NULL, updated_at BIGINT NOT NULL, UNIQUE(user_a,user_b), CHECK(user_a <> user_b))`,
@@ -112,6 +140,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
       [me, t, t, t]);
     return profile(me);
   }
+  const ADV_VERIFY_MSG = "Verify your phone number in Vico Message to be able to start using Vico Message for calling, chatting and messaging for the advertisement of products in Vico Pay.";
   const requireActivated = async (req, res, next) => {
     try {
       await ready;
@@ -119,6 +148,8 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
       let p = await profile(me);
       // Keep existing SMS-verified accounts working; new accounts activate through verified email.
       if (p && p.phone) { req.vm = p; return next(); }
+      // An advertiser (phone number on a Vico Pay advert) is listed but not active until that number is verified in Vico Message.
+      if (env.VM_ADVERTISER_VERIFY !== "off" && await adPhoneOf(me)) return bad(res, 403, ADV_VERIFY_MSG, { needsVerification: true, needsPhoneVerification: true, advertiserPending: true });
       // VM_REQUIRE_PHONE=on in .env: nobody can use Vico Message until their phone number is verified (default off: email alone still works)
       if (env.VM_REQUIRE_PHONE === "on") return bad(res, 403, "Verify your phone number to use Vico Message.", { needsVerification: true, needsPhoneVerification: true });
       if (!(await emailIsVerified(me))) return bad(res, 403, "Verify your VicoPay account email to use Vico Message.", { needsVerification: true, needsEmailVerification: true });
@@ -174,12 +205,14 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
       const emailVerified = await emailIsVerified(me);
       if (emailVerified) p = await ensureEmailProfile(me);
       const biz = await businessProfileOf(me);
+      const adPhone = await adPhoneOf(me), advertiserPending = !!adPhone && !(p && p.phone) && env.VM_ADVERTISER_VERIFY !== "off";
       let suggested = null;
-      if (biz && biz.phone) { const n = phoneLib.normalizePhone(biz.phone); if (n.ok) suggested = { phone: n.e164, businessName: biz.businessName || "" }; }
+      if (adPhone) { const n0 = phoneLib.normalizePhone(adPhone); if (n0.ok) suggested = { phone: n0.e164, businessName: (biz && biz.businessName) || "" }; }
+      if (!suggested && biz && biz.phone) { const n = phoneLib.normalizePhone(biz.phone); if (n.ok) suggested = { phone: n.e164, businessName: biz.businessName || "" }; }
       const phoneVerified = !!(p && p.phone);
       const provider = phoneLib.providerName(env);
       res.json({
-        success: true, activated: !!(p && (p.phone || p.email_verified_at)), emailVerified, email: me,
+        success: true, activated: !!(p && (p.phone || p.email_verified_at)) && !advertiserPending, advertiserPending, advertiserMessage: advertiserPending ? ADV_VERIFY_MSG : "", emailVerified, email: me,
         phoneVerified, phone: phoneVerified ? p.phone : "", phoneMasked: phoneVerified ? phoneLib.maskPhone(p.phone) : "",
         me: { ...person(me, p) }, discoverable: p ? Number(p.discoverable) !== 0 : true, showOnline: p ? Number(p.show_online) !== 0 : true,
         phoneVerifiedVia: phoneVerified ? (p.phone_verified_via || "sms") : "", phoneRequired: env.VM_REQUIRE_PHONE === "on", codeMinutes: phoneLib.CODE_MINUTES,
@@ -380,6 +413,50 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
     }
   });
 
+  // Everyone on the page right now (only people who allow it) plus the total.
+  app.get("/api/vm/online", requireAuth, requireActivated, async (req, res) => {
+    try {
+      const me = lc(req.userEmail), q = String(req.query.q || "").trim().toLowerCase().slice(0, 40), out = [];
+      let total = 0;
+      for (const e of conns.keys()) {
+        if (e === me) continue; total++;
+        if (out.length >= 60) continue;
+        const p = await profile(e); if (p && Number(p.show_online) === 0) continue;
+        if (await isBlocked(me, e)) continue;
+        await users.warm([e]); const w = person(e, p);
+        if (q && (w.displayName + " " + w.handle).toLowerCase().indexOf(q) < 0) continue;
+        out.push({ ...w, online: true });
+      }
+      res.json({ success: true, total, people: out });
+    } catch (e) { console.error("VM ONLINE:", e); bad(res, 500, "Could not load who is online."); }
+  });
+
+  // Everyone who advertised a product in Vico Pay with a phone number. They are registered automatically, but a person who has not
+  // verified their phone in Vico Message shows as "not active yet" and must verify before they can use Vico Message.
+  app.get("/api/vm/advertisers", requireAuth, requireActivated, async (req, res) => {
+    try {
+      const me = lc(req.userEmail), q = "%" + String(req.query.q || "").toLowerCase().replace(/[\\%_]/g, " ").trim().slice(0, 40) + "%";
+      let rows = [];
+      try {
+        rows = await db.all(`SELECT c.owner_email AS email, MAX(c.id) AS cid, MAX(f.phone) AS phone, MAX(a.business_name) AS biz, MAX(a.advertiser_name) AS aname
+          FROM ad_campaigns c JOIN ad_flow f ON f.campaign_id = c.id LEFT JOIN ad_advertisers a ON a.user_email = c.owner_email
+          WHERE COALESCE(f.phone,'') <> '' AND c.status NOT IN ${AD_NOT_COUNTED}
+          GROUP BY c.owner_email ORDER BY MAX(c.id) DESC LIMIT 200`, []);
+      } catch (e) { if (/does not exist/i.test(String(e.message))) return res.json({ success: true, advertisers: [] }); throw e; }
+      const out = [];
+      for (const r of rows) {
+        const e = lc(r.email); if (e === me) continue;
+        if (await isBlocked(me, e)) continue;
+        await users.warm([e]); const p = await profile(e), w = person(e, p), name = r.biz || r.aname || w.displayName;
+        const needle = q.replace(/%/g, "").trim();
+        if (needle && (name + " " + w.displayName + " " + w.handle).toLowerCase().indexOf(needle) < 0) continue;
+        out.push({ ...w, businessName: name, phone: r.phone || "", active: !!(p && p.phone), online: hub.online(e) });
+        if (out.length >= 80) break;
+      }
+      res.json({ success: true, advertisers: out });
+    } catch (e) { console.error("VM ADVERTISERS:", e); bad(res, 500, "Could not load advertisers."); }
+  });
+
   app.post("/api/vm/block", requireAuth, requireActivated, async (req, res) => {
     try { const me = lc(req.userEmail), other = await target(req.body && req.body.handle);
       if (!other || other === me) return bad(res, 400, "That contact cannot be blocked.");
@@ -510,6 +587,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
     const message = { id: Number(out.r.id), body, at, mine: true, kind, state: online ? "delivered" : "sent" };
     if (kind === "image" || kind === "voice") message.meta = mediaMeta(metaJson);
     hub.push(other, "message", { with: publicHandle(me), name: displayNameOf(me), message: { ...message, mine: false, state: undefined } });
+    if (!online) notifyOffline(other, me, "message");   // fire and forget: never slows or breaks the send
     return { ok: true, message, charged: cost, balance: out.ch ? out.ch.balance : null };
   }
   const sent = (res, r, what) => r.low ? lowBalance(res, r.cost, r.have, r.first ? "message someone new" : what)
@@ -660,7 +738,7 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
     hub.push(a, "message", { with: publicHandle(b), name: displayNameOf(b), message: { ...base, mine: true, state: "delivered" } });
     hub.push(b, "message", { with: publicHandle(a), name: displayNameOf(a), message: { ...base, mine: false } });
   }
-  const calls = makeMessageCalls({ app, db, requireAuth, requireActivated, store, hub, isBlocked, logCall, callAccess, env, wallet: charging() ? wallet : null });
+  const calls = makeMessageCalls({ app, db, requireAuth, requireActivated, store, hub, isBlocked, logCall, callAccess, env, wallet: charging() ? wallet : null, notifyOffline, adPhoneOf });
 
   return { migrate: ready, hub, calls };
 };

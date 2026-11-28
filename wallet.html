@@ -61,7 +61,7 @@
 </style>
 </head>
 <body>
-<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Wallet locked">
+<div class="lock" id="lock" style="display:none" role="dialog" aria-modal="true" aria-label="Wallet locked">
   <div class="ico" aria-hidden="true">🔒</div>
   <h1>VicoPay Wallet</h1>
   <p id="lockTxt">Enter your PIN to open your wallet.</p>
@@ -69,14 +69,14 @@
   <a href="vico-messages.html" id="lockBack">Back to messages</a>
 </div>
 
-<main id="app" hidden>
-  <div class="topbar"><h1>VicoPay Wallet</h1><button type="button" class="linkbtn" id="lockNow">🔒 Lock</button></div>
+<main id="app">
+  <div class="topbar"><h1>VicoPay Wallet</h1><a class="linkbtn" href="vico-messages.html" style="text-decoration:none">← Messages</a></div>
 
   <section class="balance" id="balanceCard" aria-live="polite">
     <small>Available balance</small>
     <div class="amt" id="balance">₦0</div>
     <div class="buys" id="buys"></div>
-    <div class="low-note" id="lowNote">Your balance is low. Recharge to keep sending messages and making calls.</div>
+    <div class="low-note" id="lowNote">Your balance is low. Recharge below to keep messaging and calling.</div>
   </section>
 
   <div class="msg" id="msg" role="status"></div>
@@ -85,9 +85,6 @@
   <div class="grid" id="grid"></div>
   <button class="pay" id="pay" disabled>Choose an amount</button>
   <div class="methods">Pay by card with Paystack. Your balance updates as soon as the payment is confirmed.</div>
-
-  <h2>What things cost</h2>
-  <div class="rates" id="rates"></div>
 
   <h2>Recent activity</h2>
   <div class="hist" id="hist"><div class="empty">Loading…</div></div>
@@ -100,7 +97,7 @@
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var naira = function (n) { return "₦" + Number(n || 0).toLocaleString("en-NG"); };
-  var state = { token: null, amount: 0, rates: { firstMessage: 3, message: 1, callMinute: 1 }, amounts: [100, 200, 500, 1000, 2000, 5000] };
+  var state = { token: null, amount: 0, rates: { firstMessage: 3, message: 1, callMinute: 1 }, amounts: [100, 200, 500, 1000, 1500, 2000, 4000, 5000, 10000] };
 
   function show(kind, text) { var m = $("msg"); m.className = "msg show " + kind; m.textContent = text; }
   function hide() { $("msg").className = "msg"; }
@@ -123,29 +120,28 @@
     $("lock").style.display = "none"; $("app").hidden = false;
     return confirmReturn().catch(function () { show("err", "Could not confirm the payment. If you were charged, your balance will update automatically."); }).then(load);
   }
+  // The page opens straight away (balance + recharge amounts + Pay button). Only the activity list needs the PIN.
   function boot() {
-    showLock("Opening…", false);
-    unlock().then(openWallet, function (e) {
-      showLock(e && e.cancel ? "Your wallet is locked. Enter your PIN to open it." : ((e && e.message) || "Could not check wallet security. Try again."), true);
-    });
+    $("lock").style.display = "none"; $("app").hidden = false;
+    paintGrid();   // amounts show at once, even before the server answers
+    var s0 = saved(); if (s0) state.token = s0.t;
+    confirmReturn().catch(function () { show("err", "Could not confirm the payment. If you were charged, your balance will update automatically."); }).then(load);
+  }
+  function unlockHistory() {
+    return unlock().then(function () { return api("/api/wallet/history?limit=30"); }).then(function (h) { paintHistory(h.success ? h.entries : []); },
+      function (e) { if (e && !e.cancel) show("err", (e && e.message) || "Could not check your PIN."); });
   }
   function api(path, opts) {
-    if (state.token !== null && state.token !== undefined && !saved()) { clearSaved(); showLock("Your wallet locked itself for your safety. Enter your PIN to open it again.", true); return Promise.resolve({ success: false, message: "Wallet locked.", _status: 428 }); }
     opts = opts || {};
     if (state.token) opts.headers = Object.assign({}, opts.headers || {}, { "x-wallet-auth": state.token });
-    return fetch(path, opts).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) {
-      d._status = r.status;
-      if (r.status === 428 && d.walletAuthRequired) { clearSaved(); showLock("Your wallet is locked. Enter your PIN to open it.", true); }
-      return d;
-    }); });
+    return fetch(path, opts).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { d._status = r.status; if (r.status === 428 && d.walletAuthRequired) clearSaved(); return d; }); })
+      .catch(function () { return { success: false, message: "No connection. Check your internet and try again.", _status: 0 }; });
   }
 
   function paintBalance(b) {
     var el = $("balance"), old = el.textContent;
     el.textContent = naira(b);
     if (old !== el.textContent) { el.classList.add("bump"); setTimeout(function () { el.classList.remove("bump"); }, 900); }
-    var perMsg = state.rates.message, perMin = state.rates.callMinute;
-    $("buys").innerHTML = "<span>" + Math.floor(b / perMsg).toLocaleString("en-NG") + " messages</span><span>" + Math.floor(b / perMin).toLocaleString("en-NG") + " call minutes</span>";
     $("balanceCard").classList.toggle("low", b < 20);
   }
 
@@ -154,7 +150,7 @@
     state.amounts.forEach(function (a) {
       var b = document.createElement("button");
       b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", "false");
-      b.innerHTML = "<b>" + naira(a) + "</b><span>" + Math.floor(a / state.rates.message).toLocaleString("en-NG") + " messages</span>";
+      b.innerHTML = "<b>" + naira(a) + "</b>";
       b.onclick = function () {
         state.amount = a;
         Array.prototype.forEach.call(g.children, function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); });
@@ -164,17 +160,10 @@
     });
   }
 
-  function paintRates() {
-    var r = state.rates;
-    $("rates").innerHTML =
-      "<div><span>First message to a new person</span><b>" + naira(r.firstMessage) + "</b></div>" +
-      "<div><span>Each message after that</span><b>" + naira(r.message) + "</b></div>" +
-      "<div><span>Voice or video call, per minute</span><b>" + naira(r.callMinute) + "</b></div>";
-  }
-
   var LABEL = { recharge: "Wallet recharge", message: "Message", first_message: "First message", call: "Call" };
   function paintHistory(entries) {
     var h = $("hist");
+    if (entries === null) { h.innerHTML = '<div class="empty">Your activity is protected by your Wallet PIN.<br><button type="button" class="linkbtn" id="seeHist">Enter PIN to see activity</button></div>'; $("seeHist").onclick = unlockHistory; return; }
     if (!entries.length) { h.innerHTML = '<div class="empty">No activity yet. Recharge to get started.</div>'; return; }
     h.innerHTML = "";
     entries.forEach(function (e) {
@@ -190,14 +179,15 @@
   }
 
   function load() {
-    return Promise.all([api("/api/wallet/balance"), api("/api/wallet/history?limit=30")]).then(function (res) {
+    var wantHist = !!state.token;
+    return Promise.all([api("/api/wallet/balance"), wantHist ? api("/api/wallet/history?limit=30") : Promise.resolve(null)]).then(function (res) {
       var b = res[0], h = res[1];
       if (b.success) {
-        state.rates = b.rates || state.rates; state.amounts = b.amounts || state.amounts;
-        paintBalance(b.balance); paintGrid(); paintRates();
+        state.amounts = b.amounts || state.amounts; state.rates = b.rates || state.rates;
+        paintBalance(b.balance); paintGrid();
         if (state.amount) { var i = state.amounts.indexOf(state.amount); if (i > -1) $("grid").children[i].click(); }
-      } else { show("err", b.message || "Could not load your wallet. Please refresh."); }
-      paintHistory(h.success ? h.entries : []);
+      } else { show("err", b.message || "Could not load your balance. You can still choose an amount and pay."); }
+      paintHistory(h && h.success ? h.entries : null);
     });
   }
 
@@ -231,7 +221,6 @@
   }
 
   $("lockBtn").onclick = boot;
-  $("lockNow").onclick = function () { clearSaved(); showLock("Your wallet is locked. Enter your PIN to open it.", true); };
   $("chgPin").onclick = function () { window.VicoPin.change().then(function () { show("ok", "Your Wallet PIN was changed."); }, function (e) { if (e && !e.cancel) show("err", (e && e.message) || "Could not change your PIN."); }); };
   boot();
 })();

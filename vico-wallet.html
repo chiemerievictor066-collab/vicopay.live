@@ -93,4 +93,29 @@ function secLoad(){if(!gmSignedIn())return;gmApi("/api/wallet-security/status").
 $("secBtns").onclick=function(e){var b=e.target.closest("button");if(!b)return;$("secE").textContent="";var f=VicoPin[b.dataset.p];f().then(secLoad,function(x){if(x&&!x.cancel)$("secE").textContent=x.message||"Could not finish.";secLoad();});};
 secLoad();
 window.gmOnCurrency=function(){if(document.getElementById("p-partnership").style.display!=="none")loadPartnershipWallet();};
-</script></body></html>
+</script><div id="vwLock" style="display:none;position:fixed;inset:0;z-index:9000;background:linear-gradient(180deg,#1c3a6e,#16315f);color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px" role="dialog" aria-modal="true" aria-label="Vico Wallet locked">
+  <div style="font-size:64px" aria-hidden="true">🔒</div><h1 style="font-size:26px;margin:14px 0 6px">Vico Wallet</h1>
+  <p id="vwTxt" style="color:#b9d5f7;margin:0 0 26px;max-width:300px">Enter your Wallet PIN to open your wallet.</p>
+  <button type="button" id="vwBtn" style="width:min(280px,100%);border:0;border-radius:14px;padding:15px;font:inherit;font-size:17px;font-weight:700;background:#7cc4ff;color:#06224f;cursor:pointer">Enter PIN</button>
+  <a href="global-market-community.html" style="color:#9fd3ff;margin-top:16px;font-weight:700;text-decoration:none">Back to home</a>
+</div>
+<script>
+/* PIN gate: the Vico Wallet page stays hidden until the Wallet PIN (and email code when asked) is done. The proof is kept in this tab for 9 minutes. */
+(function(){
+  var TK="vpWalletAuth", L=document.getElementById("vwLock"), T=document.getElementById("vwTxt"), B=document.getElementById("vwBtn");
+  function saved(){try{var o=JSON.parse(sessionStorage.getItem(TK)||"null");if(o&&o.exp>Date.now())return o;}catch(e){}return null;}
+  if(!window.gmSignedIn||!gmSignedIn()||saved())return;
+  L.style.display="flex"; document.body.style.overflow="hidden";
+  function go(){
+    B.disabled=true; T.textContent="Opening…";
+    window.VicoPin.authorize({action:"wallet"}).then(function(r){
+      try{sessionStorage.setItem(TK,JSON.stringify({t:(r&&r.token)||"",exp:Date.now()+9*60*1000}));}catch(e){}
+      L.style.display="none"; document.body.style.overflow="";
+    },function(e){
+      B.disabled=false; T.textContent=e&&e.cancel?"Your wallet is locked. Enter your PIN to open it.":((e&&e.message)||"Could not check wallet security. Try again.");
+    });
+  }
+  B.onclick=go; go();
+})();
+</script>
+</body></html>

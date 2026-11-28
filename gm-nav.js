@@ -12,7 +12,7 @@
     { k: "ads", icon: "📢", label: "Ad Center", href: "vico-ad-center.html", ready: true },
     { k: "market", icon: "🛒", label: "Marketplace", href: "vico-marketplace.html", ready: true },
     { k: "partnership", icon: "🎬", label: "Creator Partnership", href: "creator-partnership.html", ready: true },
-    { k: "vip", icon: "👑", label: "VIP", href: "vip-profile.html", ready: true },
+    { k: "vip", icon: "👑", label: "VIP", href: "vip-go-live.html", ready: true },
     { k: "profile", icon: "👤", label: "Profile", href: "vico-profile.html", ready: true }
   ];
   var here = document.body.getAttribute("data-gm") || "";

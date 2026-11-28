@@ -15,7 +15,7 @@ const RING_MS = 45 * 1000;          // how long a phone rings
 const STALE_RING_MS = 70 * 1000;    // a "ringing" row older than this was never answered (server restarted)
 const MAX_CALL_MS = 6 * 60 * 60 * 1000;
 
-module.exports = function makeMessageCalls({ app, db, requireAuth, requireActivated, store, hub, isBlocked, logCall, callAccess, env, wallet }) {
+module.exports = function makeMessageCalls({ app, db, requireAuth, requireActivated, store, hub, isBlocked, logCall, callAccess, env, wallet, notifyOffline, adPhoneOf }) {
   env = env || process.env;
   const lc = (v) => String(v || "").trim().toLowerCase();
   const now = () => Date.now();
@@ -114,12 +114,13 @@ module.exports = function makeMessageCalls({ app, db, requireAuth, requireActiva
       if (await isBlocked(me, other)) return bad(res, 403, "This call cannot be placed.");
       if (wallet) {
         const have = await wallet.balanceOf(me), need = wallet.RATES.callMinute;
-        if (have < need) return res.status(402).json({ success: false, insufficient: true, needed: need, balance: have, walletUrl: WALLET_URL,
-          message: "Your VicoPay Wallet balance is too low to make a call (₦" + need + " per minute). Recharge your wallet to continue." });
+        if (have < need) return res.status(402).json({ success: false, insufficient: true, balance: have, walletUrl: WALLET_URL,
+          message: "You have insufficient balance to make this call. You have \u20a6" + (Number(have) || 0).toLocaleString("en-NG") + ". Recharge your wallet to continue." });
       }
       const peer = await db.get("SELECT phone_verified_at FROM vm_profiles WHERE email = ? AND phone IS NOT NULL", [other]);
       await store.users.warm([me, other]);
-      if (!peer) return bad(res, 409, store.displayNameOf(other) + " has not activated Vico Message yet, so they cannot receive calls. You can still send a message.", { notActivated: true });
+      const advPending = !peer && notifyOffline && adPhoneOf ? !!(await adPhoneOf(other)) : false;   // an advertiser who has not verified yet can still be rung: they get a notification
+      if (!peer && !advPending) return bad(res, 409, store.displayNameOf(other) + " has not activated Vico Message yet, so they cannot receive calls. You can still send a message.", { notActivated: true });
       if (await inCall(me)) return bad(res, 409, "You are already on a call.");
       if (callAccess && env.VM_VIP_CALL_GATE !== "off") {
         let a = null; try { a = await callAccess(me, other); } catch (e) { console.error("VM VIP GATE:", e.message); }
@@ -135,6 +136,7 @@ module.exports = function makeMessageCalls({ app, db, requireAuth, requireActiva
         return res.status(409).json({ success: false, busy: true, message: store.displayNameOf(other) + " is on another call." });
       }
       const online = hub.push(other, "call_incoming", { callId: id, kind, from: who(me), expiresInMs: RING_MS });
+      if (!online && notifyOffline) notifyOffline(other, me, "call");
       const tm = setTimeout(async () => { try { const c = await db.get("SELECT * FROM vm_calls WHERE id = ?", [id]); if (c && c.status === "ringing") await finish(c, "missed"); } catch (_) { /* ignore */ } }, RING_MS);
       if (tm.unref) tm.unref(); timers.set(id, tm);
       res.json({ success: true, callId: id, kind, with: who(other), calleeOnline: online, ringMs: RING_MS });

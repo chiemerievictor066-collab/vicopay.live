@@ -72,7 +72,7 @@
       (it.status === "sold" ? '<span class="vs-store" style="color:#b91c1c">Sold</span>' : '<button class="vs-btn vs-buy" type="button" data-id="' + it.id + '">' + icon("cart", 17) + " Buy Now</button>") + "</div></div></div>";
   }
 
-  var READY = { home: "home.html", market: "vico-marketplace.html", partnership: "creator-partnership.html", videos: "vico-videos.html", sense: "", ai: "", messages: "vico-messages.html", wallet: "vico-wallet.html", vip: "vip-profile.html", profile: "profile.html" };
+  var READY = { home: "home.html", market: "vico-marketplace.html", partnership: "creator-partnership.html", videos: "vico-videos.html", sense: "", ai: "", messages: "vico-messages.html", wallet: "vico-wallet.html", vip: "vip-go-live.html", profile: "profile.html" };
   var SETS = {
     market: [["home", "home", "Home"], ["market", "store", "Marketplace"], ["partnership", "handshake", "Creator Partnership"], ["videos", "play", "Videos"], ["sense", "star", "8 Sense"], ["ai", "chip", "Vico AI"], ["messages", "chat", "Messages"], ["wallet", "wallet", "Vico Wallet"], ["vip", "crown", "VIP Club"], ["profile", "user", "Profile"]],
     video: [["home", "home", "Home"], ["videos", "play", "Videos"], ["market", "bag", "Marketplace"], ["sense", "star", "8Sense"], ["profile", "user", "Profile"]]

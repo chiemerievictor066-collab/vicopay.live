@@ -10,7 +10,7 @@
     var old = document.getElementById("vmRecharge"); if (old) old.remove();
     var bar = document.createElement("div"); bar.id = "vmRecharge"; bar.setAttribute("role", "alert");
     bar.style.cssText = "position:fixed;left:12px;right:12px;bottom:max(14px,env(safe-area-inset-bottom));z-index:99999;max-width:520px;margin:0 auto;background:#031c5d;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.35);font:600 14px/1.35 system-ui,sans-serif";
-    var t = document.createElement("div"); t.style.flex = "1"; t.textContent = msg || "Your wallet balance is too low. Recharge to continue.";
+    var t = document.createElement("div"); t.style.flex = "1"; t.textContent = msg || "You have insufficient balance. Recharge your wallet to continue.";
     var go = document.createElement("a"); go.href = /^[a-z0-9_.-]+\.html$/i.test(url || "") ? url : "wallet.html"; go.textContent = "Recharge wallet";
     go.style.cssText = "background:#ffc83d;color:#031c5d;text-decoration:none;font-weight:800;padding:9px 12px;border-radius:10px;white-space:nowrap";
     var x = document.createElement("button"); x.type = "button"; x.setAttribute("aria-label", "Dismiss"); x.textContent = "×";
@@ -110,7 +110,7 @@
   function gatePhone(prefill) {
     var st = S.status || {}, cs = st.countries || [], pre = prefill || (st.suggestedPhone ? splitPhone(st.suggestedPhone.phone || st.suggestedPhone) : null) || {};
     var canPush = !!(st.push && st.push.web && pushSupported());
-    gate("<h2>Verify your phone number</h2><p>Enter your phone number with its country code. VicoPay will send a six-digit code to that exact number.</p>" +
+    gate("<h2>Verify your phone number</h2>" + (st.advertiserPending ? '<div class="hint" role="note">' + esc(st.advertiserMessage || "Verify your phone number in Vico Message to be able to start using Vico Message for calling, chatting and messaging for the advertisement of products in Vico Pay.") + "</div>" : "") + "<p>Enter your phone number with its country code. VicoPay will send a six-digit code to that exact number.</p>" +
       '<label class="f" for="pcountry">Country</label><div class="phone-row"><select id="pcountry" class="fi" aria-label="Country code">' +
       cs.map(function (c) { return '<option value="' + esc(c.code) + '"' + (c.code === (pre.country || "NG") ? " selected" : "") + ">" + esc(c.name) + " (+" + esc(c.dial) + ")</option>"; }).join("") +
       '</select><input id="pnum" class="fi" type="tel" inputmode="tel" autocomplete="tel-national" maxlength="20" aria-label="Phone number" placeholder="801 234 5678" value="' + esc(pre.national || "") + '"></div>' +
@@ -290,7 +290,7 @@
   function setTab(tab) {
     S.tab = tab;
     ["message", "chat", "call"].forEach(function (t) { $("tab-" + t).setAttribute("aria-selected", t === tab); $("panel-" + t).hidden = t !== tab; });
-    if (tab === "message") { loadPeople(); loadBiz(); }
+    if (tab === "message") { loadPeople(); loadBiz(); loadOnline(); loadAdvertisers(); }
     if (tab === "chat") loadThreads();
     if (tab === "call") { loadCalls(); try { localStorage.setItem(SEEN_KEY, String(Date.now())); } catch (e) {} $("callBadge").hidden = true; }
   }
@@ -310,22 +310,35 @@
     }).catch(function () {});
   }
   function drawThreads() {
-    var q = $("filterChats").value.trim().toLowerCase(), list = S.threads.filter(function (t) { return !q || (t.displayName + " " + t.handle).toLowerCase().indexOf(q) >= 0; });
-    $("threads").innerHTML = list.map(function (t) {
+    var q = $("filterChats").value.trim().toLowerCase();
+    if (q.length >= 2) { $("threads").innerHTML = ""; return findChat(q); }
+    $("chatFind").innerHTML = "";
+    var list = S.threads.filter(function (t) { return !q || (t.displayName + " " + t.handle).toLowerCase().indexOf(q) >= 0; });
+    $("threads").innerHTML = list.map(threadRow).join("") || '<div class="empty">' + (q ? "No chats match." : "No chats yet.<br>Type a person name above to start a chat.") + "</div>";
+  }
+  function threadRow(t) {
       var pv;
       if (t.kind === "call") { var c = callText(t.meta, t.mine); pv = '<small class="' + (c.red ? "red" : "") + '">' + ico(t.meta && t.meta.kind === "video" ? "video" : "phone", "mini") + esc(c.t) + "</small>"; }
       else pv = "<small>" + (t.mine ? tick(t.state) : "") + esc(t.preview) + "</small>";
       return '<div class="row' + (S.cur === t.handle ? " on" : "") + '" data-h="' + esc(t.handle) + '" role="button" tabindex="0">' + avatar(t) + '<div class="t"><b>' + esc(t.displayName) + "</b>" + pv + '</div><div class="r"><span>' + short(t.lastAt) + "</span>" + (t.unread ? "<em>" + t.unread + "</em>" : "") + "</div></div>";
-    }).join("") || '<div class="empty">' + (q ? "No chats match." : "No chats yet.<br>Use <b>Message</b> to find someone and say hello.") + (q ? "" : '<br><button class="pill" data-go="message" type="button">' + ico("compose", "mini") + "New message</button>") + "</div>";
+      }
+  // Chat tab: type a person's name, their name appears with a Chat button; tapping opens the same page the Message button opens.
+  function findChat(q) {
+    api("/api/vm/contacts/search?q=" + encodeURIComponent(q)).then(function (d) {
+      if ($("filterChats").value.trim().toLowerCase() !== q) return;
+      var mine = S.threads.filter(function (t) { return (t.displayName + " " + t.handle).toLowerCase().indexOf(q) >= 0; });
+      $("chatFind").innerHTML = d.success ? (d.people.map(function (p) { return personRow(p, "chat"); }).join("") || (mine.length ? "" : '<div class="empty" style="padding:18px 22px">No one found. Check the spelling.</div>')) : '<div class="empty">' + esc(d.message || "Search failed.") + "</div>";
+      if (mine.length) $("threads").innerHTML = '<h2 class="vm-h">Your chats</h2>' + mine.map(threadRow).join("");
+    });
   }
-  function needVerify() { loadStatus().then(function (st) { if (!st.phoneVerified && (st.phoneRequired || !st.emailVerified)) gatePhone(); else if (st.emailVerified) gateProfile(false); else gateEmail(); }); }
+  function needVerify() { loadStatus().then(function (st) { if (!st.phoneVerified && (st.phoneRequired || st.advertiserPending || !st.emailVerified)) gatePhone(); else if (st.emailVerified) gateProfile(false); else gateEmail(); }); }
 
   /* ---------- Message tab: people and businesses ---------- */
   function personRow(p, kind) {
     var sub = p.about ? esc(p.about) : "@" + esc(p.handle);
     return '<div class="row" data-open="' + esc(p.handle) + '">' + avatar(p) + '<div class="t"><b>' + esc(p.displayName) + "</b><small>" + sub + '</small></div><div class="acts">' +
       (kind === "call" ? '<button class="round" data-call="' + esc(p.handle) + '" data-kind="voice" type="button" aria-label="Voice call ' + esc(p.displayName) + '">' + ico("phone") + '</button><button class="round vid" data-call="' + esc(p.handle) + '" data-kind="video" type="button" aria-label="Video call ' + esc(p.displayName) + '">' + ico("video") + "</button>"
-        : '<button class="pill" data-open="' + esc(p.handle) + '" type="button">Message</button>') + "</div></div>";
+        : '<button class="pill" data-open="' + esc(p.handle) + '" type="button">' + (kind === "chat" ? "Chat" : "Message") + "</button>") + "</div></div>";
   }
   function loadPeople() {
     var q = $("findPeople").value.trim(), out = $("peopleOut");
@@ -344,6 +357,26 @@
         var tel = b.phone && !b.canCall ? '<a class="round" href="tel:' + esc(b.phone.replace(/[^\d+]/g, "")) + '" aria-label="Phone ' + esc(b.businessName) + '">' + ico("phone") + "</a>" : "";
         return '<div class="row" data-open="' + esc(b.handle) + '">' + avatar(b, true) + '<div class="t"><b>' + esc(b.businessName) + (b.numberVerified ? ' <span class="tag">' + ico("check", "mini") + "Verified number</span>" : "") + "</b><small>" + esc([b.city, b.description].filter(Boolean).join(" · ")) + '</small></div><div class="acts"><button class="pill" data-open="' + esc(b.handle) + '" type="button">Message</button>' +
           (b.canCall ? '<button class="round" data-call="' + esc(b.handle) + '" data-kind="voice" type="button" aria-label="Call ' + esc(b.businessName) + '">' + ico("phone") + "</button>" : "") + tel + "</div></div>";
+      }).join("");
+    });
+  }
+
+  function loadOnline() {
+    var q = $("findPeople").value.trim();
+    api("/api/vm/online?q=" + encodeURIComponent(q.length >= 2 ? q : "")).then(function (d) {
+      var list = d.success ? d.people : [];
+      $("onlineHead").textContent = "People online" + (d.success ? " (" + d.total + ")" : ""); $("onlineHead").hidden = !d.success;
+      $("onlineOut").innerHTML = list.map(function (p) { return personRow(p, "msg"); }).join("") || (d.success ? '<div class="empty" style="padding:14px 22px">No one else is online right now.</div>' : "");
+    });
+  }
+  function loadAdvertisers() {
+    var q = $("findPeople").value.trim();
+    api("/api/vm/advertisers?q=" + encodeURIComponent(q.length >= 2 ? q : "")).then(function (d) {
+      var list = d.success ? d.advertisers : [];
+      $("advHead").hidden = !list.length;
+      $("advOut").innerHTML = list.map(function (b) {
+        var tel = b.phone ? '<a class="round" href="tel:' + esc(b.phone.replace(/[^\d+]/g, "")) + '" aria-label="Phone ' + esc(b.businessName) + '">' + ico("phone") + "</a>" : "";
+        return '<div class="row" data-open="' + esc(b.handle) + '">' + avatar(b, true) + '<div class="t"><b>' + esc(b.businessName) + (b.active ? "" : ' <span class="tag" style="background:#fff3d6;color:#7a5a12">Not active yet</span>') + "</b><small>" + esc(b.phone || "") + '</small></div><div class="acts"><button class="pill" data-open="' + esc(b.handle) + '" type="button">Message</button><button class="round" data-call="' + esc(b.handle) + '" data-kind="voice" type="button" aria-label="Call ' + esc(b.businessName) + '">' + ico("phone") + "</button>" + tel + "</div></div>";
       }).join("");
     });
   }
@@ -460,7 +493,7 @@
         if (S.ids[d.message.id]) { el.remove(); } else { S.ids[d.message.id] = true; S.lastId = Math.max(S.lastId, d.message.id); el.dataset.id = d.message.id; el.dataset.state = "pending"; setState(el, d.message.state); }
         if (d.balance != null) setWallet(d.balance);
         loadThreads();
-      } else { fail(el, body, d.insufficient ? "Not sent: wallet balance too low" : d.message); if (d.insufficient) needRecharge(d.message, d.walletUrl); }
+      } else { fail(el, body, d.insufficient ? "Not sent: insufficient balance" : d.message); if (d.insufficient) needRecharge(d.message, d.walletUrl); }
     }).catch(function () { S.sending--; fail(el, body, "No connection."); });
   }
   function fail(el, body, msg) {
@@ -511,7 +544,7 @@
     else if (ev === "typing") { if (S.cur === d.from) showTyping(); }
     else if (ev === "call_incoming") onIncoming(d);
     else if (ev === "call_update") onCallUpdate(d);
-    else if (ev === "call_balance") { if (call && d.callId === call.id) needRecharge("About " + (d.minutesLeft > 0 ? d.minutesLeft + " minute" : "less than a minute") + " of calling left in your wallet. Recharge to keep talking.", d.walletUrl); }
+    else if (ev === "call_balance") { if (call && d.callId === call.id) needRecharge("Your wallet balance is almost finished. Recharge to keep talking.", d.walletUrl); }
   }
   // when the stream is down (or as a safety net) the page still refreshes by itself
   setInterval(function () {
@@ -618,7 +651,7 @@
   function onCallUpdate(d) {
     if (call && d.callId === call.id) {
       if (d.status === "active") { if (call.dir === "out" && call.state === "ringing") { call.state = "active"; stopRing(); showCall(); } else if (call.state === "incoming" && !call.accepting) cleanup(""); }   // answered on another device
-      else if (d.reason === "balance") { var cb = call; cb.leaving = true; var mine = cb.dir === "out"; cleanup(mine ? "" : "Call ended."); if (mine) needRecharge("Your call ended because your wallet balance ran out. Recharge to keep calling.", d.walletUrl); }
+      else if (d.reason === "balance") { var cb = call; cb.leaving = true; var mine = cb.dir === "out"; cleanup(mine ? "" : "Call ended."); if (mine) needRecharge("Your call ended because you have insufficient balance. Recharge to keep calling.", d.walletUrl); }
       else { var c = call; c.leaving = true; cleanup({ declined: "Call declined.", missed: c.dir === "out" ? "No answer." : "Missed call.", cancelled: c.dir === "out" ? "" : "Missed call.", ended: "Call ended." }[d.status] || ""); }
     }
     loadCalls();
@@ -729,7 +762,7 @@
         var ok = $("sheetOk"); ok.disabled = true; ok.textContent = "Sending…";
         postMedia(h, "image", p.blob, "&w=" + p.w + "&h=" + p.h).then(function (d) { afterMediaSent(d); closeSheet(); URL.revokeObjectURL(url); })
           .catch(function () { say("No connection."); ok.disabled = false; ok.textContent = "Send photo"; });
-      }, "Sending a photo costs ₦" + r.message + " (₦" + r.firstMessage + " for a first message to someone new).");
+      }, "");
     }, function () { say("That photo could not be opened."); });
   }
 
@@ -798,7 +831,7 @@
     });
     $("threads").onkeydown = function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.dataset.h) { e.preventDefault(); openChat(e.target.dataset.h); } };
     $("filterChats").oninput = drawThreads;
-    $("findPeople").oninput = function () { clearTimeout(S.searchT); S.searchT = setTimeout(function () { loadPeople(); loadBiz(); }, 300); };
+    $("findPeople").oninput = function () { clearTimeout(S.searchT); S.searchT = setTimeout(function () { loadPeople(); loadBiz(); loadOnline(); loadAdvertisers(); }, 300); };
     $("findCall").oninput = function () { clearTimeout(S.searchT); S.searchT = setTimeout(findCall, 300); };
     $("back").onclick = backToList;
     $("chVoice").onclick = function () { if (S.cur) startCall(S.cur, "voice"); };
@@ -855,15 +888,28 @@
     $("gate").hidden = true; $("vm").hidden = false; document.body.classList.remove("vm-inchat");
     if (!wired) { wired = true; wire(); }
     S.stream.stop = false; setTab(S.tab); startStream();
-    loadWallet();
+    loadWallet(); offerPush();
     var qs = new URLSearchParams(location.search), to = (qs.get("to") || "").replace(/^@/, ""), callTo = (qs.get("call") || "").replace(/^@/, "");
     if (to) { openChat(to, qs.get("t") ? "Hi, I am interested in “" + qs.get("t") + "”. Is it still available?" : ""); history.replaceState(null, "", "vico-messages.html"); }
     else if (callTo) { history.replaceState(null, "", "vico-messages.html"); startCall(callTo, qs.get("kind") === "video" ? "video" : "voice"); }
     api("/api/vm/calls/incoming").then(function (d) { if (d.success && d.calls.length) onIncoming({ callId: d.calls[0].callId, kind: d.calls[0].kind, from: d.calls[0].from }); });
   }
+  // So a customer's message reaches this person's phone even when the page is closed, ask once to allow notifications.
+  function offerPush() {
+    try {
+      var pk = S.status && S.status.push && S.status.push.web; if (!pk || !pushSupported() || Notification.permission === "denied") return;
+      if (Notification.permission === "granted") { enablePush(); return; }
+      if (sessionStorage.getItem("vmPushAsked") || (S.status.push.devices && S.status.push.devices.web)) return;
+      var bar = $("conn"); var b = document.createElement("div"); b.id = "pushOffer"; b.style.cssText = "background:#eef6ff;color:#0b2a66;text-align:center;font:700 13px/1.4 system-ui,sans-serif;padding:8px 10px";
+      b.innerHTML = 'Turn on notifications so customers can reach you even when you are offline. <button type="button" class="link" id="pushYes">Turn on</button> <button type="button" class="link" id="pushNo" style="color:#5d7096">Later</button>';
+      bar.parentNode.insertBefore(b, bar.nextSibling);
+      $("pushYes").onclick = function () { enablePush().then(function (r) { b.remove(); say(r.ok ? "Notifications are on." : r.message); }); };
+      $("pushNo").onclick = function () { try { sessionStorage.setItem("vmPushAsked", "1"); } catch (e) {} b.remove(); };
+    } catch (e) {}
+  }
   function init() {
     if (!window.gmSignedIn || !gmSignedIn()) return gateLogin();
-    loadStatus().then(function (st) { if (st.activated && !(st.phoneRequired && !st.phoneVerified)) { if (S.status.me.displayName === "User") return gateProfile(false); enter(); } else gatePhone(); })
+    loadStatus().then(function (st) { if (st.advertiserPending) return gatePhone(); if (st.activated && !(st.phoneRequired && !st.phoneVerified)) { if (S.status.me.displayName === "User") return gateProfile(false); enter(); } else gatePhone(); })
       .catch(function (e) { gate("<h2>Vico Message is not available</h2><p>" + esc(e.message || "Please try again.") + '</p><button class="btn-main" type="button" onclick="location.reload()">Try again</button>'); });
   }
   window.addEventListener("beforeunload", function () { S.stream.stop = true; if (S.stream.ctl) try { S.stream.ctl.abort(); } catch (e) {} });
