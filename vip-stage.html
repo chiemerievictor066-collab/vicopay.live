@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#07060f">
+<title>VIP Go Live - VicoPay Live</title>
+<style>
+:root{--gold:#ffc83d;--gold2:#ffe27a;--gold3:#a86f00;--bg:#07060f;--card:#14122a;--line:#2b2757;--ink:#f5f1ff;--mute:#a9a3d6;--violet:#7c3aed;--rose:#ff4d8d}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:radial-gradient(120% 70% at 50% -10%,#2a1763 0,#0d0a22 48%,var(--bg) 100%) fixed;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45;padding-bottom:calc(30px + env(safe-area-inset-bottom));min-height:100dvh}
+a{color:inherit}.wrap{max-width:760px;margin:0 auto;padding:14px 16px}
+.top{display:flex;align-items:center;gap:10px;padding:6px 0 12px}
+.top a.back{width:40px;height:40px;border-radius:50%;background:#ffffff14;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:20px}
+.top b{flex:1;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2)}
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:30px 20px 26px;text-align:center;border:1px solid #6b4cff55;background:linear-gradient(160deg,#2a1763cc,#14122acc 55%,#2b1a05cc);box-shadow:0 20px 60px #000a,inset 0 0 0 1px #ffffff0d}
+.hero:before{content:"";position:absolute;inset:-40% -20% auto;height:100%;background:radial-gradient(closest-side,#ffc83d33,transparent);pointer-events:none}
+.crown{font-size:58px;filter:drop-shadow(0 6px 18px #ffc83d88);animation:fl 3.2s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-6px)}}
+.hero h1{margin:6px 0 4px;font-size:clamp(28px,7vw,40px);letter-spacing:-.01em;background:linear-gradient(90deg,var(--gold3),var(--gold),var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:0 auto 16px;max-width:430px;color:var(--mute);font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:8px;border-radius:20px;padding:7px 14px;font-weight:800;font-size:13.5px;background:#ffffff12;border:1px solid #ffffff22;margin-bottom:16px}
+.chip.vip{background:linear-gradient(90deg,#8a5a00,#ffc83d);color:#1b1300;border-color:#fff6}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:18px;padding:15px 24px;font:800 17px/1 inherit;font-family:inherit;cursor:pointer;text-decoration:none;color:#1b1300;background:linear-gradient(135deg,var(--gold2),var(--gold) 50%,#e89b00);box-shadow:0 10px 28px #ffc83d44}
+.btn:hover{filter:brightness(1.06)}.btn.ghost{background:#ffffff14;color:var(--ink);box-shadow:none;border:1px solid #ffffff2a}
+.btn.big{width:min(340px,100%);padding:18px}.btn:focus-visible,a:focus-visible,button:focus-visible{outline:3px solid #a78bfa;outline-offset:2px}
+.locked{margin-top:14px;font-size:13.5px;color:var(--mute);font-weight:600}
+.bar{height:8px;border-radius:6px;background:#ffffff1f;overflow:hidden;max-width:340px;margin:10px auto 4px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--gold))}
+h2{margin:26px 4px 10px;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);display:flex;align-items:center;gap:8px}
+.card{background:linear-gradient(180deg,#1a1738,var(--card));border:1px solid var(--line);border-radius:22px;padding:14px}
+.lives{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.live{position:relative;display:block;text-decoration:none;border-radius:18px;overflow:hidden;aspect-ratio:3/4;background:linear-gradient(160deg,#3b2a8a,#17102f);border:1px solid #ffc83d55;box-shadow:0 8px 22px #0007}
+.live img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.live .meta{position:absolute;left:0;right:0;bottom:0;padding:26px 10px 10px;background:linear-gradient(0deg,#000d,transparent);font-weight:800;font-size:14px}
+.live .meta small{display:block;color:var(--gold2);font-weight:700;font-size:12px}
+.live .on{position:absolute;top:8px;left:8px;background:var(--rose);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:900;letter-spacing:.06em}
+.empty{padding:26px 14px;text-align:center;color:var(--mute);font-weight:600}.empty b{display:block;font-size:17px;color:var(--ink);margin-bottom:4px}
+.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.feat{display:flex;flex-direction:column;gap:8px}.feat h3{margin:0;font-size:16px}.feat p{margin:0;color:var(--mute);font-size:13.5px;font-weight:600;flex:1}
+.feat .btn{padding:12px 16px;font-size:15px;border-radius:14px}
+.gifts{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;margin-top:12px}
+.gift{border:1px solid var(--line);background:#ffffff0a;border-radius:16px;padding:8px;text-align:center;color:var(--ink);font:inherit;cursor:pointer}
+.gift img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:#000}.gift b{display:block;font-size:12.5px;margin-top:5px}
+.gift:hover{border-color:var(--gold)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;color:#1b1300;font-weight:800;border-radius:16px;padding:12px 18px;z-index:9999;box-shadow:0 10px 30px #000a;max-width:90vw;display:none}
+#fx{position:fixed;inset:0;z-index:9000;background:#000d;display:none;align-items:center;justify-content:center}
+#fx video{max-width:100%;max-height:100%;width:min(100%,520px);mix-blend-mode:screen}
+#fx button{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;width:44px;height:44px;border-radius:50%;border:0;font-size:22px;background:#ffffff26;color:#fff;cursor:pointer}
+@media(prefers-reduced-motion:reduce){.crown{animation:none}}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="back" href="global-market-community.html" aria-label="Back to Market Community">←</a><b>VIP Go Live</b><a class="btn ghost" style="padding:9px 14px;font-size:13px;border-radius:14px" href="vip-profile.html">My VIP profile</a></div>
+
+  <section class="hero" aria-labelledby="ttl">
+    <div class="crown" aria-hidden="true">👑</div>
+    <h1 id="ttl">VIP Live Room</h1>
+    <p>The exclusive stage for VIP streamers: grand entrances, VIP gifts and a front-row audience.</p>
+    <div><span class="chip" id="chip">Checking your VIP status…</span></div>
+    <div id="cta"></div>
+    <div class="locked" id="lockedNote"></div>
+  </section>
+
+  <h2>👑 VIPs live now</h2>
+  <div class="card"><div class="lives" id="lives"></div><div class="empty" id="liveEmpty" style="display:none"><b>No VIP is live right now</b>When a VIP goes live they appear here at once. You can turn on alerts below.</div></div>
+
+  <h2>✨ VIP features</h2>
+  <div class="feats">
+    <div class="card feat"><h3>🚗 Entrance animation</h3><p>Your car and crown entrance plays when you join a live, with the “joined the exclusive room” notice.</p><button class="btn" id="prevEntr" type="button">Preview entrance</button></div>
+    <div class="card feat"><h3>🔔 VIP live alerts</h3><p id="alertTxt">Get a notification the moment a VIP goes live.</p><button class="btn" id="alertBtn" type="button">Turn on alerts</button></div>
+    <div class="card feat"><h3>🎁 VIP gift shop</h3><p>Send the royal gifts: dragon, throne, golden rose and more.</p><a class="btn" href="vip-gift-shop.html">Open gift shop</a></div>
+    <div class="card feat"><h3>📺 VIP live feed</h3><p>Swipe through every VIP live, with gifts, fan club and PK.</p><a class="btn" href="vip-live-feed.html">Watch VIP lives</a></div>
+  </div>
+
+  <h2>🎬 VIP gift animations</h2>
+  <div class="card"><div class="empty" id="giftEmpty" style="padding:8px">Tap a gift to see its animation.</div><div class="gifts" id="gifts"></div></div>
+</div>
+<div id="fx" role="dialog" aria-modal="true" aria-label="Gift animation"><video id="fxv" playsinline></video><button type="button" id="fxx" aria-label="Close">×</button></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="auth.js"></script><script>if(window.VicoAuth&&VicoAuth.requireLogin)VicoAuth.requireLogin();</script>
+<script src="vip-ui.js"></script><script src="vip-entrance.js"></script>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i);};
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function toast(t){var e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(function(){e.style.display="none";},3500);}
+  function jget(u){return fetch(u,{credentials:"same-origin"}).then(function(r){return r.json().catch(function(){return {};});}).catch(function(){return {};});}
+  var ME=null, known={}, first=true;
+
+  /* ---- who am I: VIP or not. The page always opens; only the Go Live button depends on it ---- */
+  function paintMe(d){
+    var chip=$("chip"),cta=$("cta"),note=$("lockedNote");
+    if(!d||!d.success||!d.enabled){chip.textContent="VIP is opening soon";cta.innerHTML='<a class="btn big" href="Go-Live.html">Go Live</a>';note.textContent="VIP lives are not open yet. You can still go live as normal.";return;}
+    ME=d;
+    if(d.tier&&d.tier!=="none"){
+      chip.className="chip vip";chip.textContent="👑 "+d.label+" VIP"+(d.verified?" · Verified streamer":"");
+      cta.innerHTML='<a class="btn big" href="Go-Live.html?vip=1">👑 Go Live as VIP</a>';note.textContent="Your VIP badge, frame and entrance show to everyone in your live.";
+    }else{
+      chip.className="chip";chip.textContent="Not a VIP yet";
+      var n=d.progress&&d.progress.next,p=d.progress||{},pct=0;
+      if(n){var parts=[p.followers/Math.max(1,n.minFollowers),p.liveHours/Math.max(1,n.minLiveHours)];if(n.minStars>0)parts.push(p.stars/n.minStars);pct=Math.min(100,Math.round(100*Math.min.apply(null,parts)));}
+      cta.innerHTML='<a class="btn big" href="Go-Live.html">Go Live</a><div class="bar" aria-hidden="true"><i style="width:'+pct+'%"></i></div>';
+      note.innerHTML=n?'Reach <b>'+esc(n.label)+' VIP</b> to unlock the VIP stage: '+p.followers+' / '+n.minFollowers+' followers · '+p.liveHours+' / '+n.minLiveHours+' live hours'+(n.minStars>0?' · '+p.stars+' / '+n.minStars+' Golden Stars':'')+'. <a href="vip-profile.html" style="color:var(--gold2)">See my progress</a>':'Keep streaming to unlock VIP.';
+    }
+  }
+
+  /* ---- VIP lives now (same list as the VIP feed) ---- */
+  function discover(){
+    return jget("/api/live/discover").then(function(d){
+      var rooms=d.rooms||[],handles=rooms.map(function(r){return r.handle;}).filter(Boolean);
+      if(!handles.length||!window.VicoVIP)return [];
+      return VicoVIP.load(handles.slice(0,50)).then(function(vip){return rooms.filter(function(r){return vip&&vip[r.handle];}).map(function(r){r.vip=vip[r.handle];return r;});}).catch(function(){return [];});
+    });
+  }
+  function paintLives(list){
+    $("lives").innerHTML=list.map(function(r){
+      var img=r.handle?'<img src="/api/avatar/'+encodeURIComponent(r.handle)+'" alt="" loading="lazy" onerror="this.remove()">':"";
+      return '<a class="live" href="vip-live-feed.html?room='+encodeURIComponent(r.roomId)+'">'+img+'<span class="on">LIVE</span><div class="meta">'+esc(r.displayName||r.handle||"VIP")+'<small>👑 '+esc((r.vip&&r.vip.label)||"VIP")+' · '+(r.viewers||0)+' watching</small></div></a>';
+    }).join("");
+    $("liveEmpty").style.display=list.length?"none":"block";
+  }
+  function tick(){
+    discover().then(function(list){
+      paintLives(list);
+      list.forEach(function(r){
+        if(!known[r.roomId]&&!first&&alertsOn()&&"Notification" in window&&Notification.permission==="granted"){
+          try{new Notification("👑 "+(r.displayName||"A VIP")+" is live now",{body:"A VIP just went live on VicoPay Live. Tap to watch.",tag:"vip-"+r.roomId});}catch(e){}
+        }
+        known[r.roomId]=1;
+      });
+      first=false;
+    });
+  }
+
+  /* ---- alerts ---- */
+  function alertsOn(){try{return localStorage.getItem("vipAlerts")==="1";}catch(e){return false;}}
+  function paintAlert(){
+    var on=alertsOn()&&"Notification" in window&&Notification.permission==="granted";
+    $("alertBtn").textContent=on?"Alerts are on ✓":"Turn on alerts";
+    $("alertTxt").textContent=on?"You will be told when a VIP goes live. Keep this page or the app open in the background.":"Get a notification the moment a VIP goes live.";
+  }
+  $("alertBtn").onclick=function(){
+    if(!("Notification" in window))return toast("This browser cannot show notifications.");
+    if(alertsOn()&&Notification.permission==="granted"){try{localStorage.setItem("vipAlerts","0");}catch(e){}paintAlert();return toast("VIP alerts turned off.");}
+    Notification.requestPermission().then(function(p){
+      if(p!=="granted")return toast("Notifications are blocked. Allow them in your browser settings.");
+      try{localStorage.setItem("vipAlerts","1");}catch(e){}paintAlert();toast("VIP alerts are on.");
+    });
+  };
+
+  /* ---- entrance preview ---- */
+  $("prevEntr").onclick=function(){
+    if(!window.VicoEntrance)return toast("The entrance player could not load. Refresh the page.");
+    var name=localStorage.getItem("vicoPayDisplayName")||"You";
+    VicoEntrance.play({videos:["gift-vip-entrance-car.mp4","gift-vip-entrance-crown.mp4"],name:name,text:name+" joined the exclusive room"},document.body);
+  };
+
+  /* ---- gift animations ---- */
+  function loadGifts(){
+    jget("/api/vip/gifts").then(function(d){
+      var g=(d&&d.gifts)||[];
+      if(!g.length){$("giftEmpty").textContent="VIP gifts will appear here soon.";return;}
+      $("gifts").innerHTML=g.map(function(x){return '<button class="gift" type="button" data-v="'+esc(x.video)+'"><img src="'+esc(x.image)+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><b>'+esc(x.name)+'</b></button>';}).join("");
+    });
+  }
+  $("gifts").onclick=function(e){
+    var b=e.target.closest(".gift");if(!b||!/^\/gift-[a-z0-9-]+\.mp4$/.test(b.dataset.v))return;
+    var v=$("fxv");v.src=b.dataset.v;$("fx").style.display="flex";v.play().catch(function(){});v.onended=closeFx;
+  };
+  function closeFx(){var v=$("fxv");try{v.pause();}catch(e){}v.removeAttribute("src");v.load();$("fx").style.display="none";}
+  $("fxx").onclick=closeFx;$("fx").onclick=function(e){if(e.target===$("fx"))closeFx();};
+
+  jget("/api/vip/me").then(paintMe);
+  paintAlert();loadGifts();tick();setInterval(function(){if(!document.hidden)tick();},20000);
+})();
+</script>
+</body></html>

@@ -72,4 +72,4 @@ Local testing without SMS: in `.env` set `VM_DEV_ECHO_CODE=1` (and not `NODE_ENV
 ## Update: wallet recharge, wallet PIN, VIP go-live page
 * `wallet.html` (recharge) now opens straight away: balance, amounts (₦100, 200, 500, 1,000, 1,500, 2,000, 4,000, 5,000, 10,000) and a Pay button to Paystack. Prices of messages/calls are no longer shown. Recharge needs no PIN; the activity list asks for the Wallet PIN. Needs `PAYSTACK_SECRET_KEY`.
 * `vico-wallet.html` (Vico Wallet from the Market Community) asks for the Wallet PIN (and email code when required) before it opens.
-* New `vip-go-live.html`: dark gold VIP stage. The VIP button now opens it. Shows VIP status, Go Live as VIP, VIPs live now, entrance preview, VIP live alerts, gift animations.
+* New `vip-stage.html`: dark gold VIP stage. The VIP button now opens it. Shows VIP status, Go Live as VIP, VIPs live now, entrance preview, VIP live alerts, gift animations.
