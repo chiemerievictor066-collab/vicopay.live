@@ -260,15 +260,22 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
         `INSERT INTO vm_phone_throttle (phone, hour_start, sends) VALUES (?,?,1) ON CONFLICT (phone) DO UPDATE SET hour_start = ?, sends = ?`,
         [n.e164, t, ptOpen ? Number(pt.hour_start) : t, ptOpen ? Number(pt.sends) + 1 : 1]);
 
+      // A send that failed must not count against the hourly limits (otherwise a broken SMS setup locks people out with "too many codes").
+      const refund = async () => {
+        try {
+          await db.run("UPDATE vm_otps SET last_sent_at = 0, sends_in_hour = GREATEST(sends_in_hour - 1, 0) WHERE email = ?", [me]);
+          await db.run("UPDATE vm_phone_throttle SET sends = GREATEST(sends - 1, 0) WHERE phone = ?", [n.e164]);
+        } catch (er) { console.error("VM PHONE REFUND:", er); }
+      };
       let via;
       if (channel === "push") {
         const r = await push.sendToUser(me, { title: "VicoPay verification code", body: "Your Vico Message code is " + code + ". Do not share it. It expires in " + phoneLib.CODE_MINUTES + " minutes.", tag: "vm-code", url: "vico-messages.html",
           data: { type: "vm_phone_code", code, url: "vico-messages.html" } });
-        if (!r.sent) { await db.run("UPDATE vm_otps SET last_sent_at = 0 WHERE email = ?", [me]); return bad(res, 502, "We could not reach your device. Please use SMS instead.", { useSms: true }); }
+        if (!r.sent) { await refund(); return bad(res, 502, "We could not reach your device. Please use SMS instead.", { useSms: true }); }
         via = r.kinds.join("+");
       } else try { via = (await phoneLib.sendSms({ to: n.e164, text: phoneLib.codeText(code, env), axios, env })).via; }
       catch (e) {
-        await db.run("UPDATE vm_otps SET last_sent_at = 0 WHERE email = ?", [me]);   // the person may try again straight away
+        await refund();   // the code never left the server: give the person their try back so failed sends never use up the hourly limit
         return e.code === "not_configured"
           ? bad(res, 503, "Phone verification is not switched on yet. The site owner needs to connect an SMS service.", { notConfigured: true })
           : bad(res, 502, "We could not send the SMS right now. Please check the number and try again in a moment.");
