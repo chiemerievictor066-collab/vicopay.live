@@ -21,7 +21,7 @@ const makePush = require("./vico-push");
 
 const HOUR = 3600 * 1000, RESEND_MS = 60 * 1000, MAX_SENDS_PER_HOUR = 5, MAX_WRONG = 5, MAX_BODY = 2000;
 
-module.exports = function makeMessages({ app, db, requireAuth, store, callAccess, axios, env, wallet, isEmailVerified }) {
+module.exports = function makeMessages({ app, db, requireAuth, requireAdmin, store, callAccess, axios, env, wallet, isEmailVerified }) {
   env = env || process.env;
   const { users, publicHandle, displayNameOf, avatarUrl } = store;
   const lc = (v) => String(v || "").trim().toLowerCase();
@@ -284,6 +284,25 @@ module.exports = function makeMessages({ app, db, requireAuth, store, callAccess
       if (via === "console" && env.NODE_ENV !== "production" && env.VM_DEV_ECHO_CODE === "1") out.devCode = code;   // local testing only
       res.json(out);
     } catch (e) { console.error("VM PHONE SEND:", e); bad(res, 500, "Could not send the code."); }
+  });
+
+  // ---------- SMS TEST (admin only) ----------
+  // Sends ONE test SMS through the configured provider (Infobip: https://{INFOBIP_BASE_URL}/sms/3/messages) and returns the provider's
+  // raw answer, so you can see exactly why a message is or is not delivered. The API key is read from the environment, never from code.
+  // Use sms-test.html, or:  curl -X POST https://YOURSITE/api/admin/sms-test -H "x-admin-key: ADMIN_KEY" -H "Content-Type: application/json" -d '{"to":"2348012345678"}'
+  app.post("/api/admin/sms-test", requireAdmin || ((req, res) => res.status(500).json({ success: false, message: "Admin guard missing." })), async (req, res) => {
+    const provider = phoneLib.providerName(env);
+    const cfg = { provider, infobipKeySet: !!env.INFOBIP_API_KEY, infobipHost: phoneLib.infobipHost(env) || null, sender: env.INFOBIP_SENDER || "InfoSMS (default)" };
+    if (provider === "none") return res.status(503).json({ success: false, message: "No SMS provider is configured. Set INFOBIP_API_KEY and INFOBIP_BASE_URL (and INFOBIP_SENDER) on Render.", config: cfg });
+    const n = phoneLib.normalizePhone(String((req.body && req.body.to) || ""), String((req.body && req.body.country) || "NG"));
+    if (!n.ok) return res.status(400).json({ success: false, message: n.message, config: cfg });
+    const rq = phoneLib.buildSmsRequest(provider, { to: n.e164, text: "VicoPay SMS test: your SMS service is working. Code 123456." }, env);
+    try {
+      const r = await axios.post(rq.url, rq.data, { headers: rq.headers, timeout: 15000 });
+      res.json({ success: true, to: n.e164, httpStatus: r.status, providerAnswer: r.data, config: cfg, note: "If providerAnswer shows PENDING or ACCEPTED, Infobip took the message. Check Infobip > Analyze > Logs if it does not arrive." });
+    } catch (e) {
+      res.status(502).json({ success: false, to: n.e164, httpStatus: e.response ? e.response.status : null, providerAnswer: e.response ? e.response.data : null, error: e.message, config: cfg });
+    }
   });
 
   app.post("/api/vm/phone/verify", requireAuth, async (req, res) => {

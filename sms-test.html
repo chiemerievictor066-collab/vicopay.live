@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex"><title>SMS Test - Vico Pay Live</title>
+<style>body{font-family:system-ui,sans-serif;max-width:560px;margin:24px auto;padding:0 16px;color:#14224d}input,button{width:100%;padding:12px;border-radius:12px;border:1px solid #c9d6f5;font-size:16px;margin:6px 0;box-sizing:border-box}button{background:#2b6bff;color:#fff;font-weight:800;border:0;cursor:pointer}pre{background:#0f172a;color:#d1fae5;padding:14px;border-radius:12px;white-space:pre-wrap;word-break:break-word}</style></head>
+<body><h2>SMS test (admin)</h2>
+<p>Sends one test SMS through your Infobip settings and shows Infobip's exact answer.</p>
+<input id="k" type="password" placeholder="Admin key (ADMIN_KEY from Render)" autocomplete="off">
+<input id="to" placeholder="Phone, e.g. 08126977572 or 2348126977572" inputmode="tel">
+<button id="go" type="button">Send test SMS</button>
+<pre id="out">Result will appear here.</pre>
+<script>
+document.getElementById("go").onclick=async function(){
+  var o=document.getElementById("out");o.textContent="Sending…";
+  try{var r=await fetch("/api/admin/sms-test",{method:"POST",headers:{"Content-Type":"application/json","x-admin-key":document.getElementById("k").value},body:JSON.stringify({to:document.getElementById("to").value,country:"NG"})});
+    o.textContent=JSON.stringify(await r.json(),null,2);}catch(e){o.textContent="Request failed: "+e.message;}
+};
+</script></body></html>

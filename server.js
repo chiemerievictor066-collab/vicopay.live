@@ -3430,7 +3430,7 @@ require("./vico-ai")({ app, db, requireAuth, requireAdmin, axios });
 // Vico Message: phone-verified chat + voice/video calls (vico-messages.js, vico-message-calls.js, vico-phone.js). Private calls with a VIP follow the same paid-call rule as live calls.
 // VicoPay Wallet: one central naira balance for paid messages and calls, recharged with Paystack. New tables only. See vico-wallet.js.
 vicoWallet = require("./vico-wallet")({ app, db, requireAuth, axios, siteUrlOf, walletSecurity });
-const vicoMessage = require("./vico-messages")({ app, db, requireAuth, store, axios, callAccess: callSystem && callSystem.access, wallet: vicoWallet, isEmailVerified: emailVerify.isVerified });
+const vicoMessage = require("./vico-messages")({ app, db, requireAuth, requireAdmin, store, axios, callAccess: callSystem && callSystem.access, wallet: vicoWallet, isEmailVerified: emailVerify.isVerified });
 require("./vico-market")({ app, db, requireAuth, requireAdmin, store });
 const videos = require("./vico-videos")({ app, db, requireAuth, requireAdmin, store, getAuthEmail });
 // Creator video partnership: public Marketplace publishing + Paystack verified company funding + bank transfer settlement.
@@ -3484,6 +3484,8 @@ const appreciation = require("./appreciation")({ app, db, ledger, requireAuth, h
 // START SERVER
 // ============================================================
 
+// Friendly aliases so a Profile link can never end on the 404 page
+["/vico-profile", "/profile", "/my-profile"].forEach((r) => app.get(r, (req, res) => res.sendFile(path.join(SITE_DIR, "vico-profile.html"))));
 app.use("/api", async (req, res) => res.status(404).json({ success: false, message: "Not found." }));
 app.use(async (req, res) => res.status(404).sendFile(path.join(SITE_DIR, "404.html")));
 app.use((err, req, res, next) => {
