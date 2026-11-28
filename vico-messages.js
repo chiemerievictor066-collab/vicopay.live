@@ -292,7 +292,7 @@ module.exports = function makeMessages({ app, db, requireAuth, requireAdmin, sto
   // Use sms-test.html, or:  curl -X POST https://YOURSITE/api/admin/sms-test -H "x-admin-key: ADMIN_KEY" -H "Content-Type: application/json" -d '{"to":"2348012345678"}'
   app.post("/api/admin/sms-test", requireAdmin || ((req, res) => res.status(500).json({ success: false, message: "Admin guard missing." })), async (req, res) => {
     const provider = phoneLib.providerName(env);
-    const cfg = { provider, infobipKeySet: !!env.INFOBIP_API_KEY, infobipHost: phoneLib.infobipHost(env) || null, sender: env.INFOBIP_SENDER || "InfoSMS (default)" };
+    const cfg = { provider, infobipKeySet: !!phoneLib.infobipKey(env), envNamesSeen: Object.keys(env).filter((k) => /infobip|termii|twilio|sms|admin_key/i.test(k)).map((k) => k + (String(env[k] || "").trim() ? " (has a value)" : " (EMPTY)")), infobipHost: phoneLib.infobipHost(env) || null, sender: env.INFOBIP_SENDER || "InfoSMS (default)" };
     if (provider === "none") return res.status(503).json({ success: false, message: "No SMS provider is configured. Set INFOBIP_API_KEY and INFOBIP_BASE_URL (and INFOBIP_SENDER) on Render.", config: cfg });
     const n = phoneLib.normalizePhone(String((req.body && req.body.to) || ""), String((req.body && req.body.country) || "NG"));
     if (!n.ok) return res.status(400).json({ success: false, message: n.message, config: cfg });

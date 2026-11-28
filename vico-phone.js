@@ -88,6 +88,10 @@ const codeText = (code, env) => {
 
 // ---- SMS providers ----
 // INFOBIP_BASE_URL is shown in the Infobip portal as "xxxxx.api.infobip.com" (with or without https://). Only the host is kept, always over https.
+// Pasted keys often carry spaces, quotes, "App " or ${...}: keep only the raw key.
+function infobipKey(env) {
+  return String(env.INFOBIP_API_KEY || "").trim().replace(/^["']|["']$/g, "").replace(/^App\s+/i, "").trim();
+}
 function infobipHost(env) {
   env = env || process.env;
   const h = String(env.INFOBIP_BASE_URL || "").trim().replace(/^[a-z]+:\/\//i, "").replace(/[\/?#].*$/, "");
@@ -96,7 +100,7 @@ function infobipHost(env) {
 function providerName(env) {
   env = env || process.env;
   const want = String(env.SMS_PROVIDER || "").toLowerCase();
-  const infobip = !!(env.INFOBIP_API_KEY && infobipHost(env));
+  const infobip = !!(infobipKey(env) && infobipHost(env));
   const termii = !!env.TERMII_API_KEY;
   const twilio = !!(env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && (env.TWILIO_FROM || env.TWILIO_MESSAGING_SERVICE_SID));
   if (want === "infobip" && infobip) return "infobip";
@@ -118,7 +122,7 @@ function buildSmsRequest(provider, { to, text }, env) {
   }
   if (provider === "infobip") {
     // Infobip "Send SMS" API v3: POST https://{baseUrl}/sms/3/messages, header "Authorization: App {apiKey}"
-    return { url: "https://" + infobipHost(env) + "/sms/3/messages", headers: { "Content-Type": "application/json", Accept: "application/json", Authorization: "App " + env.INFOBIP_API_KEY },
+    return { url: "https://" + infobipHost(env) + "/sms/3/messages", headers: { "Content-Type": "application/json", Accept: "application/json", Authorization: "App " + infobipKey(env) },
       data: { messages: [{ sender: env.INFOBIP_SENDER || "InfoSMS", destinations: [{ to: String(to).replace(/^\+/, "") }], content: { text } }] } };
   }
   if (provider === "twilio") {
@@ -160,4 +164,4 @@ async function sendSms({ to, text, axios, env, log }) {
   }
 }
 
-module.exports = { COUNTRIES, normalizePhone, samePhone, maskPhone, makeCode, makeSalt, hashCode, safeEq, CODE_MINUTES, codeText, otpHost, infobipHost, providerName, buildSmsRequest, sendSms };
+module.exports = { COUNTRIES, normalizePhone, samePhone, maskPhone, makeCode, makeSalt, hashCode, safeEq, CODE_MINUTES, codeText, otpHost, infobipHost, infobipKey, providerName, buildSmsRequest, sendSms };
