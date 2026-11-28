@@ -32,7 +32,13 @@ services:
         sync: false
       - key: LIVEKIT_API_SECRET
         sync: false
-      # Vico Message phone verification (SMS). Fill the Termii OR the Twilio ones.
+      # Vico Message phone verification (SMS). Fill ONE provider: Infobip, Termii or Twilio.
+      - key: INFOBIP_API_KEY
+        sync: false
+      - key: INFOBIP_BASE_URL
+        sync: false
+      - key: INFOBIP_SENDER
+        sync: false
       - key: TERMII_API_KEY
         sync: false
       - key: TERMII_SENDER_ID

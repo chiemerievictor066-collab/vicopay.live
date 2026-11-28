@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>My Profile - Vico Pay Live</title>
+<link rel="stylesheet" href="gm.css">
+<style>
+.pf{padding:22px;text-align:center;margin-bottom:14px}
+.pf .pic{width:116px;height:116px;border-radius:50%;margin:0 auto 10px;overflow:hidden;background:linear-gradient(135deg,#7b5cff,#3b8bff);color:#fff;font-size:48px;font-weight:900;display:flex;align-items:center;justify-content:center;border:4px solid #fff;box-shadow:0 6px 22px rgba(60,80,200,.25)}
+.pf .pic img{width:100%;height:100%;object-fit:cover}
+.pf .pic.live{border-color:#ff315a}
+.pf h1{margin:4px 0 0;font-size:26px;color:var(--gm-purple)}
+.pf .h{color:var(--gm-muted);font-weight:800;margin:2px 0 8px}
+.pf .bio{font-weight:600;max-width:520px;margin:0 auto 12px}
+.sts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:14px 0}
+.sts div{padding:12px;border-radius:18px;background:#eef6ff;border:1px solid var(--gm-line)}
+.sts b{display:block;font-size:22px;color:var(--gm-purple)}.sts span{font-size:12.5px;font-weight:800;color:var(--gm-muted)}
+.lk{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.lk a{display:block;padding:14px 16px;border-radius:18px;background:#fff;border:1px solid var(--gm-line);font-weight:800;color:var(--gm-purple);text-decoration:none}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+</style></head>
+<body class="gm" data-gm="profile" data-title="Profile" data-ai="profile" data-ai-img="vico-ai-guide.gif">
+<div class="gm-wrap">
+  <div class="gm-card pf" id="card"><p style="font-weight:700">Loading profile…</p></div>
+  <div id="mine" style="display:none">
+    <div class="lk">
+      <a href="vico-messages.html">💬 Vico Message</a>
+      <a href="vico-wallet.html">👛 Vico Wallet</a>
+      <a href="live-room-dashboard.html">📊 Creator Dashboard</a>
+      <a href="my-gifts.html">🎁 My Gifts</a>
+      <a href="followers.html">👥 Followers / Following</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </div>
+    <div class="btns"><button class="gm-btn blue" id="out" type="button">Sign out</button></div>
+  </div>
+</div>
+<script src="auth.js"></script><script src="gm-nav.js"></script>
+<script>
+(function () {
+  var $ = function (i) { return document.getElementById(i); }, E = window.gmEsc;
+  var u = new URLSearchParams(location.search).get("u") || "me";
+  if (u === "me" && !gmSignedIn()) { location.replace("join-now.html"); return; }   // own profile needs a login
+  function n(x) { x = Number(x) || 0; return x >= 1e6 ? (x / 1e6).toFixed(1) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : String(x); }
+  gmApi("/api/profile/" + encodeURIComponent(u)).then(function (d) {
+    var p = d && d.profile;
+    if (!p) {
+      if (d && d._status === 401) { location.replace("join-now.html"); return; }
+      $("card").innerHTML = '<p style="font-weight:700">' + E((d && d.message) || "Profile not found.") + '</p><a class="gm-btn" href="global-market-community.html">Back to Market Community</a>';
+      return;
+    }
+    var pic = p.avatar ? '<img src="' + E(p.avatar) + '" alt="">' : E((p.displayName || "V").charAt(0).toUpperCase());
+    var btns = p.isMe
+      ? '<a class="gm-btn" href="profile.html?edit=1">✏️ Edit Profile</a><a class="gm-btn blue" href="profile.html">Full profile</a>'
+      : (p.isLive && p.roomId ? '<a class="gm-btn" href="live-feed.html?room=' + encodeURIComponent(p.roomId) + '">🔴 Watch Live</a>' : '') +
+        '<a class="gm-btn blue" href="profile.html?u=' + encodeURIComponent(p.handle) + '">View full profile</a>';
+    $("card").innerHTML = '<div class="pic' + (p.isLive ? ' live' : '') + '">' + pic + '</div>' +
+      '<h1>' + E(p.displayName) + '</h1><div class="h">@' + E(p.handle) + (p.isLive ? ' · <b style="color:#ff315a">LIVE</b>' : '') + '</div>' +
+      '<div class="bio">' + (p.bio ? E(p.bio) : (p.isMe ? "Add a short bio so people can get to know you." : "No bio yet.")) + '</div>' +
+      '<div class="sts"><div><b>' + n(p.followers) + '</b><span>Followers</span></div><div><b>' + n(p.following) + '</b><span>Following</span></div>' +
+      '<div><b>' + n(p.giftsReceived) + '</b><span>Gifts received</span></div><div><b>' + n(p.likes) + '</b><span>Likes</span></div></div>' +
+      '<div class="btns">' + btns + '</div>';
+    document.title = p.displayName + " - Vico Pay Live";
+    if (p.isMe) $("mine").style.display = "block";
+  });
+  $("out").onclick = function () { VicoAuth.signOut(); };
+})();
+</script>
+</body></html>
